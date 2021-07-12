@@ -1,0 +1,43 @@
+{
+  "name": "divbrowse-frontend",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "start": "sirv public"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^11.0.0",
+    "@rollup/plugin-node-resolve": "^7.0.0",
+    "@rollup/plugin-replace": "^2.3.3",
+    "less": "^3.11.1",
+    "rollup": "^1.20.0",
+    "rollup-plugin-includepaths": "^0.2.4",
+    "rollup-plugin-livereload": "^1.0.0",
+    "rollup-plugin-postcss": "^3.1.2",
+    "rollup-plugin-root-import": "^1.0.0",
+    "rollup-plugin-svelte": "^5.0.3",
+    "rollup-plugin-terser": "^5.1.2",
+    "svelte": "^3.33.0",
+    "svelte-preprocess-less": "^0.4.0"
+  },
+  "dependencies": {
+    "@sveltejs/svelte-virtual-list": "^3.0.1",
+    "axios": "^0.19.2",
+    "d3": "^5.16.0",
+    "dataframe-js": "^1.4.4",
+    "fuse.js": "^6.4.6",
+    "jquery": "^3.4.1",
+    "lodash": "^4.17.15",
+    "plotly.js-dist": "^1.54.7",
+    "sirv-cli": "^0.4.4",
+    "svelte-inview": "^1.0.0",
+    "svelte-moveable": "^0.8.11",
+    "svelte-preprocess": "^3.9.10",
+    "svelte-range-slider-pips": "^1.7.0",
+    "svelte-simple-datatables": "^0.1.25",
+    "svelte-simple-modal": "^0.6.0",
+    "sveltejs-tippy": "^3.0.0",
+    "tippy.js": "^6.2.3"
+  }
+}
