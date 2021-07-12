@@ -13,8 +13,6 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('..'))
-sys.path.insert(0, os.path.abspath('../../'))
 
 
 # -- Project information -----------------------------------------------------
@@ -33,18 +31,16 @@ release = '1.0'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.napoleon',
     'autoapi.extension',
-    #'sphinx.ext.autodoc',
-    #'sphinx.ext.autosummary',
-    #'sphinx.ext.coverage',
+    'sphinx.ext.napoleon',
 ]
-autoapi_dirs = ['../../']
-autoapi_ignore = ['*migrations*', '*/conf.py', '*/divbrowse_wsgi.py']
-#master_doc = 'index'
 
-#autosummary_generate = True
-#autoclass_content = 'both'
+
+autoapi_dirs = ['../../backend/']
+autoapi_ignore = ['*migrations*', '*/conf.py', '*/divbrowse_wsgi.py']
+autoapi_add_toctree_entry = True
+
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -52,7 +48,7 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', '_build', '*.pyc', '__pycache__']
+#exclude_patterns = ['_build', '*.pyc', '__pycache__']
 
 
 # -- Options for HTML output -------------------------------------------------
