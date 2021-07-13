@@ -1,0 +1,18 @@
+name: divbrowse
+channels:
+  - bjrn
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7.6
+  - nodejs=15.14.0
+  - numpy=1.18.1
+  - pandas=1.0.3
+  - flask=1.1.2
+  - scikit-learn=0.22.1
+  - scikit-allel=1.2.1
+  - bioblend=0.15.0
+  - pandarallel=1.4.8
+  - pyyaml=5.1.2
+  - zarr=2.4.0

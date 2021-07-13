@@ -16,7 +16,7 @@
     "rollup-plugin-livereload": "^1.0.0",
     "rollup-plugin-postcss": "^3.1.2",
     "rollup-plugin-root-import": "^1.0.0",
-    "rollup-plugin-svelte": "^5.0.3",
+    "rollup-plugin-svelte": "^6.1.1",
     "rollup-plugin-terser": "^5.1.2",
     "svelte": "^3.33.0",
     "svelte-preprocess-less": "^0.4.0"

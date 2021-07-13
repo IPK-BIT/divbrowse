@@ -1,6 +1,6 @@
 # frontend
-/node_modules/
-/public/build/
+/frontend/node_modules/
+/frontend/public/build/
 .DS_Store
 
 
@@ -110,4 +110,7 @@ dist
 
 # TernJS port file
 .tern-port
+
+# VS Code settings
+.vscode/
 .vscode/settings.json
