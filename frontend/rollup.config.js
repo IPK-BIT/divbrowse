@@ -8,7 +8,6 @@ import { terser } from 'rollup-plugin-terser';
 import postcss from 'rollup-plugin-postcss';
 import replace from '@rollup/plugin-replace';
 
-//import includePaths from 'rollup-plugin-includepaths';
 import rootImport from 'rollup-plugin-root-import';
 
 const rootImportSettings = {
@@ -27,7 +26,7 @@ export default {
 	output: {
 		sourcemap: true,
 		format: 'iife',
-		name: 'IPK_VARIANT_BROWSER',
+		name: 'divbrowse',
 		file: 'public/build/bundle.js'
 	},
 	plugins: [
@@ -39,7 +38,6 @@ export default {
                 production ? 'production' : 'development'
             ),
         }),
-        //includePaths({ paths: ["./"] }),
         rootImport(rootImportSettings),
 		svelte({
             preprocess: {
