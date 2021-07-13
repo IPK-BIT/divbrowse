@@ -1,18 +1,17 @@
+import json
 import os
-import zarr
+from timeit import default_timer as timer
+from types import SimpleNamespace
+from typing import Tuple
+
 import allel
 import numpy as np
 import pandas as pd
-import json
-from sklearn.preprocessing import StandardScaler
+import zarr
 from sklearn.decomposition import PCA
-from timeit import default_timer as timer
-from types import SimpleNamespace
+from sklearn.preprocessing import StandardScaler
 
 from lib.utils import ApiError
-
-from typing import Tuple
-
 
 
 def calculate_mean(submatrix_of_snps: np.ndarray) -> np.ndarray:
@@ -409,26 +408,26 @@ class GenotypeData:
             per_snp_stats['vcf_qual'] = sliced_qual.tolist()
         
         per_snp_stats['positions_indices'] = list(range(_slice_snps.start, _slice_snps.stop))
-        df_per_snp_stats = pd.DataFrame(per_snp_stats)
+        df = pd.DataFrame(per_snp_stats)
 
-        print(df_per_snp_stats)
+        print(df)
 
         if 'filterByMaf' in fs and fs['filterByMaf'] == True:
-            df_per_snp_stats = df_per_snp_stats[ df_per_snp_stats['maf'].between(fs['maf'][0], fs['maf'][1]) ]
+            df = df[ df['maf'].between(fs['maf'][0], fs['maf'][1]) ]
 
         if 'filterByMissingFreq' in fs and fs['filterByMissingFreq'] == True:
-            df_per_snp_stats = df_per_snp_stats[ df_per_snp_stats['missing_freq'].between(fs['missingFreq'][0], fs['missingFreq'][1]) ]
+            df = df[ df['missing_freq'].between(fs['missingFreq'][0], fs['missingFreq'][1]) ]
 
         if 'filterByHeteroFreq' in fs and fs['filterByHeteroFreq'] == True:
-            df_per_snp_stats = df_per_snp_stats[ df_per_snp_stats['heterozygosity_freq'].between(fs['heteroFreq'][0], fs['heteroFreq'][1]) ]
+            df = df[ df['heterozygosity_freq'].between(fs['heteroFreq'][0], fs['heteroFreq'][1]) ]
 
         if 'filterByVcfQual' in fs and fs['filterByVcfQual'] == True and 'QUAL' in self.available_variants_metadata:
-            df_per_snp_stats = df_per_snp_stats[ df_per_snp_stats['vcf_qual'].between(fs['vcfQual'][0], fs['vcfQual'][1]) ]
+            df = df[ df['vcf_qual'].between(fs['vcfQual'][0], fs['vcfQual'][1]) ]
 
-        if snps_to_alt[:, df_per_snp_stats.index.values].shape[1] >= 2:
-            snps_to_alt = snps_to_alt[:, df_per_snp_stats.index.values]
+        if snps_to_alt[:, df.index.values].shape[1] >= 2:
+            snps_to_alt = snps_to_alt[:, df.index.values]
 
-        return snps_to_alt, df_per_snp_stats['positions_indices'].values
+        return snps_to_alt, df['positions_indices'].values
 
 
     def get_slice_of_snps(self, chrom, startpos=None, endpos=None, count=None, samples=None, variant_filter_settings=None):

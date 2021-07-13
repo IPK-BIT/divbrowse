@@ -1,33 +1,28 @@
-from flask import Flask
-from flask import request
-from flask import jsonify
-from flask import Response
 import os
-os.environ['NUMEXPR_MAX_THREADS'] = '144'
+import json
+import sys
+from pprint import pprint
+from timeit import default_timer as timer
+
+from flask import Flask, Response, jsonify, request
+
 import allel
 import numpy as np
 import pandas as pd
-import sys
-import json
-from pprint import pprint
-from sklearn.metrics import pairwise_distances
-from timeit import default_timer as timer
 from bioblend.galaxy import GalaxyInstance
 from bioblend.galaxy.tools.inputs import inputs
-import socket
-hostname = socket.gethostname()
+from sklearn.metrics import pairwise_distances
+import yaml
 
-from lib.utils import ApiError
-from lib.genotype_data import GenotypeData
 from lib.annotation_data import AnnotationData
-from lib.genotype_data import impute_with_mean, calculate_pca_in_snp_window
-
-
+from lib.genotype_data import (GenotypeData, calculate_pca_in_snp_window,
+                               impute_with_mean)
+from lib.utils import ApiError
 
 # =========================================================================
 # PLEASE EDIT VARIABLES BELOW FOR CONFIGURATION
 # =========================================================================
-filename_config_ini = 'divbrowse.ini'
+filename_config_yaml = 'divbrowse.config.yml'
 
 
 
@@ -36,31 +31,14 @@ filename_config_ini = 'divbrowse.ini'
 # PLEASE DON'T CHANGE ANYTHING BELOW UNLESS YOU KNOW WHAT YOU'RE DOING.
 # =========================================================================
 app = Flask(__name__)
-#app.run(debug=True)
 
 
-import yaml
-with open('divbrowse.config.yaml') as fd:
-    config = yaml.load(fd)
-
-pprint(config)
-#print("~~~~~~~~~~~~~~~~~~~~~~")
-#exit()
-
-
-
-def pl():
-    print("========================================================================================")
-
-
-pl()
+with open(filename_config_yaml) as config_file:
+    config = yaml.full_load(config_file)
 
 
 gd = GenotypeData(config)
 ad = AnnotationData(config, gd)
-
-#print(gd.available_calldata)
-#print(gd.available_variants_metadata)
 
 
 def process_request_vars(vars):
@@ -315,7 +293,6 @@ def __variants():
     
 
     print("==== output dict creation => calculation time: ", timer() - start)
-
     print("==== ALL /variants => calculation time: ", timer() - start_all)
 
     return jsonify(result)

@@ -1,14 +1,15 @@
+import json
 import os
-import zarr
+from timeit import default_timer as timer
+
 import allel
 import numpy as np
 import pandas as pd
-import json
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-from timeit import default_timer as timer
-
+import zarr
 from pandarallel import pandarallel
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+
 pandarallel.initialize(nb_workers=3, progress_bar=True)
 
 

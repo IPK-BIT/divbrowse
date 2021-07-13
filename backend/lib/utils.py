@@ -1,12 +1,3 @@
-#import numpy as np
-#from sklearn.preprocessing import StandardScaler
-#from sklearn.decomposition import PCA
-#from timeit import default_timer as timer
-
-def test():
-    print('Hello from the module :-)')
-
-
 class ApiError(Exception):
     status_code = 400
     def __init__(self, message, status_code=None, payload=None):

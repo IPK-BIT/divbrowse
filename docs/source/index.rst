@@ -10,6 +10,8 @@ Welcome to DivBrowse's documentation!
    :caption: Contents:
 
    introduction.rst
+   installation.rst
+   configuration.rst
    API Reference <../autoapi#http://>
 
 
