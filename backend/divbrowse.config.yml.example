@@ -1,11 +1,19 @@
 data:
+  # absolute path to the directory containing the data files
   datadir: /opt/shape/uwsgi/shape/data/
+
+  # name of the directory containing the Zarr array converted from a VCF file
   zarr_variants: SNP_matrix_WGS_300_samples.vcf.zarr
+
+  # filename of the mapping table to map other sample IDs on the VCF sample IDs
   sample_id_mapping: 
 
 
 gff3:
+  # filename of the GFF3 file containing the gene annotations
   filename: 
+
+  
   key_confidence: 
   key_ontology: Ontology_term
   main_feature_type_for_genes_track: mRNA

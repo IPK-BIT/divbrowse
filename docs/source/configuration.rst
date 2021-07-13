@@ -82,3 +82,9 @@ The configuration of your DivBrowse instance is managed by a YAML file:
        chr6H: 6
        chr7H: 7
        chrUn: 0
+
+
+
+.. include:: ../../backend/divbrowse.config.yml.example
+   :literal:
+   :code: yaml
