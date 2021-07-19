@@ -12,7 +12,9 @@ data:
 gff3:
   # filename of the GFF3 file containing the gene annotations
   filename: 
-
+  
+  feature_type_with_description: mRNA
+  count_exon_snps: true
   
   key_confidence: 
   key_ontology: Ontology_term

@@ -66,8 +66,7 @@ class AnnotationData:
         self.metadata_gff3.update(dict(self.config['gff3']))
 
         # list of genes with descriptions and start+end positions
-        # TODO: make this configureable via ini file
-        genes_with_descriptions = self.genes.loc[(self.genes['type'] == 'mRNA')] # gene or transcript
+        genes_with_descriptions = self.genes.loc[(self.genes['type'] == self.config['gff3']['feature_type_with_description'])] # gene or transcript
 
 
         def count_exon_snps(row):
@@ -85,24 +84,29 @@ class AnnotationData:
             return pd.Series( [count_snps, exons_counts.sum() ], index=['count_snps', 'count_exon_snps'])
 
 
-        geneStatsCacheFilename = self.datadir+'____gene_stats_.hdf5'
-        try:
-            gene_list = pd.read_hdf(geneStatsCacheFilename, key='s')
-            print("++++ Loaded Pandas Dataframe for gene stats")
+        if self.config['gff3']['count_exon_snps'] is True:
 
-            genes_counted_snps = gene_list[ ['count_snps', 'count_exon_snps'] ].copy()
-            merged = pd.concat([genes_with_descriptions, genes_counted_snps], axis=1)
-            gene_list = merged[ ['ID', 'seqid', 'start', 'end', 'primary_confidence_class', 'description', 'Ontology_term', 'count_snps', 'count_exon_snps'] ].copy()
+            geneStatsCacheFilename = self.datadir+'____gene_stats_.hdf5'
+            try:
+                gene_list = pd.read_hdf(geneStatsCacheFilename, key='s')
+                print("++++ Loaded Pandas Dataframe for gene stats")
 
-        except FileNotFoundError:
-            start = timer()
-            genes_counted_snps = genes_with_descriptions.parallel_apply(count_gene_snps, axis=1, result_type='expand')
-            print("==== genes_with_descriptions.parallel_apply() calculation time: ", timer() - start)
+                genes_counted_snps = gene_list[ ['count_snps', 'count_exon_snps'] ].copy()
+                merged = pd.concat([genes_with_descriptions, genes_counted_snps], axis=1)
+                gene_list = merged[ ['ID', 'seqid', 'start', 'end', 'primary_confidence_class', 'description', 'Ontology_term', 'count_snps', 'count_exon_snps'] ].copy()
 
-            merged = pd.concat([genes_with_descriptions, genes_counted_snps], axis=1)
+            except FileNotFoundError:
+                start = timer()
+                #genes_counted_snps = genes_with_descriptions.parallel_apply(count_gene_snps, axis=1, result_type='expand')
+                genes_counted_snps = genes_with_descriptions.apply(count_gene_snps, axis=1, result_type='expand')
+                print("==== genes_with_descriptions.parallel_apply() calculation time: ", timer() - start)
+                merged = pd.concat([genes_with_descriptions, genes_counted_snps], axis=1)
 
-            gene_list = merged[ ['ID', 'seqid', 'start', 'end', 'primary_confidence_class', 'description', 'count_snps', 'count_exon_snps'] ].copy()
-            gene_list.to_hdf(geneStatsCacheFilename, key='s', mode='w', complevel=5, complib='blosc:zstd')
+                gene_list = merged[ ['ID', 'seqid', 'start', 'end', 'primary_confidence_class', 'description', 'count_snps', 'count_exon_snps'] ].copy()
+                gene_list.to_hdf(geneStatsCacheFilename, key='s', mode='w', complevel=5, complib='blosc:zstd')
+
+        else:
+            gene_list = genes_with_descriptions
 
 
         genes_list = gene_list.to_dict('split')

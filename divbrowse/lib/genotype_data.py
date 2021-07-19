@@ -11,7 +11,8 @@ import zarr
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-from lib.utils import ApiError
+from divbrowse import log
+from divbrowse.lib.utils import ApiError
 
 
 def calculate_mean(submatrix_of_snps: np.ndarray) -> np.ndarray:
@@ -66,7 +67,7 @@ def calculate_pca_in_snp_window(snps, samples_selected):
     start = timer()
     pca_model = PCA(n_components=2, whiten=False, svd_solver='randomized', iterated_power=6).fit(snps_imputed_scaled)
     pca_result = pca_model.transform(snps_imputed_scaled)
-    print("==== PCA calculation time: ", timer() - start)
+    log.debug("==== PCA calculation time: ", timer() - start)
     pca_result_combined = np.concatenate((sample_ids, pca_result), axis=1)
     return pca_result_combined
 
@@ -90,7 +91,7 @@ class GenotypeData:
             exit('ERROR: the configured path for the Zarr-archive of variants does not exist or is not accessible')
 
         self.callset = zarr.open_group(path_zarr_variants, mode='r')
-        print(self.callset.tree(expand=True))
+        log.debug(self.callset.tree(expand=True))
 
         self.available = {
             'snpeff': False,
@@ -161,10 +162,10 @@ class GenotypeData:
             cached_index_path = self.datadir + '____pandas_index_chromosome_' + str(_chr) + '_.hdf5'
             try:
                 chrom_indices[_chr] = pd.read_hdf(cached_index_path, key='s')
-                print("++++ Loaded Pandas index for chromosome "+str(_chr))
+                log.debug("++++ Loaded Pandas index for chromosome %s", str(_chr))
 
             except FileNotFoundError:
-                print("++++ Creating Pandas index for chromosome "+str(_chr))
+                log.debug("++++ Creating Pandas index for chromosome %s", str(_chr))
                 chrom_range = self.idx_pos.locate_key(_chr)
                 chrom_indices[_chr] = pd.Series(data=np.arange(chrom_range.start, chrom_range.stop), index=self.pos[chrom_range])
                 chrom_indices[_chr].to_hdf(cached_index_path, key='s', mode='w', complevel=5, complib='blosc:zstd')
@@ -181,16 +182,14 @@ class GenotypeData:
 
         try:
             with open(path_chromosome_tmp_data) as f:
-                print("++++ Load chromosome metadata from json on disk")
+                log.debug("++++ Load chromosome metadata from json on disk")
                 self.list_of_chromosomes = json.loads(f.read())
 
         except FileNotFoundError:
-            print("++++ Need to create chromosome metadata on thy fly")
+            log.debug("++++ Need to create chromosome metadata on thy fly")
             self.list_of_chromosomes = []
             for _chr in self.list_chrom:
-                #start = timer()
                 _region = self.idx_pos.locate_range(_chr)
-                #print("TIME MEASURE: _region = idx_pos.locate_range(_chr): ", timer() - start)
                 self.list_of_chromosomes.append({
                     'id': _chr,
                     'label': chromosome_labels[str(_chr)],
@@ -236,7 +235,7 @@ class GenotypeData:
             start = timer()
             for input_sample_id in sample_ids:
                 mapped_sample_ids.append( self.map_input_sample_ids_to_vcf_sample_ids_dict[input_sample_id] )
-            print("==== map_input_sample_ids_to_vcf_sample_ids() calculation time: ", timer() - start)
+            log.debug("==== map_input_sample_ids_to_vcf_sample_ids() calculation time: %f", timer() - start)
         else:
             mapped_sample_ids = sample_ids
 
@@ -259,7 +258,7 @@ class GenotypeData:
             start = timer()
             for input_sample_id in sample_ids:
                 mapped_sample_ids.append( self.map_vcf_sample_ids_to_input_sample_ids_dict[input_sample_id] )
-            print("==== map_vcf_sample_ids_to_input_sample_ids() calculation time: ", timer() - start)
+            log.debug("==== map_vcf_sample_ids_to_input_sample_ids() calculation time: %f", timer() - start)
         else:
             mapped_sample_ids = sample_ids
 
@@ -301,13 +300,11 @@ class GenotypeData:
         pd_series = self.chrom_indices[chrom]
         try:
             lookup = pd_series.at[pos]
-            #print("++++ direct lookup")
             return lookup, 'direct_lookup'
         except KeyError:
             # do fuzzy search via nearest neighbor search
             nearest = pd_series.index.get_loc(pos, method='nearest')
             lookup = pd_series.iloc[nearest]
-            #print("++++ nearest lookup")
             return lookup, 'nearest_lookup'
 
 
@@ -320,8 +317,6 @@ class GenotypeData:
         Returns:
             numpy.ndarray: SNP matrix array holding the number of alternate allele calls
         """
-
-        print(type(sliced_snps))
 
         # monoploid / haploid
         if sliced_snps.ndim == 2:
@@ -410,7 +405,7 @@ class GenotypeData:
         per_snp_stats['positions_indices'] = list(range(_slice_snps.start, _slice_snps.stop))
         df = pd.DataFrame(per_snp_stats)
 
-        print(df)
+        log.debug(df)
 
         if 'filterByMaf' in fs and fs['filterByMaf'] == True:
             df = df[ df['maf'].between(fs['maf'][0], fs['maf'][1]) ]

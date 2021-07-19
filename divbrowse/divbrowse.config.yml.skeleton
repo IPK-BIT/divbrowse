@@ -1,0 +1,36 @@
+data:
+  datadir:
+  zarr_variants: SNP_matrix_WGS_300_samples.vcf.zarr
+  sample_id_mapping: 
+
+gff3:
+  filename: 
+  feature_type_with_description: mRNA
+  count_exon_snps: false
+  key_confidence: 
+  key_ontology: Ontology_term
+  main_feature_type_for_genes_track: mRNA
+  external_link_ontology_term: https://www.ebi.ac.uk/QuickGO/term/{ID}
+  external_links:
+
+dataset_descriptions:
+  general_description: 
+  vcf_doi: 
+  vcf_reference_genome_doi: 
+  gff3_doi: 
+
+chromosome_labels:
+
+gff3_chromosome_labels:
+
+centromeres_positions:
+
+blast:
+  active: false
+  galaxy_server_url: 
+  galaxy_user: 
+  galaxy_pass: 
+  galaxy_tool_id: 
+  blast_database: 
+  blast_type: megablast
+  blast_result_to_vcf_chromosome_mapping:
