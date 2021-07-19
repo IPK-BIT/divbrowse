@@ -57,10 +57,7 @@ export default {
         }),
         rootImport(rootImportSettings),
 		svelte({
-            preprocess: sveltePreprocess({
-                less: true,
-                postcss: true,
-            }), // { /* options */ }
+            preprocess: sveltePreprocess(),
             compilerOptions: {
 				// enable run-time checks when not in production
 				dev: !production
