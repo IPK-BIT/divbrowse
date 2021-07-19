@@ -129,31 +129,32 @@ function isFiltered(pos, gt) {
 
 @fontsizeTrackLabel: 12px;
 
-:global(div.track div.label) {
-    width: 170px;
-    margin: 0;
-    padding: 0;
+:global {
+    div.track div.label {
+        width: 170px;
+        margin: 0;
+        padding: 0;
 
-    /*display: inline-block;
-    vertical-align: top;*/
-    box-sizing: border-box;
-    padding-left: 4px;
+        /*display: inline-block;
+        vertical-align: top;*/
+        box-sizing: border-box;
+        padding-left: 4px;
 
-    font-size: @fontsizeTrackLabel;
-    line-height: @fontsizeTrackLabel;
+        font-size: @fontsizeTrackLabel;
+        line-height: @fontsizeTrackLabel;
 
-    display:inline-flex;
-    align-items: center;
-    min-height: 20px;
+        display:inline-flex;
+        align-items: center;
+        min-height: 20px;
 
-    &.firstNode {
-        /*box-shadow: inset 0 2px 1px -1px black;*/
+        &.firstNode {
+            /*box-shadow: inset 0 2px 1px -1px black;*/
+        }
+
+        &.lastNode {
+            box-shadow: inset 0 -2px 1px -1px rgb(70,70,70);
+        }
     }
-
-    &.lastNode {
-        box-shadow: inset 0 -2px 1px -1px rgb(70,70,70);
-    }
-    
 }
 
 div.label {

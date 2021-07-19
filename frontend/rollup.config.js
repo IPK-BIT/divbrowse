@@ -1,13 +1,12 @@
 import svelte from 'rollup-plugin-svelte';
-import { less } from 'svelte-preprocess-less';
-import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
+import css from 'rollup-plugin-css-only';
+import sveltePreprocess from 'svelte-preprocess';
 
-import postcss from 'rollup-plugin-postcss';
 import replace from '@rollup/plugin-replace';
-
 import rootImport from 'rollup-plugin-root-import';
 
 const rootImportSettings = {
@@ -21,6 +20,27 @@ const rootImportSettings = {
 
 const production = !process.env.ROLLUP_WATCH;
 
+function serve() {
+	let server;
+
+	function toExit() {
+		if (server) server.kill(0);
+	}
+
+	return {
+		writeBundle() {
+			if (server) return;
+			server = require('child_process').spawn('npm', ['run', 'start', '--', '--dev'], {
+				stdio: ['ignore', 'inherit', 'inherit'],
+				shell: true
+			});
+
+			process.on('SIGTERM', toExit);
+			process.on('exit', toExit);
+		}
+	};
+}
+
 export default {
 	input: 'src/main.js',
 	output: {
@@ -30,9 +50,6 @@ export default {
 		file: 'public/build/bundle.js'
 	},
 	plugins: [
-        postcss({
-            plugins: [],
-        }),
         replace({
             'process.env.NODE_ENV': JSON.stringify(
                 production ? 'production' : 'development'
@@ -40,17 +57,16 @@ export default {
         }),
         rootImport(rootImportSettings),
 		svelte({
-            preprocess: {
-                style: less(),
-            },
-			// enable run-time checks when not in production
-			dev: !production,
-			// we'll extract any component CSS out into
-			// a separate file - better for performance
-			css: css => {
-				css.write('public/build/bundle.css');
+            preprocess: sveltePreprocess({
+                less: true,
+                postcss: true,
+            }), // { /* options */ }
+            compilerOptions: {
+				// enable run-time checks when not in production
+				dev: !production
 			}
 		}),
+        css({ output: 'bundle.css' }),
 
 		// If you have external dependencies installed from
 		// npm, you'll most likely need these plugins. In
@@ -79,20 +95,3 @@ export default {
 		clearScreen: false
 	}
 };
-
-function serve() {
-	let started = false;
-
-	return {
-		writeBundle() {
-			if (!started) {
-				started = true;
-
-				require('child_process').spawn('npm', ['run', 'start', '--', '--dev'], {
-					stdio: ['ignore', 'inherit', 'inherit'],
-					shell: true
-				});
-			}
-		}
-	};
-}

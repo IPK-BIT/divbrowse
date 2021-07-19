@@ -1,5 +1,6 @@
 # frontend
 /frontend/node_modules/
+/frontend/package-lock.json
 /frontend/public/build/
 .DS_Store
 
