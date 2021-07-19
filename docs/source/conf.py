@@ -36,7 +36,7 @@ extensions = [
 ]
 
 
-autoapi_dirs = ['../../backend/']
+autoapi_dirs = ['../../divbrowse/']
 autoapi_ignore = ['*migrations*', '*/conf.py', '*/divbrowse_wsgi.py']
 autoapi_add_toctree_entry = True
 
