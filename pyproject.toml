@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "divbrowse"
+version = "0.1.0a1"
+description = "A web application for interactive exploration and analysis of very large SNP matrices"
+authors = ["Patrick König <koenig@ipk-gatersleben.de>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+click = "^8.0.1"
+numpy = "^1.18.1"
+pandas = "^1.0.3"
+flask = "^1.1.2"
+scikit-learn = "^0.22.1"
+scikit-allel = "^1.2.1"
+bioblend = "^0.15.0"
+pandarallel = "^1.4.8"
+pyyaml = "^5.1.2"
+zarr = "^2.4.0"
+gunicorn = "^20.1.0"
+tables = "^3.6.1"
+
+[tool.poetry.scripts]
+divbrowse = 'divbrowse.cli:main'
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
