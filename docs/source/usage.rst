@@ -20,3 +20,12 @@ __
 If you provide a `divbrowse.config.yml` you can start a DivBrowse instance using this customized configuration by executing the following CLI command in the directory consisting the config YAML file::
 
     $ divbrowse start
+
+
+DivBrowse CLI reference
+=======================
+
+.. click:: divbrowse.cli:main
+   :prog: divbrowse
+   :nested: full
+   :commands: start

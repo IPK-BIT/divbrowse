@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "divbrowse"
-version = "0.1.0a1"
+version = "0.1.0a4"
 description = "A web application for interactive exploration and analysis of very large SNP matrices"
 authors = ["Patrick König <koenig@ipk-gatersleben.de>"]
 license = "MIT"
@@ -14,11 +14,17 @@ flask = "^1.1.2"
 scikit-learn = "^0.22.1"
 scikit-allel = "^1.2.1"
 bioblend = "^0.15.0"
-pandarallel = "^1.4.8"
-pyyaml = "^5.1.2"
+pyyaml = "^5.4.1"
 zarr = "^2.4.0"
-gunicorn = "^20.1.0"
 tables = "^3.6.1"
+waitress = "2.0.0"
+sphinx = {version = "^4.0.2", optional = true}
+sphinx-autoapi = {version = "^1.6.0", optional = true}
+sphinx_rtd_theme = {version = "^0.5.2", optional = true}
+sphinx-click = {version = "^3.0.1", optional = true}
+
+[tool.poetry.extras]
+docs = ["sphinx", "sphinx-autoapi", "sphinx_rtd_theme", "sphinx-click"]
 
 [tool.poetry.scripts]
 divbrowse = 'divbrowse.cli:main'

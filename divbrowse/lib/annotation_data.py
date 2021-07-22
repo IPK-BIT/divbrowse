@@ -6,11 +6,11 @@ import allel
 import numpy as np
 import pandas as pd
 import zarr
-from pandarallel import pandarallel
+#from pandarallel import pandarallel
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-pandarallel.initialize(nb_workers=3, progress_bar=True)
+#pandarallel.initialize(nb_workers=3, progress_bar=True)
 
 
 class AnnotationData:

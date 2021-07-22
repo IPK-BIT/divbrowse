@@ -13,6 +13,27 @@ You can then install DivBrowse from PyPI via pip::
 
 
 
+Installation via Docker or Podman
+=================================
+
+Pull the image::
+
+    $ sudo docker pull ipkbit/divbrowse
+
+or with Podman::
+
+    $ podman pull docker.io/ipkbit/divbrowse
+
+Start a container from the image::
+
+    $ sudo docker run --name divbrowse -v /home/myusername/divbrowse_data:/opt/divbrowse/:Z -it -p 8080:8080 ipkbit/divbrowse:latest
+
+or with Podman::
+
+    $ podman run --name divbrowse -v /home/myusername/divbrowse_data:/opt/divbrowse/:Z -it -p 8080:8080 ipkbit/divbrowse:latest
+
+
+
 
 Installation from sources on Github via conda
 =============================================

@@ -13,6 +13,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('../../'))
 
 
 # -- Project information -----------------------------------------------------
@@ -33,6 +34,7 @@ release = '1.0'
 extensions = [
     'autoapi.extension',
     'sphinx.ext.napoleon',
+    'sphinx_click'
 ]
 
 
