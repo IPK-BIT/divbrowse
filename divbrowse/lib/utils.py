@@ -1,3 +1,5 @@
+from simplejson import JSONEncoder
+
 RED = '\033[31m'
 RESET = '\033[0m'
 
@@ -19,3 +21,10 @@ class ApiError(Exception):
         rv['status'] = 'error'
         rv['message'] = self.message
         return rv
+
+
+class StrictEncoder(JSONEncoder):
+    def __init__(self, *args, **kwargs):
+        kwargs["allow_nan"] = False
+        kwargs["ignore_nan"] = True
+        super().__init__(*args, **kwargs)

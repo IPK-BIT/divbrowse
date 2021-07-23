@@ -40,7 +40,6 @@ let selectedAccessions = [];
 let data = controller.data;
 $: {
     data = controller.data;
-    console.log(data);
     featuresById = {};
     data.features.forEach((feature) => {
         featuresById[feature.ID] = feature;

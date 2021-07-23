@@ -21,22 +21,15 @@ from divbrowse.lib.genotype_data import (GenotypeData, calculate_pca_in_snp_wind
                                impute_with_mean)
 
 from divbrowse.lib.utils import ApiError
-
-# =========================================================================
-# PLEASE EDIT VARIABLES BELOW FOR CONFIGURATION
-# =========================================================================
-
-
-
-
-
-# =========================================================================
-# PLEASE DON'T CHANGE ANYTHING BELOW UNLESS YOU KNOW WHAT YOU'RE DOING.
-# =========================================================================
+from divbrowse.lib.utils import StrictEncoder
 
 
 def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=None):
+    """Factory method to create and return a wsgi-compliant Flask app instance"""
+
     app = Flask(__name__, static_url_path='', static_folder='static')
+
+    app.json_encoder = StrictEncoder
 
     if config_runtime is not None:
         log.info('Using runtime config')

@@ -26,7 +26,7 @@ if (oLinkTemplate !== '' && oLinkTemplate !== null) {
 
 
 let externalLinks = [];
-if (controller.metadata.gff3.external_links.length > 0) {
+if (Array.isArray(controller.metadata.gff3.external_links) && controller.metadata.gff3.external_links.length > 0) {
     for (let link of controller.metadata.gff3.external_links) {
         externalLinks.push({
             url: link.url.replace('{FEATURE_ID}', result[link.feature_attribute]),

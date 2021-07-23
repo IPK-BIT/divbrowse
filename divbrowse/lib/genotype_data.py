@@ -67,7 +67,7 @@ def calculate_pca_in_snp_window(snps, samples_selected):
     start = timer()
     pca_model = PCA(n_components=2, whiten=False, svd_solver='randomized', iterated_power=6).fit(snps_imputed_scaled)
     pca_result = pca_model.transform(snps_imputed_scaled)
-    log.debug("==== PCA calculation time: ", timer() - start)
+    log.debug("==== PCA calculation time: %f", timer() - start)
     pca_result_combined = np.concatenate((sample_ids, pca_result), axis=1)
     return pca_result_combined
 
@@ -262,7 +262,7 @@ class GenotypeData:
         else:
             mapped_sample_ids = sample_ids
 
-        return sample_ids
+        return mapped_sample_ids
 
 
     def get_samples_mask(self, sample_ids):
@@ -389,7 +389,13 @@ class GenotypeData:
         df_snps_with_nan = df_snps.replace(-1, np.nan)
         counts_without_missing = df_snps_with_nan.apply(pd.Series.value_counts, axis=0, normalize=True, dropna=True).fillna(0)
         counts_without_missing.index = counts_without_missing.index.astype(int, copy=False)
-        result['heterozygosity_freq'] = counts_without_missing.loc[1].values.tolist()
+
+        try:
+            result['heterozygosity_freq'] = counts_without_missing.loc[1].values.tolist()
+        except KeyError:
+            _tmp = counts_without_missing.loc[0].values
+            _tmp[:] = 0
+            result['heterozygosity_freq'] = _tmp.tolist()
 
         return result
 
