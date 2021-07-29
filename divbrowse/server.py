@@ -410,7 +410,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
                 vcf_line = [
                     str(input['chrom']),
-                    str(positions[pos_idx]),
+                    str(gd.pos[pos_idx]),
                     '.',
                     str(ref[i]),
                     ','.join([ _alt for _alt in (alts[i].astype(str).tolist()) if _alt != '' ]), #','.join([ _alt for _alt in (alts[i].astype(str).tolist()) if _alt != '' ]),
