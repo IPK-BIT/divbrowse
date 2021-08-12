@@ -393,9 +393,7 @@ class GenotypeData:
         try:
             result['heterozygosity_freq'] = counts_without_missing.loc[1].values.tolist()
         except KeyError:
-            _tmp = counts_without_missing.loc[0].values
-            _tmp[:] = 0
-            result['heterozygosity_freq'] = _tmp.tolist()
+            result['heterozygosity_freq'] = np.zeros(counts_without_missing.columns.size).tolist()
 
         return result
 
