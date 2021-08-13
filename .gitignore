@@ -4,6 +4,9 @@
 /frontend/public/build/
 .DS_Store
 
+#backend
+divbrowse/static/
+
 # poetry
 poetry.lock
 
