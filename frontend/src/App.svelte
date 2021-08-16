@@ -99,12 +99,12 @@ onMount(async () => {
         console.log(muts);
     }));*/
     
+    let resizeObserverStarted = false;
     let initResizeObserver = () => {
-        let resizeObserverStarted = false;
-        console.log('INIT of ResizeObserver ('+appId+')');
+        console.log('ResizeObserver INITIATED ('+appId+')');
         const containerResizeObserver = new ResizeObserver(_debounce(500, function(entries) {
-            if (resizeObserverStarted === true) {
-                resizeObserverStarted = false;
+            if (resizeObserverStarted === false) {
+                resizeObserverStarted = true;
                 console.log('ResizeObserver OMITTED FIRST CALL ('+appId+')');
                 console.log(entries);
             } else {
@@ -119,7 +119,6 @@ onMount(async () => {
             }
         }));
         containerResizeObserver.observe(snpbrowserMatrixContainer);
-        
     }
     setTimeout( () => initResizeObserver(), 1000);
 
@@ -187,6 +186,8 @@ function handleWindowResize(event) {
             {#if errorTooManySamples === true}
             <div><p style="padding:30px;">The size of your collection exceeds the maximum of {maxSamplesDisplayable} samples to be displayed simultaneously.
             Please decrease the size of your collection below the value of {maxSamplesDisplayable} samples.</p></div>
+            {:else if data.error !== undefined}
+            <div><p style="padding:30px;">Error: {data.error}</p></div>
             {:else}
             <Modal>
                 <RendererGapless data={data} statusShowMinimap={settings.statusShowMinimap} />
@@ -242,6 +243,7 @@ h1 {
     /*border: 1px dashed rgb(150,150,150);*/
     border: 1px solid rgb(70, 70, 70);
     background: rgb(255,255,255);
+    min-height: 300px;
 }
 
 
