@@ -55,7 +55,10 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             if type(vars['samples']) is str:
                 vars['samples'] = json.loads(vars['samples'])
 
-            samples = gd.map_input_sample_ids_to_vcf_sample_ids(vars['samples'])
+            samples, unmapable_sample_ids = gd.map_input_sample_ids_to_vcf_sample_ids(vars['samples'])
+
+            if len(unmapable_sample_ids) > 0:
+                raise ApiError('The following sample-IDs could not be resolved: '+', '.join(unmapable_sample_ids))
 
             processed = {
                 'chrom': vars['chrom'],

@@ -8,7 +8,7 @@ def print_error(msg):
     pass
 
 class ApiError(Exception):
-    status_code = 400
+    status_code = 200
     def __init__(self, message, status_code=None, payload=None):
         Exception.__init__(self)
         self.message = message

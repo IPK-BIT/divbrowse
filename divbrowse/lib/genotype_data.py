@@ -230,16 +230,25 @@ class GenotypeData:
         """
 
         mapped_sample_ids = []
+        unmapable_sample_ids = []
 
         if self.available['sample_id_mapping']:
             start = timer()
             for input_sample_id in sample_ids:
-                mapped_sample_ids.append( self.map_input_sample_ids_to_vcf_sample_ids_dict[input_sample_id] )
+                if input_sample_id in self.map_input_sample_ids_to_vcf_sample_ids_dict:
+                    mapped_sample_ids.append( self.map_input_sample_ids_to_vcf_sample_ids_dict[input_sample_id] )
+                else:
+                    unmapable_sample_ids.append(input_sample_id)
             log.debug("==== map_input_sample_ids_to_vcf_sample_ids() calculation time: %f", timer() - start)
         else:
-            mapped_sample_ids = sample_ids
+            #mapped_sample_ids = sample_ids
+            for input_sample_id in sample_ids:
+                if input_sample_id in self.samples_dict:
+                    mapped_sample_ids.append(input_sample_id)
+                else:
+                    unmapable_sample_ids.append(input_sample_id)
 
-        return mapped_sample_ids
+        return mapped_sample_ids, unmapable_sample_ids
 
 
     def map_vcf_sample_ids_to_input_sample_ids(self, sample_ids: list) -> list:
@@ -253,16 +262,20 @@ class GenotypeData:
         """
         
         mapped_sample_ids = []
+        unmapable_sample_ids = []
 
         if self.available['sample_id_mapping']:
             start = timer()
             for input_sample_id in sample_ids:
-                mapped_sample_ids.append( self.map_vcf_sample_ids_to_input_sample_ids_dict[input_sample_id] )
+                if input_sample_id in self.map_vcf_sample_ids_to_input_sample_ids_dict:
+                    mapped_sample_ids.append(self.map_vcf_sample_ids_to_input_sample_ids_dict[input_sample_id])
+                else:
+                    unmapable_sample_ids.append(input_sample_id)
             log.debug("==== map_vcf_sample_ids_to_input_sample_ids() calculation time: %f", timer() - start)
         else:
             mapped_sample_ids = sample_ids
 
-        return mapped_sample_ids
+        return mapped_sample_ids, unmapable_sample_ids
 
 
     def get_samples_mask(self, sample_ids):
@@ -278,9 +291,9 @@ class GenotypeData:
 
         try:
             samples_mask = self.sample_ids_to_mask(sample_ids)
-            samples_mapped = self.map_vcf_sample_ids_to_input_sample_ids(self.samples[samples_mask].tolist())
+            samples_mapped, unmapable_sample_ids = self.map_vcf_sample_ids_to_input_sample_ids(self.samples[samples_mask].tolist())
         except KeyError:
-            raise ApiError('At least one sample-ID is not included in the sample ID list of the SNP matrix.')
+            raise ApiError('The following sample-IDs could not be resolved: '+', '.join(unmapable_sample_ids))
 
         return samples_mask, samples_mapped
 

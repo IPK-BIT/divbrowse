@@ -203,7 +203,7 @@ $: debouncedHandleVariantFilterSettings($variantFilterSettings);
 let variants, variantsMap;
 
 $: {
-    if (data !== false) {
+    if (data !== false && data.error === undefined) {
 
         // Apply/add variant filter data
         let df_variant_filter = setupVariantFilterDataframe(data);
@@ -320,7 +320,7 @@ eventbus.on('minimap:click', payload => {
             <LoadingAnimation />
         </div>
         {:else}
-        <p style="padding:30px;">Before SNPs can be displayed, a collection must first be selected.</p>
+        <p style="width: 90%; padding:30px;">Before SNPs can be displayed, a collection must first be selected.</p>
         {/if}
         
     {/if}

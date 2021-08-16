@@ -349,6 +349,14 @@ export default class SnpbrowserController {
 
     draw() {
         this.loadData(data => {
+            
+            if (data.status == 'error') {
+                this.eventbus.emit('loading:animation', {status: false});
+                this.data =  {error: data.message};
+                this.eventbus.emit('data:display:changed', this.data);
+                return false;
+            }
+
             this.data = data;
 
             if (this.data.coordinate_first > this.data.coordinate_last || this.data.coordinate_first > this.data.coordinate_first_next) {
