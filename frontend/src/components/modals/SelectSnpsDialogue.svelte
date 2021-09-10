@@ -159,10 +159,12 @@ const doCalculation = () => {
             </select>
         </div>
 
+        {#if settings.allowSnpFiltering === undefined || settings.allowSnpFiltering === true}
         <div style="float: left; margin-left: 20px; margin-top: 6px;">
             <input id="useVariantFilter" type="checkbox" style="vertical-align: -1px;" bind:checked={useVariantFilter}>
             <label for="useVariantFilter" style="color: {useVariantFilter==true ? 'black' : 'rgb(140,140,140)'};">Apply SNP filter settings</label>
         </div>
+        {/if}
 
     </div>
 
@@ -224,10 +226,13 @@ const doCalculation = () => {
                 <td>End position:</td>
                 <td>{endpos}</td>
             </tr>
+
+            {#if settings.showSnpCount === undefined || settings.showSnpCount === true}
             <tr>
                 <td>Number of SNPs:</td>
                 <td>{snpcount}</td>
             </tr>
+            {/if}
 
             {#if useVariantFilter}
             <tr>

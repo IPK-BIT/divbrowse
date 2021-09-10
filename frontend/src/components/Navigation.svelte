@@ -16,6 +16,7 @@ import VariantFilterModal from '/components/modals/VariantFilterModal.svelte';
 import PcaModal from '/components/modals/PcaModal.svelte';
 import BlastModal from '/components/modals/BlastModal.svelte';
 import VcfExportModal from '/components/modals/VcfExportModal.svelte';
+import GffExportModal from '/components/modals/GffExportModal.svelte';
 import DataSummaryModal from '/components/modals/DataSummaryModal.svelte';
 import GeneSearchModal from '/components/modals/GeneSearchModal.svelte';
 
@@ -208,6 +209,14 @@ eventbus.on('data:display:changed', _data => {
         </Modal>
         </div>
         {/if}
+
+
+        <div style="float:left; margin-left:20px; margin-top: 2px;">
+        <Modal>
+            <GffExportModal disabled={data !== false ? false : true} />
+        </Modal>
+        </div>
+
 
         <div class="clearfix"></div>
         </Modal>
