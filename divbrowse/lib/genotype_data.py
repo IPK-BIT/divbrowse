@@ -397,7 +397,11 @@ class GenotypeData:
 
         df_snps = pd.DataFrame(submatrix_of_snps)
         counts = df_snps.apply(pd.Series.value_counts, axis=0, normalize=True).fillna(0)
-        result['missing_freq'] = counts.loc[-1].values.tolist()
+
+        try:
+            result['missing_freq'] = counts.loc[-1].values.tolist()
+        except KeyError:
+            result['missing_freq'] = np.zeros(counts.columns.size).tolist()
 
         df_snps_with_nan = df_snps.replace(-1, np.nan)
         counts_without_missing = df_snps_with_nan.apply(pd.Series.value_counts, axis=0, normalize=True, dropna=True).fillna(0)

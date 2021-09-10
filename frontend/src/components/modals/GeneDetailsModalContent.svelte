@@ -55,6 +55,7 @@ if (Array.isArray(controller.metadata.gff3.external_links) && controller.metadat
             <td>Primary confidence class</td>
             <td>{result.primary_confidence_class}</td>
         </tr>
+        {#if controller.metadata.gff3.count_exon_snps !== undefined && controller.metadata.gff3.count_exon_snps === true}
         <tr>
             <td>SNPs on whole gene</td>
             <td>{result.count_snps}</td>
@@ -63,6 +64,7 @@ if (Array.isArray(controller.metadata.gff3.external_links) && controller.metadat
             <td>SNPs on exons</td>
             <td>{result.count_exon_snps}</td>
         </tr>
+        {/if}
     </table>
 
     {#if externalLinks.length > 0}

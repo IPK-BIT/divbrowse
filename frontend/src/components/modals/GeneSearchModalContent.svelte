@@ -208,7 +208,9 @@ const datatableSettings = {
                 <th data-key="start">Start position</th>
                 <th data-key="end">End position</th>
                 <th data-key="primary_confidence_class">Primary confidence class</th>
+                {#if controller.metadata.gff3.count_exon_snps !== undefined && controller.metadata.gff3.count_exon_snps === true}
                 <th data-key="count_snps">Number of SNPs / Exon-SNPs</th>
+                {/if}
                 <th></th>
             </thead>
             <tbody>
@@ -220,7 +222,9 @@ const datatableSettings = {
                     <td class="centered">{row.start}</td>
                     <td class="centered">{row.end}</td>
                     <td class="centered">{row.primary_confidence_class}</td>
+                    {#if controller.metadata.gff3.count_exon_snps !== undefined && controller.metadata.gff3.count_exon_snps === true}
                     <td class="centered">{row.count_snps} / {row.count_exon_snps}</td>
+                    {/if}
                     <td><a href="#" on:click|preventDefault={ () => goToPos(row.seqid, row.start, row.end) }>show</a></td>
                 </tr>
                 {/each}

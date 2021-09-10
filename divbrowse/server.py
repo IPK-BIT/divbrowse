@@ -50,20 +50,23 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
     def process_request_vars(vars):
 
+        processed = {
+            'chrom': vars['chrom'],
+        }
+
         try:
-            # conversion to Python list from stringified JSON is necessary for form-data POST requests of vcf_export
-            if type(vars['samples']) is str:
-                vars['samples'] = json.loads(vars['samples'])
 
-            samples, unmapable_sample_ids = gd.map_input_sample_ids_to_vcf_sample_ids(vars['samples'])
+            if 'samples' in vars:
+                # conversion to Python list from stringified JSON is necessary for form-data POST requests of vcf_export
+                if type(vars['samples']) is str:
+                    vars['samples'] = json.loads(vars['samples'])
 
-            if len(unmapable_sample_ids) > 0:
-                raise ApiError('The following sample-IDs could not be resolved: '+', '.join(unmapable_sample_ids))
+                samples, unmapable_sample_ids = gd.map_input_sample_ids_to_vcf_sample_ids(vars['samples'])
 
-            processed = {
-                'chrom': vars['chrom'],
-                'samples': samples
-            }
+                if len(unmapable_sample_ids) > 0:
+                    raise ApiError('The following sample-IDs could not be resolved: '+', '.join(unmapable_sample_ids))
+
+                processed['samples'] = samples
 
             processed['count'] = None
             if 'count' in vars:
@@ -382,7 +385,6 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         location_start = _result.location_start
         location_end = _result.location_end
 
-
         vcf_lines_header = [
             '##fileformat=VCFv4.0',
             #'##fileDate=20190225',
@@ -517,13 +519,15 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             'pca': True,
         }
 
+        samples, _ = gd.map_vcf_sample_ids_to_input_sample_ids(gd.samples.tolist())
+
         result = {
             'ploidy': gd.ploidy,
             'count_genotypes': len(gd.samples),
             'count_variants': len(gd.pos),
             'count_snp_matrix_elements': len(gd.samples) * len(gd.pos),
             'chromosomes': gd.list_of_chromosomes,
-            'samples': gd.map_vcf_sample_ids_to_input_sample_ids(gd.samples.tolist()),
+            'samples': samples,
             'gff3': ad.metadata_gff3,
             'features': features,
             'dataset_descriptions': dict(config['dataset_descriptions'])
