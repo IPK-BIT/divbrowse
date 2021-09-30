@@ -162,11 +162,7 @@ function handleChangeBlastResult(selectedPastBlastResultTimestamp) {
         <table id="blast-result" cellpadding="0" cellspacing="0">
         <thead>
             <tr>
-                {#if params.database === 'morex_v2.all.cds'}
-                <th>Gene / Feature</th>
-                {:else}
                 <th>Chromosome</th>
-                {/if}
                 <th>Number of SNPs</th>
                 <th>E-value</th>
                 <th>Bit score</th>
@@ -185,11 +181,7 @@ function handleChangeBlastResult(selectedPastBlastResultTimestamp) {
         <tbody>
             {#each blastResult as hit}
             <tr>
-                {#if params.database === 'morex_v2.all.cds'}
-                <td><a href="https://apex.ipk-gatersleben.de/apex/f?p=284:50:::::P50_GENE_NAME:{hit[1]}" target="_blank">{hit[1]}</a></td>
-                {:else}
                 <td>{controller.metadata.chromosomesById[hit.chromosome].label}</td>
-                {/if}
                 <td>{hit.snp_count}</td>
                 <td>{hit.e_value}</td>
                 <td>{hit.bit_score}</td>
