@@ -188,7 +188,7 @@ function handleChangeBlastResult(selectedPastBlastResultTimestamp) {
                 {#if params.database === 'morex_v2.all.cds'}
                 <td><a href="https://apex.ipk-gatersleben.de/apex/f?p=284:50:::::P50_GENE_NAME:{hit[1]}" target="_blank">{hit[1]}</a></td>
                 {:else}
-                <td>{controller.metadata.chromosomes[hit.chromosome].label}</td>
+                <td>{controller.metadata.chromosomesById[hit.chromosome].label}</td>
                 {/if}
                 <td>{hit.snp_count}</td>
                 <td>{hit.e_value}</td>
