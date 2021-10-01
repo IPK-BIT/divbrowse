@@ -53,12 +53,14 @@ const snpClass = calls => {
 }
 
 function sampleDisplayName(sampleId, sampleData) {
-    if (sampleData.metadata !== undefined) {
-        if (sampleData.metadata.displayName !== undefined) {
-            sampleId = sampleData.metadata.displayName;
-        }
+
+    if (sampleData.metadata !== undefined) {  
         if (sampleData.metadata.link !== undefined) {
             sampleId = sampleData.metadata.link;
+        } else {
+            if (sampleData.metadata.displayName !== undefined) {
+                sampleId = sampleData.metadata.displayName;
+            }
         }
     }
 

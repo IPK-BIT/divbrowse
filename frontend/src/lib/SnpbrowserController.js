@@ -27,6 +27,7 @@ export default class SnpbrowserController {
     setup(setupObj) {
         this.container = setupObj.container;
         this.config = setupObj.config;
+        this.config.samplesMetadata = false;
 
         this.loadMetadata(metadata => {
             this.metadata = metadata;
@@ -119,10 +120,20 @@ export default class SnpbrowserController {
         }
 
         if (typeof samples[0] === 'object') {
-            let sample_ids = samples.map(item => item.id);
-            this.config.samples = sample_ids;
+            let sampleIds = samples.map(item => item.id);
+            this.config.samples = sampleIds;
             let bykey = {};
-            samples.forEach(sample => { bykey[sample.id] = sample });
+            samples.forEach(sample => {
+                // handling of links / <a> tags
+
+                if (sample.link !== undefined && sample.displayName === undefined) {
+                    let el = document.createElement('a');
+                    el.innerHTML = sample.link;
+                    sample.displayName = el.innerText;
+                }
+
+                bykey[sample.id] = sample 
+            });
             this.config.samplesMetadata = bykey;
         }
         
@@ -145,7 +156,7 @@ export default class SnpbrowserController {
         }
         const self = this;
         let keyedChromosomes = {};
-        let url = this.config.apiBaseUrl+'/metadata';
+        let url = this.config.apiBaseUrl+'/configuration';
         axios.get(url).then(function (response) {
             callback(response.data);
             self.metadata = response.data;

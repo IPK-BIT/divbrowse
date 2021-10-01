@@ -56,13 +56,37 @@ function sortSamples(params) {
 
     // handle sort settings
     if (params.sortSettings.sortmode === 'alphabetical') {
-        if (params.sortSettings.sortorder !== undefined) {
-            let allIdsUnsorted = allIds.slice();
-            allIdsUnsorted.sort( (a, b) => a.localeCompare(b) );
-            allIdsOut = allIdsUnsorted.slice();
+        
+        let allIdsUnsorted = allIds.slice();
 
+        // displayName is provided; if an <a> tag/link is provided the displayName is derived automatically by SnpbrowserController::setSamples()
+        if (Object.values(controller.config.samplesMetadata)[0].displayName !== undefined) {
+            
+            // create array of arrays of corresponding pairs of sampleID and displayName
+            let pairsIdDisplayName = [];
+            allIdsUnsorted.forEach(sampleId => {
+                pairsIdDisplayName.push([sampleId, controller.config.samplesMetadata[sampleId].displayName ])
+            });
+
+            // sort the pairs based on the displayName (2nd element => array index is 1)
+            pairsIdDisplayName.sort( (a, b) => a[1].localeCompare(b[1]) );
+
+            // extract only the sampleIDs
+            allIdsOut = pairsIdDisplayName.map(item => item[0]);
+            
             if (params.sortSettings.sortorder === 'DESC') {
                 allIdsOut.reverse();
+            }
+        
+        } else {
+            // only sample IDs provided => simply sort by the IDs
+            if (params.sortSettings.sortorder !== undefined) {
+                allIdsUnsorted.sort( (a, b) => a.localeCompare(b) );
+                allIdsOut = allIdsUnsorted.slice();
+
+                if (params.sortSettings.sortorder === 'DESC') {
+                    allIdsOut.reverse();
+                }
             }
         }
     }
@@ -206,10 +230,14 @@ $: {
     if (data !== false && data.error === undefined) {
 
         // Apply/add variant filter data
-        let df_variant_filter = setupVariantFilterDataframe(data);
-        data.filtered_variants_coordinates = getFilteredVariants(df_variant_filter);
+        data.filtered_variants_coordinates = getFilteredVariants(setupVariantFilterDataframe(data));
 
-        variants = sortSamples({variants: data.variants, distances: data.hamming_distances_to_reference, groups: $groups, sortSettings: $sortSettings });
+        variants = sortSamples({
+            variants: data.variants,
+            distances: data.hamming_distances_to_reference,
+            groups: $groups,
+            sortSettings: $sortSettings
+        });
 
         variantsMap = Object.fromEntries(variants);
 
