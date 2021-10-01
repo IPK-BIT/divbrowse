@@ -60,8 +60,8 @@ function sortSamples(params) {
         let allIdsUnsorted = allIds.slice();
 
         // displayName is provided; if an <a> tag/link is provided the displayName is derived automatically by SnpbrowserController::setSamples()
-        if (Object.values(controller.config.samplesMetadata)[0].displayName !== undefined) {
-            
+        if (controller.config.samplesMetadata !== false && Object.values(controller.config.samplesMetadata)[0].displayName !== undefined) {
+
             // create array of arrays of corresponding pairs of sampleID and displayName
             let pairsIdDisplayName = [];
             allIdsUnsorted.forEach(sampleId => {
