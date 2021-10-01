@@ -120,8 +120,8 @@ def start(host: str, port: str, infer_config: bool, save_config):
 
         config_runtime = get_config_skeleton()
 
-        config_runtime['data']['datadir'] = path+'/'
-        config_runtime['data']['zarr_variants'] = os.path.basename(path_zarr)
+        config_runtime['datadir'] = path+'/'
+        config_runtime['variants']['zarr_dir'] = os.path.basename(path_zarr)
         config_runtime['gff3']['filename'] = os.path.basename(gff3_files[0])
         config_runtime['gff3']['feature_type_with_description'] = 'gene'
         config_runtime['gff3']['main_feature_type_for_genes_track'] = 'gene'

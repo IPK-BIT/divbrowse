@@ -6,10 +6,19 @@ The configuration of your DivBrowse instance is managed by a YAML file:
 
 .. code-block:: yaml
 
-   data:
-     datadir: /opt/shape/uwsgi/shape/data/
-     zarr_variants: SNP_matrix_WGS_300_samples.vcf.zarr
-     sample_id_mapping: 
+   metadata:
+     general_description: 
+     vcf_doi: 
+     vcf_reference_genome_doi: 
+     gff3_doi:
+
+
+   datadir: /opt/shape/uwsgi/shape/data/
+
+
+   variants:
+     zarr_dir: SNP_matrix_WGS_300_samples.vcf.zarr
+     sample_id_mapping_filename: 
 
 
    gff3:
@@ -22,14 +31,7 @@ The configuration of your DivBrowse instance is managed by a YAML file:
        - feature_type: mRNA
          feature_attribute: ID
          url: https://some.external.resource.org/{FEATURE_ID}
-         linktext: Open this gene in an external resource
-
-
-   dataset_descriptions:
-     general_description: 
-     vcf_doi: 
-     vcf_reference_genome_doi: 
-     gff3_doi: 
+         linktext: Open this gene in an external resource 
 
 
    chromosome_labels:

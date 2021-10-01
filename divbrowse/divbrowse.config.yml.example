@@ -1,12 +1,19 @@
-data:
-  # absolute path to the directory containing the data files
-  datadir: /opt/shape/uwsgi/shape/data/
+metadata:
+  general_description: 
+  vcf_doi: 
+  vcf_reference_genome_doi: 
+  gff3_doi: 
 
+
+# absolute path to the directory containing the data files
+datadir: /opt/shape/uwsgi/shape/data/
+
+variants:
   # name of the directory containing the Zarr array converted from a VCF file
-  zarr_variants: SNP_matrix_WGS_300_samples.vcf.zarr
+  zarr_dir: SNP_matrix_WGS_300_samples.vcf.zarr
 
   # filename of the mapping table to map other sample IDs on the VCF sample IDs
-  sample_id_mapping: 
+  sample_id_mapping_filename: 
 
 
 gff3:
@@ -25,13 +32,6 @@ gff3:
       feature_attribute: ID
       url: https://some.external.resource.org/{FEATURE_ID}
       linktext: Open this gene in an external resource
-
-
-dataset_descriptions:
-  general_description: 
-  vcf_doi: 
-  vcf_reference_genome_doi: 
-  gff3_doi: 
 
 
 chromosome_labels:

@@ -19,7 +19,7 @@ class AnnotationData:
 
         self.config = config
         self.gd = gd
-        self.datadir = config['data']['datadir']
+        self.datadir = config['datadir']
 
         self.available = {
             'gff3': False

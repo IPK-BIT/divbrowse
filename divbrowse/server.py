@@ -511,8 +511,8 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
 
 
-    @app.route("/metadata", methods = ['GET', 'POST', 'OPTIONS'])
-    def __metadata():
+    @app.route("/configuration", methods = ['GET', 'POST', 'OPTIONS'])
+    def __configuration():
 
         features = {
             'blast': config['blast']['active'],
@@ -530,7 +530,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             'samples': samples,
             'gff3': ad.metadata_gff3,
             'features': features,
-            'dataset_descriptions': dict(config['dataset_descriptions'])
+            'dataset_descriptions': dict(config['metadata'])
         }
 
         return jsonify(result)

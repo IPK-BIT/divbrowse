@@ -81,8 +81,8 @@ class GenotypeData:
 
         self.config = config
 
-        self.datadir = config['data']['datadir']
-        path_zarr_variants = self.datadir + config['data']['zarr_variants']
+        self.datadir = config['datadir']
+        path_zarr_variants = self.datadir + config['variants']['zarr_dir']
 
         if not os.path.exists(self.datadir):
             exit('ERROR: the configured datadir does not exist or is not accessible')
@@ -141,8 +141,8 @@ class GenotypeData:
 
     def _setup_sample_id_mapping(self):
 
-        if self.config['data']['sample_id_mapping']:
-            self._path_sample_id_mapping = self.datadir + self.config['data']['sample_id_mapping']
+        if self.config['variants']['sample_id_mapping_filename']:
+            self._path_sample_id_mapping = self.datadir + self.config['variants']['sample_id_mapping_filename']
             if os.path.exists(self._path_sample_id_mapping):
                 self.available['sample_id_mapping'] = True
             else:
