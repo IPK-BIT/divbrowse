@@ -397,8 +397,8 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             #'##FORMAT=<ID=DV,Number=.,Type=Integer,Description="Read depth of the alternative allele">'
         ]
 
-        vcf_genotypes = gd.map_vcf_sample_ids_to_input_sample_ids(gd.samples[samples_mask].astype(str).tolist())
-        vcf_line_variants_header = ['#CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO', 'FORMAT'] + vcf_genotypes
+        mapped_sample_ids, _ = gd.map_vcf_sample_ids_to_input_sample_ids(gd.samples[samples_mask].astype(str).tolist())
+        vcf_line_variants_header = ['#CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO', 'FORMAT'] + mapped_sample_ids
         vcf_lines_header.append("\t".join(vcf_line_variants_header)) 
 
         ref = gd.reference_allele.get_orthogonal_selection( (filtered_positions_indices) )
