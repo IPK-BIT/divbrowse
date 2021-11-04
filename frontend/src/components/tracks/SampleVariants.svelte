@@ -1,7 +1,6 @@
 <script>
 export let sampleId;
 export let data;
-export let variants;
 export let item;
 
 import { getContext } from 'svelte';
@@ -14,6 +13,8 @@ let { controller } = context.app();
 
 import getStores from '/utils/store';
 const { variantWidth } = getStores();
+
+import { numberOfAltAllelesFactory } from '/utils/helpers';
 
 let coords, ref, alt, sampleData, ref_and_alt;
 
@@ -28,29 +29,7 @@ $: {
     sampleData = item[1];
 }
 
-const isHetero = arr => arr.some(item => item !== arr[0]);
-
-const snpClass = calls => {
-    if (ploidy == 2) {
-        let variantType = 2;
-        if (calls[0] == -1) {
-            variantType = -1;
-        } else if (isHetero(calls)) {
-            variantType = 1;
-        } else if (calls.reduce((a, b) => a + b, 0) === 0) {
-            variantType = 0;
-        }
-        return variantType;
-    }
-
-    if (ploidy == 1) {
-        let variantType = 2;
-        if (calls === 0) {
-            variantType = 0;
-        }
-        return variantType;
-    }
-}
+const snpClass = numberOfAltAllelesFactory.getFunction(ploidy);
 
 function sampleDisplayName(sampleId, sampleData) {
 
@@ -106,8 +85,8 @@ function isFiltered(pos, gt) {
     </div>
     {/if}
     
-    {#if sampleData.variants.length > 0}
-    {#each sampleData.variants as variant, i}
+    {#if data.filtered_variants_coordinates.length > 0}
+    {#each data.filtered_variants_coordinates as variant_coordinate, i}
     
     {#if ploidy === 1}
         <span data-tippy-content="Pos: {coords[i]}" class="snp snp-{snpClass(data.variants_gt[sampleId][i])} ref-{ref_and_alt[i][ data.variants_gt[sampleId][i] ]} alt-{ref_and_alt[i][ data.variants_gt[sampleId][i] ]}" data-sample-id="{sampleId}" data-position="{coords[i]}" data-position-index="{i}" style="width: {$variantWidth}px;"></span>

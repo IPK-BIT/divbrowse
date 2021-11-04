@@ -6,10 +6,18 @@ const key = "__stores";
 function createStores() {
 
     const stores = {
+        settings: writable({
+            statusShowMinimap: false,
+            statusColorblindMode: false,
+            variantDisplayMode: 'reference_mismatch'
+        }),
         variantWidth: writable(20),
         groups: writable({}),
         snpPosHighlights: writable({}),
-        sortSettings: writable({sortmode: 'none', sortorder: undefined}),
+        sortSettings: writable({
+            sortmode: 'none',
+            sortorder: undefined
+        }),
         variantFilterSettings: writable({
             maf: [0.05,0.5],
             missingFreq: [0,0.1],

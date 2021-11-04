@@ -63,8 +63,8 @@ function validateSnpWindow(_startpos, _endpos) {
 
     controller.snp_window_summary(params, result => {
         showLoadingAnimationSnpWindow = false;
-        snpcount = result.count_snps_in_window;
-        snpcountFiltered = result.count_snps_in_window_filtered;
+        snpcount = result.number_of_variants_in_window;
+        snpcountFiltered = result.number_of_variants_in_window_filtered;
         if (snpcount > 0) {
             startpos = result.startpos;
             endpos = result.endpos;

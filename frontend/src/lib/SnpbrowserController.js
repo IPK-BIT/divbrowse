@@ -44,6 +44,7 @@ export default class SnpbrowserController {
             this.draw();
 
             this.loadGenes(genes => {
+                this.eventbus.emit('data:genes:loaded', true);
                 this.metadata.gff3._dataframe = new DataFrame(genes.data, genes.columns);
             });
         });

@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import zarr
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import RobustScaler
 
 from divbrowse import log
 from divbrowse.lib.utils import ApiError
@@ -62,7 +62,7 @@ def calculate_pca_in_snp_window(snps, samples_selected):
 
     sample_ids = np.array(samples_selected).reshape((-1, 1)).copy()
     snps_imputed = impute_with_mean(snps)
-    scaler = StandardScaler()
+    scaler = RobustScaler()
     snps_imputed_scaled = np.nan_to_num(scaler.fit_transform(snps_imputed))
     start = timer()
     pca_model = PCA(n_components=2, whiten=False, svd_solver='randomized', iterated_power=6).fit(snps_imputed_scaled)
@@ -176,8 +176,9 @@ class GenotypeData:
 
     def _create_list_of_chromosomes(self):
 
-        chromosome_labels = self.config['chromosome_labels']
-        centromeres_positions = self.config['centromeres_positions']
+        chromosome_labels = {str(key): value for key, value in self.config['chromosome_labels'].items()}
+        centromeres_positions = {str(key): value for key, value in self.config['centromeres_positions'].items()}
+
         path_chromosome_tmp_data = self.datadir+'____list_of_chromosomes____.json'
 
         try:
@@ -196,7 +197,7 @@ class GenotypeData:
                     'centromere_position': int(centromeres_positions[str(_chr)]),
                     'start': int(self.pos[ _region.start ]),
                     'end': int(self.pos[ _region.stop - 1 ]),
-                    'count_snps': int(self.pos[_region].size)
+                    'number_of_variants': int(self.pos[_region].size)
                 })
             with open(path_chromosome_tmp_data, 'w') as outfile:
                 json.dump(self.list_of_chromosomes, outfile)
@@ -309,7 +310,7 @@ class GenotypeData:
             lookup (int) Array coordinate of the found physical position on the chromosome
             lookup_type (str): Type of the lookup, could be either 'direct_lookup' or 'nearest_lookup'
         """
-
+        
         pd_series = self.chrom_indices[chrom]
         try:
             lookup = pd_series.at[pos]
@@ -343,7 +344,7 @@ class GenotypeData:
         return snps_to_alt
 
 
-    def count_snps_in_window(self, chrom, startpos, endpos) -> int:
+    def count_variants_in_window(self, chrom, startpos, endpos) -> int:
         """Counts number of SNPs in a genomic region
 
         Args:
@@ -495,8 +496,8 @@ class GenotypeData:
             snps_to_alt, filtered_positions_indices = self.apply_variant_filter_settings(variant_filter_settings, snps_to_alt, slice_snps)
 
         stats = {
-            'count_snps_in_window': int(positions.shape[0]),
-            'count_snps_in_window_filtered': int(snps_to_alt.shape[1]),
+            'number_of_variants_in_window': int(positions.shape[0]),
+            'number_of_variants_in_window_filtered': int(snps_to_alt.shape[1]),
             'startpos': int(positions[0]),
             'endpos': int(positions[-1]),
             'lookup_type_start': str(lookup_type_start),

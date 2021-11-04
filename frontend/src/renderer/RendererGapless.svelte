@@ -136,7 +136,7 @@ function sortSamples(params) {
             sampleData = {
                 status: 'single',
                 color: '#FFFFFF',
-                variants: _variants
+                //variants: _variants
             }
 
             if (controller.config.samplesMetadata !== undefined) {
@@ -165,7 +165,7 @@ function sortSamples(params) {
                 sampleData = {
                     status: 'group-node',
                     color: groupColorMap[id],
-                    variants: _variants,
+                    //variants: _variants,
                     isLastNode: isLastNode
                 }
                 sorted.push([idNode, sampleData]);
@@ -224,7 +224,7 @@ function handleVariantFilterSettings(variantFilterSettings) {
 const debouncedHandleVariantFilterSettings = debounce(handleVariantFilterSettings, 500);
 $: debouncedHandleVariantFilterSettings($variantFilterSettings);
 
-let variants, variantsMap;
+let variants;
 
 $: {
     if (data !== false && data.error === undefined) {
@@ -238,8 +238,6 @@ $: {
             groups: $groups,
             sortSettings: $sortSettings
         });
-
-        variantsMap = Object.fromEntries(variants);
 
         data.ref_and_alt = data.alternates.map((variant, idx) => {
             let tmp = variant.slice();
@@ -337,7 +335,7 @@ eventbus.on('minimap:click', payload => {
             {/if}
 
             <VirtualList bind:viewport={viewport} itemHeight={20} items={variants} bind:start bind:end let:item>
-                <SampleVariants data={data} variants={variantsMap} item={item} sampleId={item[0]} />
+                <SampleVariants data={data} item={item} sampleId={item[0]} />
             </VirtualList>
         </div>
 

@@ -175,7 +175,6 @@ function handleChangeBlastResult(selectedPastBlastResultTimestamp) {
                 <th>Start of alignment in subject</th>
                 <th>End of alignment in subject</th>
                 <th></th>
-                
             </tr>
         </thead>
         <tbody>

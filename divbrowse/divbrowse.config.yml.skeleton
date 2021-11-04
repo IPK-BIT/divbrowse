@@ -13,7 +13,7 @@ variants:
 gff3:
   filename: 
   feature_type_with_description: mRNA
-  count_exon_snps: false
+  count_exon_variants: false
   key_confidence: 
   key_ontology: Ontology_term
   main_feature_type_for_genes_track: mRNA

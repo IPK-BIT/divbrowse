@@ -337,7 +337,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             variant_filter_settings = input['variant_filter_settings']
         )
 
-        if _result.stats['count_snps_in_window_filtered'] > 5000:
+        if _result.stats['number_of_variants_in_window_filtered'] > 5000:
             return jsonify({
                 'success': False, 
                 'status': 'error_snp_window_too_big', 
@@ -347,7 +347,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         return jsonify({
             'success': True, 
             'status': 'export_possible',
-            'message': _result.stats['count_snps_in_window_filtered']
+            'message': _result.stats['number_of_variants_in_window_filtered']
         })
 
 
@@ -499,7 +499,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
                     'end_of_alignment_in_subject': line_parts[9],
                     'e_value': line_parts[10],
                     'bit_score': line_parts[11],
-                    'snp_count': gd.count_snps_in_window(_chromosome_vcf, int(line_parts[8]), int(line_parts[9]))
+                    'snp_count': gd.count_variants_in_window(_chromosome_vcf, int(line_parts[8]), int(line_parts[9]))
                 }
                 blast_result_json.append(_single_blast_hit)
         
@@ -525,7 +525,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             'ploidy': gd.ploidy,
             'count_genotypes': len(gd.samples),
             'count_variants': len(gd.pos),
-            'count_snp_matrix_elements': len(gd.samples) * len(gd.pos),
+            'count_elements': len(gd.samples) * len(gd.pos),
             'chromosomes': gd.list_of_chromosomes,
             'samples': samples,
             'gff3': ad.metadata_gff3,

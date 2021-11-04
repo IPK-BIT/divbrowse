@@ -11,6 +11,7 @@ const { variantWidth, groups } = getStores();
 
 import Modal from 'svelte-simple-modal';
 
+import SettingsModal from '/components/modals/SettingsModal.svelte';
 import SortSamplesModal from '/components/modals/SortSamplesModal.svelte';
 import VariantFilterModal from '/components/modals/VariantFilterModal.svelte';
 import PcaModal from '/components/modals/PcaModal.svelte';
@@ -70,6 +71,7 @@ let btnBackwardDisabled = true;
 let btnForwardDisabled = true;
 
 let data = false;
+let dataGenesLoaded = false;
 let variants = false;
 
 eventbus.on('data:display:changed', _data => {
@@ -89,6 +91,9 @@ eventbus.on('data:display:changed', _data => {
     selectedChromosome = controller.chromosome;
 });
 
+eventbus.on('data:genes:loaded', _data => {
+    dataGenesLoaded = true;
+});
 </script>
 
 
@@ -103,13 +108,7 @@ eventbus.on('data:display:changed', _data => {
 
     <div class="snpbrowser-nav-row clearfix">
 
-        <div style="float:left;">
-            <Modal>
-                <DataSummaryModal />
-            </Modal>
-        </div>
-
-        <div style="margin-left:20px;">
+        <div style="">
             <label class="form-label" for="chromosome-selector">Chromosome: </label>
             <select class="divbrowse-form-control" bind:value={selectedChromosome} on:change|preventDefault="{handleChangeChromosome(selectedChromosome)}">
                 {#each chromosomes as chromosome}
@@ -125,23 +124,21 @@ eventbus.on('data:display:changed', _data => {
             <button on:click|preventDefault={handleGoToPosition(position)} type="button" class="divbrowse-btn divbrowse-btn-light">Go</button>
         </div>
 
-        <div style="margin-left:30px;">
-            <label class="form-label" for="snp-coloring-selector">SNP coloring: </label>
-            <select id="snp-coloring-selector" bind:value={settings.variantDisplayMode} class="divbrowse-form-control">
-                <option value="reference_mismatch">Reference mismatch</option>
-                <option value="nucleotides">Nucleotides</option>
-            </select>
+        <div style="float:left; margin-left: 45px;">
+            <Modal>
+                <DataSummaryModal />
+            </Modal>
+        </div>
+
+        <div style="float:left; margin-left:20px;">
+        <Modal closeOnOuterClick={false}>
+            <SettingsModal />
+        </Modal>
         </div>
 
         <div style="margin-left:30px;display:none;">
             <label class="form-label" for="position-input">SNP width: </label>
             <input value={$variantWidth} on:change|preventDefault="{handleVariantWidthChange}" type="number" min="1" max="20" id="width-input" class="divbrowse-form-control">
-        </div>
-
-        <div style="margin-left: 30px; margin-top: 5px; position: relative; padding-right: 20px;">
-            <!--<button on:click|preventDefault={() => statusColorblindMode = !statusColorblindMode} type="button" id="btnColorblindMode" class="divbrowse-btn divbrowse-btn-light">Color-blind mode</button>-->
-            <label class="form-label" for="colorblind-mode" style="vertical-align: middle;">Colour vision deficiency mode: </label>
-            <input style="vertical-align: middle; " id="colorblind-mode" type=checkbox bind:checked={settings.statusColorblindMode}>
         </div>
 
         <div style="margin-left:30px;margin-top:5px;">
@@ -170,7 +167,7 @@ eventbus.on('data:display:changed', _data => {
 
         <div style="float:left; margin-left:20px; margin-top: 2px;">
         <Modal closeOnOuterClick={false}>
-            <GeneSearchModal disabled={data !== false ? false : true} />
+            <GeneSearchModal disabled={dataGenesLoaded !== false ? false : true} />
         </Modal>
         </div>
 

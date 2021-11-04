@@ -2,20 +2,26 @@
 export let data;
 export let variants;
 
+console.log(variants);
+
 import { onMount, getContext } from 'svelte';
 
 const context = getContext('app');
 let { eventbus, controller } = context.app();
+
+import { numberOfAltAllelesFactory } from '/utils/helpers';
 
 let canvas;
 let widthAllVariants;
 let framesPerSecond = 10;
 let timeoutHandle;
 let frame;
-let countVariants = variants.length;
-let canvasHeight = countVariants;
-let countSamples = 0;
-let trackHeight = 0;
+let canvasHeight = variants.length;
+
+
+const ploidy = controller.metadata.ploidy;
+
+const numberOfAlternateAlleles = numberOfAltAllelesFactory.getFunction(ploidy);
 
 
 function drawVariants(variants) {
@@ -24,50 +30,47 @@ function drawVariants(variants) {
         console.log('drawVariants() EARLY EXIT no canvas available');
         return false;
     }
-    //window.requestAnimationFrame();
 
     let ctx = canvas.getContext('2d');
-
     ctx.clearRect(0, 0, widthAllVariants, canvasHeight);
 
     clearTimeout(timeoutHandle);
     cancelAnimationFrame(frame);
 
-    let counter = 0;
+    let frameCounter = 0;
 
     (function loop() {
-    //function loop() {
     	
             frame = requestAnimationFrame(loop);
 
-            // ==================================================================
             let row = 0;
-            //for (let [sampleId, sampleVariants] of Object.entries(variants)) {
             for (let sample of variants) {
                 let sampleId = sample[0];
-                let sampleVariants = sample[1].variants;
-
                 let col = 0;
                 let xPos = 0;
 
-                for (let sampleVariant of sampleVariants) {
+                for (let col = 0; col < data.filtered_variants_coordinates.length; col++) {
                     xPos = col * 20;
-                    col += 1;
+                    //col += 1;
 
-                    if (sampleVariant == -1) {
+                    //let call = data.variants_gt[sampleId][col]
+
+                    let numAltAlleles = numberOfAlternateAlleles(data.variants_gt[sampleId][col])
+
+                    if (numAltAlleles == -1) {
                         ctx.fillStyle = "rgb(255,255,255)";
                     }
 
-                    if (sampleVariant == 0) {
+                    if (numAltAlleles == 0) {
                         ctx.fillStyle = "rgb(219, 240, 216)";
                         //ctx.fillStyle = "rgb(255,255,255)";
                     }
 
-                    if (sampleVariant == 1) {
+                    if (numAltAlleles == 1) {
                         ctx.fillStyle = "rgb(255, 136, 71)";
                     }
 
-                    if (sampleVariant == 2) {
+                    if (numAltAlleles == 2) {
                         //ctx.fillStyle = "rgb(153, 191, 222)";
                         ctx.fillStyle = "rgb(133, 171, 222)";
                     }
@@ -79,17 +82,12 @@ function drawVariants(variants) {
             //ctx.fillStyle = "rgb(0, 0, 0)";
             //ctx.fillRect(20, 20, 100, 50);
 
-            counter += 1;
-            if (counter > 60) {
+            frameCounter += 1;
+            if (frameCounter > 60) {
                 cancelAnimationFrame(frame);
             }
 
-            // ==================================================================
-
-
     }());
-    //}
-    //loop();
 
 }
 
@@ -98,10 +96,8 @@ let _data, _variants;
 $: {
     _data = data;
     _variants = variants;
-    countSamples = _variants.length;
-    trackHeight = countSamples;
-    if (trackHeight > 400) {
-        trackHeight = 400;
+    if (canvasHeight > 400) {
+        canvasHeight = 400;
     }
     widthAllVariants = controller.getCurrentWidthOfVariants();
     drawVariants(_variants);
@@ -127,7 +123,7 @@ onMount(() => {
 
 </script>
 
-<div class="track minimap" style="position: absolute; top: 0px; left: 0px; z-index: 900; height: {trackHeight}px; width: 100%;">
+<div class="track minimap" style="position: absolute; top: 0px; left: 0px; z-index: 900; height: {canvasHeight}px; width: 100%;">
     <div class="label">Compressed view</div>
     <div style="max-height: 399px; overflow-y: scroll; flex-grow: 1; margin-top: 1px;">
         <canvas bind:this={canvas} width={widthAllVariants} height={canvasHeight} ></canvas>

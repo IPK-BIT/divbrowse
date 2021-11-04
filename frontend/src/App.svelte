@@ -29,7 +29,7 @@ setContext('app', {
 });
 
 import getStores from '/utils/store';
-const { variantWidth, groups } = getStores();
+const { settings, variantWidth, groups } = getStores();
 
 import Navigation from '/components/Navigation.svelte';
 
@@ -64,11 +64,11 @@ export function setGroups(_groups) {
 
 let snpbrowserMatrixContainer;
 
-let settings = {
+/*let settings = {
     statusShowMinimap: false,
     statusColorblindMode: false,
     variantDisplayMode: 'reference_mismatch'
-};
+};*/
 
 onMount(async () => {
     console.log('Svelte App mounted!');
@@ -180,9 +180,9 @@ function handleWindowResize(event) {
 
     <div id="{appId}" class="snpbrowser-container">
 
-        <Navigation config={config} bind:settings={settings} />
+        <Navigation config={config} bind:settings={$settings} />
 
-        <div id="snpbrowser-matrix-container" bind:this={snpbrowserMatrixContainer} ref="matrix-pane-container" class:colorblind={settings.statusColorblindMode} class:nucleotides={settings.variantDisplayMode === 'nucleotides'}>
+        <div id="snpbrowser-matrix-container" bind:this={snpbrowserMatrixContainer} ref="matrix-pane-container" class:colorblind={$settings.statusColorblindMode} class:nucleotides={$settings.variantDisplayMode === 'nucleotides'}>
             {#if errorTooManySamples === true}
             <div><p style="padding:30px;">The size of your collection exceeds the maximum of {maxSamplesDisplayable} samples to be displayed simultaneously.
             Please decrease the size of your collection below the value of {maxSamplesDisplayable} samples.</p></div>
@@ -190,7 +190,7 @@ function handleWindowResize(event) {
             <div><p style="padding:30px;">Error: {data.error}</p></div>
             {:else}
             <Modal>
-                <RendererGapless data={data} statusShowMinimap={settings.statusShowMinimap} />
+                <RendererGapless data={data} statusShowMinimap={$settings.statusShowMinimap} />
             </Modal>
             {/if}
         </div>

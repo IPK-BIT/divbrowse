@@ -40,14 +40,14 @@ function sampleDisplayName(sampleId) {
             <td>{controller.metadata.count_genotypes}</td>
         </tr>
         <tr>
-            <td style="width: 200px;">Number of SNP variants:</td>
+            <td style="width: 200px;">Number of variants:</td>
             <td>{controller.metadata.count_variants}</td>
         </tr>
         <tr>
-            <td style="width: 200px;">Number of SNP variants per chromosome:</td>
+            <td style="width: 200px;">Number of variants per chromosome:</td>
             <td>
                 {#each controller.metadata.chromosomes as chrom}
-                {chrom.label}: {chrom.count_snps}<br/>
+                {chrom.label}: {chrom.number_of_variants}<br/>
                 {/each}
             </td>
         </tr>

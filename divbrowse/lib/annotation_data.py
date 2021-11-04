@@ -69,40 +69,43 @@ class AnnotationData:
         genes_with_descriptions = self.genes.loc[(self.genes['type'] == self.config['gff3']['feature_type_with_description'])] # gene or transcript
 
 
-        def count_exon_snps(row):
+        def count_exon_variants(row):
             _chromosome_gff3 = row['seqid']
             _chromosome_vcf = self.metadata_gff3['gff3_to_vcf_chromosome_mapping'][ _chromosome_gff3 ]
-            count_snps = self.gd.count_snps_in_window(_chromosome_vcf, row['start'], row['end'])
-            return count_snps
+            number_of_variants = self.gd.count_variants_in_window(str(_chromosome_vcf), row['start'], row['end'])
+            return number_of_variants
 
-        def count_gene_snps(row):
+        def count_genic_variants(row):
+            print(str(row['seqid'])+' / '+str(row['start']))
             _chromosome_gff3 = row['seqid']
-            _chromosome_vcf = metadata_gff3['gff3_to_vcf_chromosome_mapping'][ _chromosome_gff3 ]
-            count_snps = self.gd.count_snps_in_window(_chromosome_vcf, row['start'], row['end'])
+            _chromosome_vcf = self.metadata_gff3['gff3_to_vcf_chromosome_mapping'][ _chromosome_gff3 ]
+            number_of_variants = self.gd.count_variants_in_window(str(_chromosome_vcf), row['start'], row['end'])
             exons = self.genes.loc[(self.genes['Parent'] == row['ID']) & (self.genes['type'] == 'exon')]
-            exons_counts = exons.apply(count_exon_snps, axis=1)
-            return pd.Series( [count_snps, exons_counts.sum() ], index=['count_snps', 'count_exon_snps'])
+            number_of_exon_variants = exons.apply(count_exon_variants, axis=1)
+            return pd.Series( [number_of_variants, number_of_exon_variants.sum() ], index=['number_of_variants', 'number_of_exon_variants'])
 
 
-        if self.config['gff3']['count_exon_snps'] is True:
+        if self.config['gff3']['count_exon_variants'] is True:
 
             geneStatsCacheFilename = self.datadir+'____gene_stats_.hdf5'
             try:
                 gene_list = pd.read_hdf(geneStatsCacheFilename, key='s')
                 print("++++ Loaded Pandas Dataframe for gene stats")
 
-                genes_counted_snps = gene_list[ ['count_snps', 'count_exon_snps'] ].copy()
-                merged = pd.concat([genes_with_descriptions, genes_counted_snps], axis=1)
-                gene_list = merged[ ['ID', 'seqid', 'start', 'end', 'primary_confidence_class', 'description', 'Ontology_term', 'count_snps', 'count_exon_snps'] ].copy()
+                genes_number_of_variants = gene_list[ ['number_of_variants', 'number_of_exon_variants'] ].copy()
+                merged = pd.concat([genes_with_descriptions, genes_number_of_variants], axis=1)
+                gene_list = merged[ ['ID', 'seqid', 'start', 'end', 'primary_confidence_class', 'description', 'Ontology_term', 'number_of_variants', 'number_of_exon_variants'] ].copy()
 
             except FileNotFoundError:
                 start = timer()
-                #genes_counted_snps = genes_with_descriptions.parallel_apply(count_gene_snps, axis=1, result_type='expand')
-                genes_counted_snps = genes_with_descriptions.apply(count_gene_snps, axis=1, result_type='expand')
+                
+                print("++++ Count variants on genes and exons..........")
+                #genes_number_of_variants = genes_with_descriptions.parallel_apply(count_genic_variants, axis=1, result_type='expand')
+                genes_number_of_variants = genes_with_descriptions.apply(count_genic_variants, axis=1, result_type='expand')
                 print("==== genes_with_descriptions.parallel_apply() calculation time: ", timer() - start)
-                merged = pd.concat([genes_with_descriptions, genes_counted_snps], axis=1)
+                merged = pd.concat([genes_with_descriptions, genes_number_of_variants], axis=1)
 
-                gene_list = merged[ ['ID', 'seqid', 'start', 'end', 'primary_confidence_class', 'description', 'count_snps', 'count_exon_snps'] ].copy()
+                gene_list = merged[ ['ID', 'seqid', 'start', 'end', 'primary_confidence_class', 'description', 'number_of_variants', 'number_of_exon_variants'] ].copy()
                 gene_list.to_hdf(geneStatsCacheFilename, key='s', mode='w', complevel=5, complib='blosc:zstd')
 
         else:
