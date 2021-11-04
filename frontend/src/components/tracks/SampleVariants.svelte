@@ -89,9 +89,9 @@ function isFiltered(pos, gt) {
     {#each data.filtered_variants_coordinates as variant_coordinate, i}
     
     {#if ploidy === 1}
-        <span data-tippy-content="Pos: {coords[i]}" class="snp snp-{snpClass(data.variants_gt[sampleId][i])} ref-{ref_and_alt[i][ data.variants_gt[sampleId][i] ]} alt-{ref_and_alt[i][ data.variants_gt[sampleId][i] ]}" data-sample-id="{sampleId}" data-position="{coords[i]}" data-position-index="{i}" style="width: {$variantWidth}px;"></span>
+        <span data-tippy-content="Pos: {coords[i]}" class="snp snp-{snpClass(data.calls[sampleId][i])} ref-{ref_and_alt[i][ data.calls[sampleId][i] ]} alt-{ref_and_alt[i][ data.calls[sampleId][i] ]}" data-sample-id="{sampleId}" data-position="{coords[i]}" data-position-index="{i}" style="width: {$variantWidth}px;"></span>
     {:else if ploidy === 2}
-        <span data-tippy-content="Pos: {coords[i]}" class="snp snp-{snpClass(data.variants_gt[sampleId][i])} ref-{ref_and_alt[i][ data.variants_gt[sampleId][i][0] ]} alt-{ref_and_alt[i][ data.variants_gt[sampleId][i][1] ]}" data-sample-id="{sampleId}" data-position="{coords[i]}" data-position-index="{i}" style="width: {$variantWidth}px; {isFiltered(coords[i], data.variants_gt[sampleId][i])}"></span>
+        <span data-tippy-content="Pos: {coords[i]}" class="snp snp-{snpClass(data.calls[sampleId][i])} ref-{ref_and_alt[i][ data.calls[sampleId][i][0] ]} alt-{ref_and_alt[i][ data.calls[sampleId][i][1] ]}" data-sample-id="{sampleId}" data-position="{coords[i]}" data-position-index="{i}" style="width: {$variantWidth}px; {isFiltered(coords[i], data.calls[sampleId][i])}"></span>
     {/if}
     
     {/each}

@@ -51,11 +51,8 @@ function drawVariants(variants) {
 
                 for (let col = 0; col < data.filtered_variants_coordinates.length; col++) {
                     xPos = col * 20;
-                    //col += 1;
 
-                    //let call = data.variants_gt[sampleId][col]
-
-                    let numAltAlleles = numberOfAlternateAlleles(data.variants_gt[sampleId][col])
+                    let numAltAlleles = numberOfAlternateAlleles(data.calls[sampleId][col])
 
                     if (numAltAlleles == -1) {
                         ctx.fillStyle = "rgb(255,255,255)";

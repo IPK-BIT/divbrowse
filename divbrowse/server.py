@@ -204,7 +204,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
 
         variants_samples = {}
-        variants_gt = {}
+        calls = {}
         if _sliced_snps.ndim == 2:
             _sliced_snps = _sliced_snps.T # transpose GenotypeArray so that samples are in the 1st dimension and not the SNP-calls
 
@@ -215,7 +215,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         
         for sample in samples_selected_mapped:
             variants_samples[sample] = snps_to_alt[i].tolist()
-            variants_gt[sample] = _sliced_snps[i].tolist()
+            calls[sample] = _sliced_snps[i].tolist()
             i += 1
 
         start = timer()
@@ -229,7 +229,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             'coordinate_last_chromosome': gd.chrom[location_end],
             'variants_coordinates': positions.tolist(),
             'variants': variants_samples,
-            'variants_gt': variants_gt,
+            'calls': calls,
             'reference': sliced_reference.tolist(),
             'alternates': sliced_alternates.tolist(),
             'hamming_distances_to_reference': distances_combined.tolist()
