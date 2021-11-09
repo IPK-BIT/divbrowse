@@ -1,8 +1,8 @@
-import json
 import os
 from timeit import default_timer as timer
 from types import SimpleNamespace
 from typing import Tuple
+import json
 
 import allel
 import numpy as np
@@ -15,58 +15,58 @@ from divbrowse import log
 from divbrowse.lib.utils import ApiError
 
 
-def calculate_mean(submatrix_of_snps: np.ndarray) -> np.ndarray:
-    """Calculate the mean for each SNP of a SNP matrix array holding the number of alternate alleles
+def calculate_mean(slice_of_variant_calls: np.ndarray) -> np.ndarray:
+    """Calculate the mean for each variant of a variant matrix array holding the number of alternate alleles
 
     Note:
-        Missing SNP call are excluded from the mean calculation
+        Missing variant calls are excluded from the mean calculation
 
     Args:
-        submatrix_of_snps (numpy.ndarray): Numpy array representing a SNP matrix holding the number of alternate allele calls
+        slice_of_variant_calls (numpy.ndarray): Numpy array representing a variant matrix holding the number of alternate allele calls
 
     Returns:
-        numpy.ndarray: Numpy array holding the means per SNP
+        numpy.ndarray: Numpy array holding the means per variant
     """
 
-    submatrix_of_snps_missing_values_to_nan = np.where(submatrix_of_snps == -1, np.nan, submatrix_of_snps)
-    return np.nanmean(submatrix_of_snps_missing_values_to_nan, axis=0) #, keepdims=True
+    slice_of_variant_calls_missing_values_to_nan = np.where(slice_of_variant_calls == -1, np.nan, slice_of_variant_calls)
+    return np.nanmean(slice_of_variant_calls_missing_values_to_nan, axis=0) #, keepdims=True
 
 
-def impute_with_mean(submatrix_of_snps: np.ndarray) -> np.ndarray:
-    """SNP matrix array for that missing values should be imputed (replaced) with the mean for the SNP
+def impute_with_mean(slice_of_variant_calls: np.ndarray) -> np.ndarray:
+    """variant matrix array for that missing values should be imputed (replaced) with the mean for the variant
 
     Args:
-        submatrix_of_snps (numpy.ndarray): Numpy array representing a SNP matrix holding the number of alternate allele calls
+        slice_of_variant_calls (numpy.ndarray): Numpy array representing a variant matrix holding the number of alternate allele calls
 
     Returns:
-        numpy.ndarray: Imputed version of the input SNP matrix array
+        numpy.ndarray: Imputed version of the input variant matrix array
     """
 
-    imputed = np.copy(submatrix_of_snps).astype(np.float32)
-    means = calculate_mean(submatrix_of_snps)
-    indices_missing = np.where(submatrix_of_snps == -1)
+    imputed = np.copy(slice_of_variant_calls).astype(np.float32)
+    means = calculate_mean(slice_of_variant_calls)
+    indices_missing = np.where(slice_of_variant_calls == -1)
     imputed[indices_missing] = np.take(means, indices_missing[1])
     imputed = np.nan_to_num(imputed)
     return imputed
 
 
-def calculate_pca_in_snp_window(snps, samples_selected):
-    """Calculate a PCA for a SNP matrix array
+def calc_pca_for_slice_of_variant_calls(slice_of_variant_calls, samples_selected):
+    """Calculate a PCA for a variant matrix array
 
     Args:
-        snps (numpy.ndarray): Numpy array representing a SNP matrix holding the number of alternate allele calls
+        slice_of_variant_calls (numpy.ndarray): Numpy array representing a variant matrix holding the number of alternate allele calls
 
     Returns:
         numpy.ndarray: PCA result aligned with the sample IDs in the first column
     """
 
     sample_ids = np.array(samples_selected).reshape((-1, 1)).copy()
-    snps_imputed = impute_with_mean(snps)
+    calls_imputed = impute_with_mean(slice_of_variant_calls)
     scaler = RobustScaler()
-    snps_imputed_scaled = np.nan_to_num(scaler.fit_transform(snps_imputed))
+    calls_imputed_scaled = np.nan_to_num(scaler.fit_transform(calls_imputed))
     start = timer()
-    pca_model = PCA(n_components=2, whiten=False, svd_solver='randomized', iterated_power=6).fit(snps_imputed_scaled)
-    pca_result = pca_model.transform(snps_imputed_scaled)
+    pca_model = PCA(n_components=2, whiten=False, svd_solver='randomized', iterated_power=6).fit(calls_imputed_scaled)
+    pca_result = pca_model.transform(calls_imputed_scaled)
     log.debug("==== PCA calculation time: %f", timer() - start)
     pca_result_combined = np.concatenate((sample_ids, pca_result), axis=1)
     return pca_result_combined
@@ -127,13 +127,13 @@ class GenotypeData:
         if 'ANN' in self.available_variants_metadata:
             self.available['snpeff'] = True
 
-        # Derive distinct chromosome ID's from snp matrix
+        # Derive distinct chromosome ID's from variant matrix
         self.list_chrom = pd.unique(self.chrom).tolist()
 
         # Create index for samples
         self.idx_samples = allel.UniqueIndex(self.samples)
 
-        # Create combined index for snp positions
+        # Create combined index for variant positions
         self.idx_pos = allel.ChromPosIndex(self.chrom, self.pos)
 
         self.samples_dict = dict(zip(self.samples.tolist(), list(range(0, self.samples.shape[0]))))
@@ -322,30 +322,30 @@ class GenotypeData:
             return lookup, 'nearest_lookup'
 
 
-    def get_snp_matrix(self, sliced_snps):
+    def count_alternate_alleles(self, sliced_variant_calls):
         """Returns a tupel consisting of a boolean mask for found sample Ids and a list of mapped sample IDs
 
         Args:
-            sliced_snps (numpy.ndarray): SNP matrix array holding the allele calls (0/0  0/1  1/1)
+            sliced_variant_calls (numpy.ndarray): variant matrix array holding the allele calls (0/0  0/1  1/1)
 
         Returns:
-            numpy.ndarray: SNP matrix array holding the number of alternate allele calls
+            numpy.ndarray: variant matrix array holding the number of alternate allele calls
         """
 
         # monoploid / haploid
-        if sliced_snps.ndim == 2:
-            snps_to_alt = allel.HaplotypeArray(sliced_snps).T
+        if sliced_variant_calls.ndim == 2:
+            numbers_of_alternate_alleles = allel.HaplotypeArray(sliced_variant_calls).T
 
         # diploid
-        if sliced_snps.ndim == 3:
+        if sliced_variant_calls.ndim == 3:
             # Transform each genotype call into the number of non-reference alleles and then transpose it via .T to row-major order
-            snps_to_alt = allel.GenotypeArray(sliced_snps).to_n_alt(fill=-1).T
+            numbers_of_alternate_alleles = allel.GenotypeArray(sliced_variant_calls).to_n_alt(fill=-1).T
 
-        return snps_to_alt
+        return numbers_of_alternate_alleles
 
 
     def count_variants_in_window(self, chrom, startpos, endpos) -> int:
-        """Counts number of SNPs in a genomic region
+        """Counts number of variants in a genomic region
 
         Args:
             chrom (str): The chromosome of the genomic region.
@@ -353,7 +353,7 @@ class GenotypeData:
             endpos (int): The last position of the genommic region.
 
         Returns:
-            int: Number of SNPs in the genomic region
+            int: Number of variants in the genomic region
 
         """
 
@@ -370,42 +370,42 @@ class GenotypeData:
         return count
 
 
-    def calculate_minor_allele_freq(self, submatrix_of_snps):
+    def calculate_minor_allele_freq(self, numbers_of_alternate_alleles):
         """Calculates minor allele frequency
 
         Args:
-            submatrix_of_snps (numpy.ndarray): Numpy array representing a SNP matrix holding the number of alternate allele calls
+            numbers_of_alternate_alleles (numpy.ndarray): Numpy array representing a variant matrix holding the number of alternate allele calls
 
         Returns:
-            numpy.ndarray: Numpy array (1d) holding the calculated minor allele frequencies per each SNP
+            numpy.ndarray: Numpy array (1d) holding the calculated minor allele frequencies per each variant
         """
 
         if self.ploidy == 1:
-            means = calculate_mean(submatrix_of_snps)
+            means = calculate_mean(numbers_of_alternate_alleles)
             maf = np.where(means < 0.5, means, 1 - means)
             return np.nan_to_num(maf, nan=-1).tolist()
 
         if self.ploidy == 2:
-            means_halfed = calculate_mean(submatrix_of_snps) / 2
+            means_halfed = calculate_mean(numbers_of_alternate_alleles) / 2
             maf = np.where(means_halfed < 0.5, means_halfed, 1 - means_halfed)
             return np.nan_to_num(maf, nan=-1).tolist()
 
 
-    def calculate_per_snp_stats(self, submatrix_of_snps):    
+    def calc_variants_summary_stats(self, numbers_of_alternate_alleles):    
         result = {}
 
-        result['maf'] = self.calculate_minor_allele_freq(submatrix_of_snps)
+        result['maf'] = self.calculate_minor_allele_freq(numbers_of_alternate_alleles)
 
-        df_snps = pd.DataFrame(submatrix_of_snps)
-        counts = df_snps.apply(pd.Series.value_counts, axis=0, normalize=True).fillna(0)
+        df_numbers_of_alternate_alleles = pd.DataFrame(numbers_of_alternate_alleles)
+        counts = df_numbers_of_alternate_alleles.apply(pd.Series.value_counts, axis=0, normalize=True).fillna(0)
 
         try:
             result['missing_freq'] = counts.loc[-1].values.tolist()
         except KeyError:
             result['missing_freq'] = np.zeros(counts.columns.size).tolist()
 
-        df_snps_with_nan = df_snps.replace(-1, np.nan)
-        counts_without_missing = df_snps_with_nan.apply(pd.Series.value_counts, axis=0, normalize=True, dropna=True).fillna(0)
+        df_numbers_of_alternate_alleles_with_nan = df_numbers_of_alternate_alleles.replace(-1, np.nan)
+        counts_without_missing = df_numbers_of_alternate_alleles_with_nan.apply(pd.Series.value_counts, axis=0, normalize=True, dropna=True).fillna(0)
         counts_without_missing.index = counts_without_missing.index.astype(int, copy=False)
 
         try:
@@ -416,16 +416,16 @@ class GenotypeData:
         return result
 
 
-    def apply_variant_filter_settings(self, fs, snps_to_alt, _slice_snps):
-        per_snp_stats = self.calculate_per_snp_stats(snps_to_alt)
+    def apply_variant_filter_settings(self, fs, numbers_of_alternate_alleles, _slice_variant_calls):
+        variants_summary_stats = self.calc_variants_summary_stats(numbers_of_alternate_alleles)
 
         #### QUAL #########################
         if 'QUAL' in self.available_variants_metadata:
-            sliced_qual = self.variants_qual.get_basic_selection(_slice_snps)
-            per_snp_stats['vcf_qual'] = sliced_qual.tolist()
+            sliced_qual = self.variants_qual.get_basic_selection(_slice_variant_calls)
+            variants_summary_stats['vcf_qual'] = sliced_qual.tolist()
         
-        per_snp_stats['positions_indices'] = list(range(_slice_snps.start, _slice_snps.stop))
-        df = pd.DataFrame(per_snp_stats)
+        variants_summary_stats['positions_indices'] = list(range(_slice_variant_calls.start, _slice_variant_calls.stop))
+        df = pd.DataFrame(variants_summary_stats)
 
         log.debug(df)
 
@@ -441,13 +441,13 @@ class GenotypeData:
         if 'filterByVcfQual' in fs and fs['filterByVcfQual'] == True and 'QUAL' in self.available_variants_metadata:
             df = df[ df['vcf_qual'].between(fs['vcfQual'][0], fs['vcfQual'][1]) ]
 
-        if snps_to_alt[:, df.index.values].shape[1] >= 2:
-            snps_to_alt = snps_to_alt[:, df.index.values]
+        if numbers_of_alternate_alleles[:, df.index.values].shape[1] >= 2:
+            numbers_of_alternate_alleles = numbers_of_alternate_alleles[:, df.index.values]
 
-        return snps_to_alt, df['positions_indices'].values
+        return numbers_of_alternate_alleles, df['positions_indices'].values
 
 
-    def get_slice_of_snps(self, chrom, startpos=None, endpos=None, count=None, samples=None, variant_filter_settings=None):
+    def get_slice_of_variant_calls(self, chrom, startpos=None, endpos=None, count=None, samples=None, variant_filter_settings=None):
 
         lookup_type_start = False
         lookup_type_end = False
@@ -460,7 +460,7 @@ class GenotypeData:
             location_end = location_end + 1
         else:
             if startpos is not None:
-                # Get start coordinate (allows automatic position fuzzy search if coordinate does not exist in the SNP matrix!)
+                # Get start coordinate (allows automatic position fuzzy search if coordinate does not exist in the variant matrix!)
                 location_start, lookup_type_start = self.get_posidx_by_genome_coordinate(chrom, startpos)
 
                 # calculate location_end from start and count
@@ -468,7 +468,7 @@ class GenotypeData:
                 
 
             if endpos is not None:
-                # Get start coordinate (allows automatic position fuzzy search if coordinate does not exist in the SNP matrix!)
+                # Get start coordinate (allows automatic position fuzzy search if coordinate does not exist in the variant matrix!)
                 location_end, lookup_type_end = self.get_posidx_by_genome_coordinate(chrom, endpos)
                 location_end = location_end + 1
 
@@ -481,23 +481,23 @@ class GenotypeData:
 
 
         # create slice() object for later going into get_orthogonal_selection()
-        slice_snps = slice(location_start, location_end, None)
+        slice_variant_calls = slice(location_start, location_end, None)
 
-        positions = self.pos[slice_snps]
+        positions = self.pos[slice_variant_calls]
 
-        # get the SNP slice from Zarr dataset
-        sliced_snps = self.calldata.get_orthogonal_selection((slice_snps, samples_mask))   # samples_mask
+        # get the variant slice from Zarr dataset
+        sliced_variant_calls = self.calldata.get_orthogonal_selection((slice_variant_calls, samples_mask))   # samples_mask
 
         # Transform each genotype call into the number of non-reference alleles and then transpose it via .T to row-major order
-        snps_to_alt = self.get_snp_matrix(sliced_snps)
+        numbers_of_alternate_alleles = self.count_alternate_alleles(sliced_variant_calls)
 
-        filtered_positions_indices = np.asarray(range(slice_snps.start, slice_snps.stop)) #None
+        filtered_positions_indices = np.asarray(range(slice_variant_calls.start, slice_variant_calls.stop)) #None
         if variant_filter_settings is not None:
-            snps_to_alt, filtered_positions_indices = self.apply_variant_filter_settings(variant_filter_settings, snps_to_alt, slice_snps)
+            numbers_of_alternate_alleles, filtered_positions_indices = self.apply_variant_filter_settings(variant_filter_settings, numbers_of_alternate_alleles, slice_variant_calls)
 
         stats = {
             'number_of_variants_in_window': int(positions.shape[0]),
-            'number_of_variants_in_window_filtered': int(snps_to_alt.shape[1]),
+            'number_of_variants_in_window_filtered': int(numbers_of_alternate_alleles.shape[1]),
             'startpos': int(positions[0]),
             'endpos': int(positions[-1]),
             'lookup_type_start': str(lookup_type_start),
@@ -505,9 +505,9 @@ class GenotypeData:
         }
 
         result = {
-            'snps_to_alt': snps_to_alt,
-            'slice_snps': slice_snps,
-            'sliced_snps': sliced_snps,
+            'numbers_of_alternate_alleles': numbers_of_alternate_alleles,
+            'slice_variant_calls': slice_variant_calls,
+            'sliced_variant_calls': sliced_variant_calls,
             'samples_mask': samples_mask,
             'samples_selected_mapped': samples_selected_mapped,
             'positions': positions,

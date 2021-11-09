@@ -1,6 +1,6 @@
-import json
 import os
 from timeit import default_timer as timer
+import json
 
 import allel
 import numpy as np

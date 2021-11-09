@@ -1,8 +1,6 @@
 __version__ = '0.1.0'
 
-import os
 import json
-import sys
 from timeit import default_timer as timer
 
 from flask import Flask, Response, jsonify, request
@@ -17,7 +15,7 @@ import yaml
 
 from divbrowse import log
 from divbrowse.lib.annotation_data import AnnotationData
-from divbrowse.lib.genotype_data import (GenotypeData, calculate_pca_in_snp_window,
+from divbrowse.lib.genotype_data import (GenotypeData, calc_pca_for_slice_of_variant_calls,
                                impute_with_mean)
 
 from divbrowse.lib.utils import ApiError
@@ -103,7 +101,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         else:
             return 'ERROR'
 
-        _result = gd.get_slice_of_snps(
+        _result = gd.get_slice_of_variant_calls(
             chrom = input['chrom'],
             startpos = input['startpos'],
             endpos = input['endpos'],
@@ -123,7 +121,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         else:
             return 'ERROR'
 
-        _result = gd.get_slice_of_snps(
+        _result = gd.get_slice_of_variant_calls(
             chrom = input['chrom'],
             startpos = input['startpos'],
             endpos = input['endpos'],
@@ -131,7 +129,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             variant_filter_settings = input['variant_filter_settings']
         )
 
-        pca_result = calculate_pca_in_snp_window(_result.snps_to_alt, _result.samples_selected_mapped)
+        pca_result = calc_pca_for_slice_of_variant_calls(_result.numbers_of_alternate_alleles, _result.samples_selected_mapped)
 
         result = {
             'pca_result': pca_result.tolist()
@@ -155,14 +153,14 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             return jsonify({
                 'success': False, 
                 'status': 'error', 
-                'message': 'The provided chromosome number '+str(input['chrom'])+' is not included in the SNP matrix.'
+                'message': 'The provided chromosome number '+str(input['chrom'])+' is not included in the variant matrix.'
             })
         
         log.debug("==== 0 => calculation time: %f", timer() - start_all)
 
         start = timer()
 
-        _result = gd.get_slice_of_snps(
+        _result = gd.get_slice_of_variant_calls(
             chrom = input['chrom'],
             startpos = input['startpos'],
             endpos = input['endpos'],
@@ -171,9 +169,9 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             variant_filter_settings = input['variant_filter_settings']
         )
 
-        snps_to_alt = _result.snps_to_alt
-        _slice_snps = _result.slice_snps
-        _sliced_snps = _result.sliced_snps
+        numbers_of_alternate_alleles = _result.numbers_of_alternate_alleles
+        _slice_variant_calls = _result.slice_variant_calls
+        _sliced_variant_calls = _result.sliced_variant_calls
         samples_mask = _result.samples_mask
         samples_selected_mapped = _result.samples_selected_mapped
         positions = _result.positions
@@ -181,41 +179,41 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         location_end = _result.location_end
 
         # calculate some allel stats like MAF etc.
-        per_snp_stats = gd.calculate_per_snp_stats(snps_to_alt)
+        variants_summary_stats = gd.calc_variants_summary_stats(numbers_of_alternate_alleles)
 
         # impute with mean
-        imputed = impute_with_mean(snps_to_alt)
-        ref_vec = np.zeros(snps_to_alt.shape[1]).reshape(1, snps_to_alt.shape[1])
-        log.debug("==== gd.get_snp_matrix() + gd.calculate_per_snp_stats() + impute_with_mean() => calculation time: %f", timer() - start)
+        imputed = impute_with_mean(numbers_of_alternate_alleles)
+        ref_vec = np.zeros(numbers_of_alternate_alleles.shape[1]).reshape(1, numbers_of_alternate_alleles.shape[1])
+        log.debug("==== gd.get_variant_matrix() + gd.calc_variants_summary_stats() + impute_with_mean() => calculation time: %f", timer() - start)
 
         start = timer()
         distances = pairwise_distances(imputed, ref_vec, n_jobs=1, metric='hamming')
-        distances = distances * snps_to_alt.shape[1]
+        distances = distances * numbers_of_alternate_alleles.shape[1]
         distances = distances.astype(np.int16);
         sample_ids = np.array(samples_selected_mapped).reshape(gd.samples[samples_mask].shape[0], 1)
         distances_combined = np.concatenate((sample_ids, distances), axis=1)
         log.debug("==== pairwise_distances() calculation time: %f", timer() - start)
 
         # Get the reference nucleotides (as letters ATCG)
-        sliced_reference = gd.reference_allele[_slice_snps]
+        sliced_reference = gd.reference_allele[_slice_variant_calls]
 
         # Get the alternate nucleotides (as letters ATCG)
-        sliced_alternates = gd.alternate_alleles[_slice_snps]
+        sliced_alternates = gd.alternate_alleles[_slice_variant_calls]
 
 
         variants_samples = {}
         calls = {}
-        if _sliced_snps.ndim == 2:
-            _sliced_snps = _sliced_snps.T # transpose GenotypeArray so that samples are in the 1st dimension and not the SNP-calls
+        if _sliced_variant_calls.ndim == 2:
+            _sliced_variant_calls = _sliced_variant_calls.T # transpose GenotypeArray so that samples are in the 1st dimension and not the variant-calls
 
-        if _sliced_snps.ndim == 3:
-            _sliced_snps = _sliced_snps.transpose(1, 0, 2) # transpose GenotypeArray so that samples are in the 1st dimension and not the SNP-calls
+        if _sliced_variant_calls.ndim == 3:
+            _sliced_variant_calls = _sliced_variant_calls.transpose(1, 0, 2) # transpose GenotypeArray so that samples are in the 1st dimension and not the variant-calls
 
         i = 0
         
         for sample in samples_selected_mapped:
-            variants_samples[sample] = snps_to_alt[i].tolist()
-            calls[sample] = _sliced_snps[i].tolist()
+            variants_samples[sample] = numbers_of_alternate_alleles[i].tolist()
+            calls[sample] = _sliced_variant_calls[i].tolist()
             i += 1
 
         start = timer()
@@ -238,7 +236,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         # get DP values
         if 'DP' in gd.available_calldata:
             DP_values = {}
-            sliced_DP = gd.callset['calldata/DP'].get_orthogonal_selection((_slice_snps, samples_mask)).T
+            sliced_DP = gd.callset['calldata/DP'].get_orthogonal_selection((_slice_variant_calls, samples_mask)).T
             DP_values = {}
             i = 0
             for sample in samples_selected_mapped:
@@ -250,7 +248,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         # get DV values
         if 'DV' in gd.available_calldata:
             DV_values = {}
-            sliced_DV = gd.callset['calldata/DV'].get_orthogonal_selection((_slice_snps, samples_mask)).T
+            sliced_DV = gd.callset['calldata/DV'].get_orthogonal_selection((_slice_variant_calls, samples_mask)).T
             DV_values = {}
             i = 0
             for sample in samples_selected_mapped:
@@ -261,16 +259,16 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
         #### QUAL #########################
         if 'QUAL' in gd.available_variants_metadata:
-            sliced_qual = gd.variants_qual.get_basic_selection(_slice_snps)
-            per_snp_stats['vcf_qual'] = sliced_qual.tolist()
+            sliced_qual = gd.variants_qual.get_basic_selection(_slice_variant_calls)
+            variants_summary_stats['vcf_qual'] = sliced_qual.tolist()
 
 
 
-        result['per_snp_stats'] = per_snp_stats
+        result['per_snp_stats'] = variants_summary_stats
 
         #### SNPEFF #######################
         if gd.available['snpeff']:
-            sliced_ann = gd.callset['variants/ANN'].get_basic_selection( _slice_snps )
+            sliced_ann = gd.callset['variants/ANN'].get_basic_selection( _slice_variant_calls )
             
             snpeff_variants = {}
             i = 0
@@ -325,10 +323,10 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             return jsonify({
                 'success': False, 
                 'status': 'error_missing_chromosome', 
-                'message': 'The provided chromosome number '+str(input['chrom'])+' is not included in the SNP matrix.'
+                'message': 'The provided chromosome number '+str(input['chrom'])+' is not included in the variant matrix.'
             })
 
-        _result = gd.get_slice_of_snps(
+        _result = gd.get_slice_of_variant_calls(
             chrom = input['chrom'],
             startpos = input['startpos'],
             endpos = input['endpos'],
@@ -341,7 +339,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             return jsonify({
                 'success': False, 
                 'status': 'error_snp_window_too_big', 
-                'message': 'The requested SNP window size is bigger than 5000 SNPs and is therefore too big. Please decrease the window size to not exceed 5000 SNPs.'
+                'message': 'The requested genomic window size is bigger than 5000 variants and is therefore too big. Please decrease the window size to not exceed 5000 variants.'
             })
 
         return jsonify({
@@ -364,10 +362,10 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             return jsonify({
                 'success': False, 
                 'status': 'error_missing_chromosome', 
-                'message': 'The provided chromosome number '+str(input['chrom'])+' is not included in the SNP matrix.'
+                'message': 'The provided chromosome number '+str(input['chrom'])+' is not included in the variant matrix.'
             })
 
-        _result = gd.get_slice_of_snps(
+        _result = gd.get_slice_of_variant_calls(
             chrom = input['chrom'],
             startpos = input['startpos'],
             endpos = input['endpos'],
@@ -375,9 +373,9 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             variant_filter_settings = input['variant_filter_settings']
         )
 
-        snps_to_alt = _result.snps_to_alt
-        _slice_snps = _result.slice_snps
-        _sliced_snps = _result.sliced_snps
+        numbers_of_alternate_alleles = _result.numbers_of_alternate_alleles
+        _slice_variant_calls = _result.slice_variant_calls
+        _sliced_variant_calls = _result.sliced_variant_calls
         samples_mask = _result.samples_mask
         samples_selected_mapped = _result.samples_selected_mapped
         positions = _result.positions
