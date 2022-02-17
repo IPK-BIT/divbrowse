@@ -1,6 +1,8 @@
-import os, sys, fnmatch
+import os, sys
+
+sys.setrecursionlimit(1000000)
+
 from pprint import pprint
-import multiprocessing
 
 import click
 import yaml
@@ -11,7 +13,7 @@ import numcodecs
 from waitress import serve
 
 from divbrowse import log
-from divbrowse.server import create_app
+
 
 from divbrowse import __version__ as DIVBROWSE_VERSION
 
@@ -49,11 +51,36 @@ def test():
 
 
 @click.command()
+def calcsumstats():
+
+    click.echo('Starting calculation of variant summary statistics...')
+    log.info('Starting calculation of variant summary statistics...')
+
+    from divbrowse.lib.annotation_data import AnnotationData
+    from divbrowse.lib.genotype_data import GenotypeData
+
+    try:
+        with open('divbrowse.config.yml') as config_file:
+            config = yaml.full_load(config_file)
+    except FileNotFoundError:
+        log.error('Divbrowse config file `divbrowse.config.yml` not found in current directory!')
+        exit(1)
+
+    gd = GenotypeData(config)
+    ad = AnnotationData(config, gd)
+
+
+
+
+
+
+@click.command()
 @click.option('--host', default='0.0.0.0', help='IP address to bind the DivBrowse server to', show_default=True)
 @click.option('--port', default='8080', help='Port number to bind the DivBrowse server to', show_default=True)
 @click.option('--infer-config', is_flag=True, help='If set: infer a basic configuration from the provided VCF and GFF/GFF3 files and do not use an existing `divbrowse.config.yml`')
 @click.option('--save-config', type=click.Path(file_okay=True, writable=True), help='Save the inferred configuration as a YAML file. Please provide a relative or absolute path.')
 def start(host: str, port: str, infer_config: bool, save_config):
+    from divbrowse.server import create_app
 
     print(save_config)
     exit()
@@ -156,6 +183,7 @@ def start(host: str, port: str, infer_config: bool, save_config):
 @click.option('--host', default='0.0.0.0', help='IP address to bind the DivBrowse server to')
 @click.option('--port', default='8080', help='Port number to bind the DivBrowse server to')
 def starttest(host: str, port: str):
+    from divbrowse.server import create_app
     click.secho('Starting DivBrowse server using gunicorn...', fg='green', bold=True)
     
     app = create_app()
@@ -166,6 +194,7 @@ def starttest(host: str, port: str):
 main.add_command(test)
 main.add_command(start)
 main.add_command(starttest)
+main.add_command(calcsumstats)
 
 if __name__ == '__main__':
     main()

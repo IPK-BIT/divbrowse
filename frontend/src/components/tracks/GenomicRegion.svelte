@@ -4,6 +4,9 @@ export let data;
 import { getContext } from 'svelte';
 let { appId, controller } = getContext('app').app();
 
+import getStores from '/utils/store';
+const { variantWidth } = getStores();
+
 import GeneDetailsModalContent from '/components/modals/GeneDetailsModalContent.svelte';
 
 import { delegate } from 'tippy.js';
@@ -19,7 +22,14 @@ let yOffset = {
     plusStrand: 10,
     minusStrand: 20,
     variant: 40,
+    curveTop: 45,
+    controlPoint: 75,
+    curveBottom: 100
 }
+
+let xbot = 70;
+
+let _xTop, _xBottom;
 
 const isEmpty = (value) => (value === undefined || value === '') ? true : false;
 
@@ -115,6 +125,7 @@ const openGeneDetailsModal = (featureId) => {
     open(GeneDetailsModalContent, { featureId: featureId });
 };
 
+
 </script>
 
 
@@ -126,7 +137,7 @@ const openGeneDetailsModal = (featureId) => {
     <div style="width: {widthAllVariants}px; border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">
 
         <div id="svg-container" style="width: {widthAllVariants}px;">
-            <svg width="{widthAllVariants}" height="50" bind:this={svg}>
+            <svg width="{widthAllVariants}" height="100" bind:this={svg}>
                 <defs>
                     <symbol id="arrow" viewBox="0 0 50 50" width="50" height="50">
                         <g transform="scale(0.5)">
@@ -184,7 +195,16 @@ const openGeneDetailsModal = (featureId) => {
                 </a>
                 {/each}
 
-                
+
+                <!--<path class="curve" d="M1,1 C1,50 {xbot},50 {xbot},99" />-->
+                <!--<path class="curve" d="M1,{yOffset.curveTop} C1,{yOffset.controlPoint} {xbot},{yOffset.controlPoint} {xbot},{yOffset.curveBottom}" />-->
+
+                {#each data.variants_coordinates as position, col}
+                <path class="curve" d="M{(( ((position - data.coordinate_first) / maxmin) * (widthAllVariants-5) ) + 3)},{yOffset.curveTop} C{(( ((position - data.coordinate_first) / maxmin) * (widthAllVariants-5) ) + 3)},{yOffset.controlPoint} {((col * $variantWidth) + 10)},{yOffset.controlPoint} {((col * $variantWidth) + 10)},{yOffset.curveBottom}" />
+                {/each}
+
+
+
             </svg>
         </div>
 
@@ -209,11 +229,11 @@ const openGeneDetailsModal = (featureId) => {
 }
 
 div.track.genomic-region {
-    height: 50px;
+    height: 100px;
 }
 
 #svg-container {
-    height: 50px;
+    height: 100px;
 }
 
 
@@ -231,6 +251,17 @@ div.track.genomic-region {
 .gene:hover {
     stroke: rgba(0,0,0,0.1);
     cursor: pointer;
+}
+
+path.curve {
+	stroke-width: 1;
+	stroke: rgb(215,215,215);
+	stroke-linecap: round;
+	fill: none;
+}
+
+path.curve.fill {
+	fill: rgb(215,215,215);
 }
 
 </style>

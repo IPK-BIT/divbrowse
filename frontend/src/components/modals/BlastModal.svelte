@@ -11,4 +11,4 @@
     };
 </script> 
  
-<button on:click|preventDefault={showModal} disabled={disabled} type="button" class="divbrowse-btn divbrowse-btn-light">BLAST</button>
+<button on:click|preventDefault={showModal} disabled={disabled} type="button" class="divbrowse-btn divbrowse-btn-light" style="font-size:0.8rem;">BLAST</button>

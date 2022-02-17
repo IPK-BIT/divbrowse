@@ -124,17 +124,17 @@ eventbus.on('data:genes:loaded', _data => {
             <button on:click|preventDefault={handleGoToPosition(position)} type="button" class="divbrowse-btn divbrowse-btn-light">Go</button>
         </div>
 
-        <div style="float:left; margin-left: 45px;">
-            <Modal>
-                <DataSummaryModal />
-            </Modal>
+        <div style="float:left; margin-left:30px;">
+            <!--<button on:click|preventDefault={ () => handleBackward() } disabled="{btnBackwardDisabled}" type="button" class="divbrowse-btn divbrowse-btn-light">&laquo; prev. window</button>-->
+            <button on:click|preventDefault={ () => handleBackward(20) } disabled="{btnBackwardDisabled}" type="button" class="divbrowse-btn divbrowse-btn-light"><span style="font-size:20px;">&#8678;&#8678;</span></button>
+            <button on:click|preventDefault={ () => handleBackward(10) } disabled="{btnBackwardDisabled}" type="button" class="divbrowse-btn divbrowse-btn-light" style="margin-left:2px;"><span style="font-size:20px;">&#8678;</span></button>
+            <!--<span style="border-left:2px solid rgb(150,150,150); margin-left: 10px; margin-right:12px;"></span>-->
+            <button on:click|preventDefault={ () => handleForward(10) } disabled="{btnForwardDisabled}" type="button" class="divbrowse-btn divbrowse-btn-light" style=""><span style="font-size:20px;">&#8680;</span></button>
+            <button on:click|preventDefault={ () => handleForward(20) } disabled="{btnForwardDisabled}" type="button" class="divbrowse-btn divbrowse-btn-light" style="margin-left:2px;"><span style="font-size:20px;">&#8680;&#8680;</span></button>
+            <!--<button on:click|preventDefault={ () => handleForward() } disabled="{btnForwardDisabled}" type="button" class="divbrowse-btn divbrowse-btn-light" style="margin-left:2px;">next window &raquo;</button>-->
         </div>
 
-        <div style="float:left; margin-left:20px;">
-        <Modal closeOnOuterClick={false}>
-            <SettingsModal />
-        </Modal>
-        </div>
+
 
         <div style="margin-left:30px;display:none;">
             <label class="form-label" for="position-input">SNP width: </label>
@@ -150,55 +150,59 @@ eventbus.on('data:genes:loaded', _data => {
 
     </div>
 
-    <div class="snpbrowser-nav-row clearfix" style="margin-top:10px;">
+    <div class="snpbrowser-nav-row clearfix" style="margin-top:12px;">
         <Modal key="2nd-modal" styleBg={{'z-index': '2000', 'top': '0px', 'left': '0px'}} closeOnOuterClick={false}>
         
-        <div style="float:left; margin-left:0px;">
-            <!--<button on:click|preventDefault={ () => handleBackward() } disabled="{btnBackwardDisabled}" type="button" class="divbrowse-btn divbrowse-btn-light">&laquo; prev. window</button>-->
-            <button on:click|preventDefault={ () => handleBackward(20) } disabled="{btnBackwardDisabled}" type="button" class="divbrowse-btn divbrowse-btn-light"><span style="font-size:20px;">&#8678;&#8678;</span></button>
-            <button on:click|preventDefault={ () => handleBackward(10) } disabled="{btnBackwardDisabled}" type="button" class="divbrowse-btn divbrowse-btn-light" style="margin-left:2px;"><span style="font-size:20px;">&#8678;</span></button>
-            <!--<span style="border-left:2px solid rgb(150,150,150); margin-left: 10px; margin-right:12px;"></span>-->
-            <button on:click|preventDefault={ () => handleForward(10) } disabled="{btnForwardDisabled}" type="button" class="divbrowse-btn divbrowse-btn-light" style=""><span style="font-size:20px;">&#8680;</span></button>
-            <button on:click|preventDefault={ () => handleForward(20) } disabled="{btnForwardDisabled}" type="button" class="divbrowse-btn divbrowse-btn-light" style="margin-left:2px;"><span style="font-size:20px;">&#8680;&#8680;</span></button>
-            <!--<button on:click|preventDefault={ () => handleForward() } disabled="{btnForwardDisabled}" type="button" class="divbrowse-btn divbrowse-btn-light" style="margin-left:2px;">next window &raquo;</button>-->
-        </div>
+        <!--<div style="float:left; width: 1px; height: 20px; border-left:2px solid rgb(150,150,150); margin-left: 20px; margin-right:0px; margin-top:6px;"></div>-->
 
-        <div style="float:left; width: 1px; height: 20px; border-left:2px solid rgb(150,150,150); margin-left: 20px; margin-right:0px; margin-top:6px;"></div>
-
-        <div style="float:left; margin-left:20px; margin-top: 2px;">
+        <div style="float:left;">
         <Modal closeOnOuterClick={false}>
             <GeneSearchModal disabled={dataGenesLoaded !== false ? false : true} />
         </Modal>
         </div>
 
-        <div style="float:left; margin-left:20px; margin-top: 2px;">
-        <Modal closeOnOuterClick={false}>
-            <VariantFilterModal disabled={data !== false ? false : true} />
-        </Modal>
-        </div>
-
-        <div style="float:left; margin-left:20px; margin-top: 2px;">
-        <Modal closeOnOuterClick={false}>
-            <SortSamplesModal disabled={data !== false ? false : true} />
-        </Modal>
-        </div>
-
         {#if statusBlastButton === true}
-        <div style="float:left; margin-left:20px; margin-top: 2px;">
+        <div style="float:left; margin-left:10px;">
         <Modal>
             <BlastModal disabled={data !== false ? false : true} />
         </Modal>
         </div>
         {/if}
 
+        <div style="float:left; margin-left:30px;">
+        <Modal closeOnOuterClick={false}>
+            <VariantFilterModal disabled={data !== false ? false : true} />
+        </Modal>
+        </div>
+
+        <div style="float:left; margin-left:10px;">
+        <Modal closeOnOuterClick={false}>
+            <SortSamplesModal disabled={data !== false ? false : true} />
+        </Modal>
+        </div>
+
         {#if config.allowPca !== false}
-        <div style="float:left; margin-left:20px; margin-top: 2px;">
+        <div style="float:left; margin-left:10px;">
         <Modal>
             <PcaModal disabled={data !== false ? false : true} />
         </Modal>
         </div>
         {/if}
 
+
+        <div style="float:left; margin-left: 30px;">
+            <Modal>
+                <DataSummaryModal />
+            </Modal>
+        </div>
+
+        <div style="float:left; margin-left:10px;">
+        <Modal closeOnOuterClick={false}>
+            <SettingsModal />
+        </Modal>
+        </div>
+
+        <!--
         {#if config.allowVcfExport !== false}
         <div style="float:left; margin-left:20px; margin-top: 2px;">
         <Modal>
@@ -213,6 +217,7 @@ eventbus.on('data:genes:loaded', _data => {
             <GffExportModal disabled={data !== false ? false : true} />
         </Modal>
         </div>
+        -->
 
 
         <div class="clearfix"></div>
@@ -228,6 +233,9 @@ eventbus.on('data:genes:loaded', _data => {
 
 .snpbrowser-nav {
     margin-bottom: 10px;
+    /*background:rgb(190,190,190);
+    padding: 10px 15px;
+    border: 1px solid rgb(120, 120, 120);*/
 }
 
 .snpbrowser-nav-row {

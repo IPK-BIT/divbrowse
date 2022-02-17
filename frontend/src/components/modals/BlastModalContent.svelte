@@ -14,8 +14,11 @@ let showLoadingAnimation = false;
 
 let doCalcBtnDisabled = false;
 
+let blastType = 'blastn';
+
 let params = {
     query: '',
+    blast_type: 'ncbi_blastn_wrapper_barley'
 }
 
 
@@ -68,14 +71,14 @@ if (blastResultHistory.length > 0) {
 }
 
 const doCalculation = () => {
-    if (query === '') {
+    if (params.query === '') {
         return false;
     }
 
     doCalcBtnDisabled = true;
     showLoadingAnimation = true;
 
-    controller.blast(query, result => {
+    controller.blast(params, result => {
         console.log(result);
         showLoadingAnimation = false;
         doCalcBtnDisabled = false;
@@ -114,6 +117,12 @@ function handleChangeBlastResult(selectedPastBlastResultTimestamp) {
 <div>
     <div class="divbrowse-modal-dialogue-headline">BLAST</div>
 
+    <div style="font-size: 0.85rem;margin-bottom:10px;">
+        <span>BLAST type: </span>
+        <input type="radio" name="mode" bind:group={params.blast_type} value={"ncbi_blastn_wrapper_barley"} id="blastn"> <label for="blastn">blastn</label>
+        <input type="radio" name="mode" bind:group={params.blast_type} value={"ncbi_tblastn_wrapper_barley"} id="tblastn"> <label for="tblastn">tblastn</label>
+    </div>
+
 
     {#if blastResult !== false || blastResultHistory.length > 1}
     <div class="clearfix" style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 2px solid rgb(190,190,190);">
@@ -139,9 +148,9 @@ function handleChangeBlastResult(selectedPastBlastResultTimestamp) {
     {/if}
 
     {#if blastResult === false}
-    <div class="form-inline" style="">
-        <label class="form-label" for="" style="font-size: 1rem; display:block; margin-bottom:4px;">Please enter a query sequence to BLAST with:</label>
-        <textarea id="divbrowse-blast-query" bind:value={query}></textarea>
+    <div class="form-inline" style="margin-top: 20px;">
+        <label class="form-label" for="" style="font-size: 0.85rem; display:block; margin-bottom:6px;">Please enter a query sequence to BLAST with:</label>
+        <textarea id="divbrowse-blast-query" bind:value={params.query}></textarea>
 
         <div style="margin-top: 5px;" class="clearfix">
             <button type="button" on:click|preventDefault={doCalculation} disabled="{doCalcBtnDisabled}" class="divbrowse-btn divbrowse-btn-light" style="float:left;">Start BLAST search</button>

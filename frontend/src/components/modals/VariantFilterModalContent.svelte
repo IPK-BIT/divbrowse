@@ -1,5 +1,4 @@
 <script>
-export let close;
 
 import getStores from '/utils/store';
 const { variantFilterSettings } = getStores();
@@ -9,7 +8,7 @@ import RangeSlider from "svelte-range-slider-pips";
  
 
 <div style="min-height: 500px;">
-    <div class="divbrowse-modal-dialogue-headline">Filter SNPs</div>
+    <div class="divbrowse-modal-dialogue-headline">Filter Variants</div>
 
     <div class="sortmode" style="margin-top: 30px;">
         <div class="sortmode-option">

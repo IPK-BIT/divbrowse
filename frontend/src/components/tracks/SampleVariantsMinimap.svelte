@@ -24,6 +24,19 @@ const ploidy = controller.metadata.ploidy;
 const numberOfAlternateAlleles = numberOfAltAllelesFactory.getFunction(ploidy);
 
 
+function isFiltered(pos, gt) {
+    if ( gt.every(el => el < 0) ) {
+        return false;
+    }
+    if (data.filtered_variants_coordinates.includes( pos ) === false) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+
 function drawVariants(variants) {
 
     if (canvas === undefined) {
@@ -49,7 +62,7 @@ function drawVariants(variants) {
                 let col = 0;
                 let xPos = 0;
 
-                for (let col = 0; col < data.filtered_variants_coordinates.length; col++) {
+                for (let col = 0; col < data.variants_coordinates.length; col++) {
                     xPos = col * 20;
 
                     let numAltAlleles = numberOfAlternateAlleles(data.calls[sampleId][col])
@@ -70,6 +83,10 @@ function drawVariants(variants) {
                     if (numAltAlleles == 2) {
                         //ctx.fillStyle = "rgb(153, 191, 222)";
                         ctx.fillStyle = "rgb(133, 171, 222)";
+                    }
+
+                    if (isFiltered(data.variants_coordinates[col], data.calls[sampleId][col])) {
+                        ctx.fillStyle = "rgb(255,255,255)";
                     }
 
                     ctx.fillRect(xPos, row, 20, 1);
@@ -93,9 +110,10 @@ let _data, _variants;
 $: {
     _data = data;
     _variants = variants;
-    if (canvasHeight > 400) {
+    
+    /*if (canvasHeight > 400) {
         canvasHeight = 400;
-    }
+    }*/
     widthAllVariants = controller.getCurrentWidthOfVariants();
     drawVariants(_variants);
 }
@@ -120,7 +138,7 @@ onMount(() => {
 
 </script>
 
-<div class="track minimap" style="position: absolute; top: 0px; left: 0px; z-index: 900; height: {canvasHeight}px; width: 100%;">
+<div class="track minimap" style="position: absolute; top: 0px; left: 0px; z-index: 900; height: 400px; width: 100%;">
     <div class="label">Compressed view</div>
     <div style="max-height: 399px; overflow-y: scroll; flex-grow: 1; margin-top: 1px;">
         <canvas bind:this={canvas} width={widthAllVariants} height={canvasHeight} ></canvas>

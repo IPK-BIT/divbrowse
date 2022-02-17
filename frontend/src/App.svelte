@@ -178,7 +178,7 @@ function handleWindowResize(event) {
 
 <div>
 
-    <div id="{appId}" class="snpbrowser-container">
+    <div id="{appId}" class="divbrowse-container">
 
         <Navigation config={config} bind:settings={$settings} />
 
@@ -229,11 +229,11 @@ h1 {
   box-sizing: border-box;
 }
 
-.snpbrowser-container {
+.divbrowse-container {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 
-    border: 1px solid rgb(150,150,150);
+    border: 1px solid rgb(0,0,0);
     padding: 10px;
     font-family: 'Roboto', sans-serif;
     background: rgb(220,220,220);
@@ -263,7 +263,7 @@ h1 {
 }
 
 :global(.snpbrowser-nav button) {
-    font-size: 14px;
+    font-size: 13px;
     line-height: 0.8 !important;
 }
 
@@ -280,37 +280,40 @@ h1 {
     /*font-size: 14px;*/
     padding: 4px 8px;
     margin: 0px;
-    border: 1px solid rgb(200,200,200);
-    border-radius: 4px;
+    border: 1px solid rgb(120,120,120);
+    border-radius: 5px;
     margin-right: 5px;
 }
 
 :global(select.divbrowse-form-control) {
-    padding: 3px 8px;
-    height: 32px;
+    padding: 2px 8px;
+    height: 30px;
 }
 
 :global(input.divbrowse-form-control) {
-    padding: 3px 8px;
-    height: 32px;
+    padding: 2px 8px;
+    height: 30px;
 }
 
 :global(.divbrowse-btn) {
-    height: 32px;
-    padding: 4px 8px;
+    height: 30px;
+    padding: 1px 8px;
     border-radius: 4px;
     
 }
 
 :global(.divbrowse-btn-light) {
-    background: #f8f9fa;
-    /*background: linear-gradient(to bottom, #f8f9fa, #e9e9e9);*/
-    background-color: rgb(235,235,235);
+    /*background: #f8f9fa;*/
+    /*background-color: rgb(235,235,235);*/
     box-shadow: inset 1px 1px 1px 0px #FFF, inset -1px -1px 0px 0px rgba(0,0,0,0.4);
-    /*border: 1px solid rgb(200,200,200);*/
-    /*border: 1px solid rgb(150,150,150);*/
-    border: 1px solid #dcdcdc;
+    /*border: 1px solid #dcdcdc;*/
     border-radius: 2px;
+
+    background: #f8f9fa;
+    background: linear-gradient(to bottom, #f0f0f0, #e0e0e0);
+    border: 1px solid rgb(180,180,180);
+    border-top: 1px solid rgb(150,150,150);
+    border-left: 1px solid rgb(150,150,150);
 }
 
 :global(.divbrowse-btn-light:hover) {

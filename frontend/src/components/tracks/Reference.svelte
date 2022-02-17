@@ -1,8 +1,18 @@
 <script>
 export let data;
 
+import { onMount, getContext } from 'svelte';
+const context = getContext('app');
+let { appId } = context.app();
+
 import getStores from '/utils/store';
 const { variantWidth } = getStores();
+
+import { delegate } from 'tippy.js';
+//let tippyInstancesReference;
+
+let tippyInstances;
+let tippyInstancesInitialized = false;
 
 function isFiltered(pos) {
     if (data.filtered_variants_coordinates.includes( pos ) === false) {
@@ -12,11 +22,40 @@ function isFiltered(pos) {
     }
 }
 
+const tippyProps = {
+    delay: 0,
+    target: 'div#'+appId+' span.reference',
+    animation: false,
+    placement: "bottom",
+    allowHTML: true
+};
+
+//tippyInstancesReference = delegate('body', tippyProps);
+
+/*onMount(async () => {
+    //if (sampleTracksContainer !== undefined) {
+        //sampleTracksContainerClassname = sampleTracksContainer.getAttribute('class');
+        if (tippyInstancesInitialized === false) {
+            tippyInstances = delegate('body', tippyProps);
+            tippyInstancesInitialized = true;
+        }
+    //}
+});*/
+
+let reference;
+
+$: {
+    reference = data.reference;
+    
+    if (tippyInstances !== undefined && typeof tippyInstances[0].destroy === "function") { tippyInstances[0].destroy(); }
+    tippyInstances = delegate('body', tippyProps);
+}
+
 </script>
 
-<div class="track reference"><div class="label">Reference genome</div>
-    {#each data.reference as nucleotide, i}
-    <span class="snp reference ref-{nucleotide}" data-position="{data.variants_coordinates[i]}" style="width: {$variantWidth}px; {isFiltered(data.variants_coordinates[i])}"></span>
+<div class="track reference"><div class="label">Reference allele</div>
+    {#each reference as nucleotide, i}
+    <span class="snp reference ref-{nucleotide}" data-tippy-content="Position: {data.variants_coordinates[i]}" data-position="{data.variants_coordinates[i]}" style="width: {$variantWidth}px; {isFiltered(data.variants_coordinates[i])}"></span>
     {/each}
 </div>
 

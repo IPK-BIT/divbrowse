@@ -316,7 +316,7 @@ eventbus.on('minimap:click', payload => {
         <GenomicRegion data={data} />
         {/if}
 
-        <Positions data={data} />
+        <!--<Positions data={data} />-->
 
         {#if data.snpeff_variants !== undefined}
         <Modal>

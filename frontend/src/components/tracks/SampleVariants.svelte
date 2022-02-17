@@ -56,7 +56,7 @@ function isFiltered(pos, gt) {
         return '';
     }
     if (data.filtered_variants_coordinates.includes( pos ) === false) {
-        return 'background-color: rgb(255,255,255);';
+        return 'background-color: rgb(255,255,255); color: rgb(255,255,255);';
     } else {
         return '';
     }
@@ -86,7 +86,7 @@ function isFiltered(pos, gt) {
     {/if}
     
     {#if data.filtered_variants_coordinates.length > 0}
-    {#each data.filtered_variants_coordinates as variant_coordinate, i}
+    {#each data.variants_coordinates as variant_coordinate, i}
     
     {#if ploidy === 1}
         <span data-tippy-content="Pos: {coords[i]}" class="snp snp-{snpClass(data.calls[sampleId][i])} ref-{ref_and_alt[i][ data.calls[sampleId][i] ]} alt-{ref_and_alt[i][ data.calls[sampleId][i] ]}" data-sample-id="{sampleId}" data-position="{coords[i]}" data-position-index="{i}" style="width: {$variantWidth}px;"></span>

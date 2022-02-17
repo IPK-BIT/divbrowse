@@ -11,4 +11,4 @@
     };
 </script> 
  
-<button on:click|preventDefault={showModal} disabled={disabled} type="button" class="divbrowse-btn divbrowse-btn-light">Gene Search</button>
+<button on:click|preventDefault={showModal} disabled={disabled} type="button" class="divbrowse-btn divbrowse-btn-light">Genes</button>

@@ -43,8 +43,8 @@ const debounce = (callback, wait) => {
 };
 
 let query = '';
-let result = false;
-let resultRowCount = 0;
+let result = null;
+let resultRowCount = null;
 
 
 // vars for 'search in interval' feature
@@ -69,7 +69,8 @@ let data = null;
 
 onMount(async () => {
     df = controller.metadata.gff3._dataframe;
-    data = df.toCollection();
+    //data = df.toCollection();
+    result = df.toCollection();
     fuse = new Fuse(data, fuseOptions);
 });
 
@@ -100,7 +101,13 @@ function setupSearchInInterval() {
 const clean = (query) => query.replace('-', ' ').toLowerCase();
 
 function doSearch(query) {
-    if (query === '') return false;
+    if (query === '') {
+        result = df.toCollection();
+        resultRowCount = result.length;
+        showLoadingAnimation = false;
+        reset();
+        return false;
+    }
     showLoadingAnimation = true;
     //let resultFuzzy = fuse.search(query);
     //result = resultFuzzy.map(x => x.item);
@@ -152,7 +159,7 @@ const datatableSettings = {
     <div style="position: relative; float:left;">
         <input type="text" bind:value={query} placeholder="The ID and the description can be searched..." style="font-size: 1rem; padding-left: 35px; width: 25rem;" class="divbrowse-form-control">
         <!--<span class="material-icons" style="position: absolute; top: 9px; left: 6px;">search</span>-->
-        <div style="position: absolute; top: 9px; left: 6px;">
+        <div style="position: absolute; top: 7px; left: 6px;">
             <svg style="width:24px;height:24px" viewBox="0 0 24 24">
             <path fill="currentColor" d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
             </svg>
@@ -167,7 +174,7 @@ const datatableSettings = {
 
     <div style="float:left; margin: 10px 0 0 10px;">
         <input type="checkbox" style="vertical-align: -2px;" bind:checked={searchInInterval} on:change={() => setupSearchInInterval()}>
-        <label>Search within interval</label>
+        <label>Search within genomic region</label>
     </div>
 
     {#if searchInInterval}
@@ -180,25 +187,26 @@ const datatableSettings = {
         </select>
     </div>
 
-    <div style="float:left; margin: 0 0 0 10px;">
-        <label class="form-label" for="startpos">Start: </label>
-        <input bind:value={startpos} on:keyup|preventDefault="{() => debouncedSetupSearchInInterval()}" type="number" id="startpos" class="divbrowse-form-control" style="width:7rem;">
+    <div style="float:left; margin: 4px 0 0 10px;">
+        <input bind:value={startpos} placeholder="start position" on:keyup|preventDefault="{() => debouncedSetupSearchInInterval()}" type="number" id="startpos" class="divbrowse-form-control pos" style="width:7rem;">
     </div>
 
-    <div style="float:left; margin: 0 0 0 10px;">
-        <label class="form-label" for="endpos">End: </label>
-        <input bind:value={endpos} on:keyup|preventDefault="{() => debouncedSetupSearchInInterval()}" type="number" id="endpos" class="divbrowse-form-control" style="width:7rem;">
+    <div style="float:left; margin: 4px 0 0 10px;">
+        <input bind:value={endpos} placeholder="end position" on:keyup|preventDefault="{() => debouncedSetupSearchInInterval()}" type="number" id="endpos" class="divbrowse-form-control pos" style="width:7rem;">
     </div>
     {/if}
 
     <div style="clear:left"></div>
 
+    <p>
+        {#if query.length > 0 && resultRowCount !== null}
+        {resultRowCount} genes were found that match your search query.
+        {/if} &nbsp;
+    </p>
 
-    {#if result !== false}
-    <div class="box" style="margin-top:15px; background: rgb(242,242,242);padding: 10px;">
-        <h3 style="font-weight:bold;margin-bottom:20px;font-size:1.1rem;padding:0;margin-top:0px;">Search result</h3>
-        <p>{resultRowCount} genes were found that match your search query.</p>
-
+    {#if result !== null}
+    <div class="box" style="margin-top:15px; background: rgb(242,242,242); border-radius: 8px; padding: 10px;">
+        <!--<h3 style="font-weight:bold;margin-bottom:20px;font-size:1.1rem;padding:0;margin-top:0px;">Search result</h3>-->
 
         <Datatable  settings={datatableSettings} data={result}>
             <thead>
@@ -209,7 +217,7 @@ const datatableSettings = {
                 <th data-key="end">End position</th>
                 <th data-key="primary_confidence_class">Primary confidence class</th>
                 {#if controller.metadata.gff3.count_exon_variants !== undefined && controller.metadata.gff3.count_exon_variants === true}
-                <th data-key="number_of_variants">Number of SNPs / Exon-SNPs</th>
+                <th data-key="number_of_variants">Number of variants / exon variants</th>
                 {/if}
                 <th></th>
             </thead>
@@ -241,6 +249,11 @@ const datatableSettings = {
 
 .centered {
     text-align: center;
+}
+
+input.pos {
+    padding: 0 8px;
+    height: 30px;
 }
 
 :global(section.dt-pagination) {

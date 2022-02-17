@@ -262,7 +262,8 @@ export default class SnpbrowserController {
             chrom: this.chromosome,
             startpos: params['startpos'],
             endpos: params['endpos'],
-            samples: samples
+            samples: samples,
+            umap_n_neighbors: params['umap_n_neighbors'],
         };
 
         if (params['variantFilterSettings'] !== undefined && typeof params['variantFilterSettings'] === 'object') {
@@ -283,9 +284,10 @@ export default class SnpbrowserController {
     }
 
 
-    async blast(query, callback) {
+    async blast(params, callback) {
         const payload = {
-            query: query
+            query: params.query,
+            blast_type: params.blast_type,
         };
 
         let url = this.config.apiBaseUrl+'/blast'
@@ -293,7 +295,7 @@ export default class SnpbrowserController {
             let blastResult = response.data.blast_hits;
             this.lastBlastResult = blastResult;
             this.blastResultHistory.push({
-                query: query,
+                query: params.query,
                 blast_hits: blastResult,
                 timestamp: new Date().toLocaleString()
             });

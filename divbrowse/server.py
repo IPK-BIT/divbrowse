@@ -16,7 +16,7 @@ import yaml
 from divbrowse import log
 from divbrowse.lib.annotation_data import AnnotationData
 from divbrowse.lib.genotype_data import (GenotypeData, calc_pca_for_slice_of_variant_calls,
-                               impute_with_mean)
+    calc_umap_for_slice_of_variant_calls, impute_with_mean)
 
 from divbrowse.lib.utils import ApiError
 from divbrowse.lib.utils import StrictEncoder
@@ -42,7 +42,10 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             exit(1)
 
 
+    log.info('Instanciate GenotypeData classes')
     gd = GenotypeData(config)
+
+    log.info('Instanciate AnnotationData classes')
     ad = AnnotationData(config, gd)
 
 
@@ -116,10 +119,14 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
     @app.route("/pca", methods = ['GET', 'POST', 'OPTIONS'])
     def __pca():
 
+        payload = request.get_json(silent=True)
+
         if request.method == 'POST':
-            input = process_request_vars(request.get_json(silent=True))
+            input = process_request_vars(payload)
         else:
             return 'ERROR'
+
+        umap_n_neighbors = int(payload['umap_n_neighbors'])
 
         _result = gd.get_slice_of_variant_calls(
             chrom = input['chrom'],
@@ -129,10 +136,18 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             variant_filter_settings = input['variant_filter_settings']
         )
 
-        pca_result = calc_pca_for_slice_of_variant_calls(_result.numbers_of_alternate_alleles, _result.samples_selected_mapped)
+        pca_result, pca_explained_variance = calc_pca_for_slice_of_variant_calls(_result.numbers_of_alternate_alleles, _result.samples_selected_mapped)
+        
+        umap_result = calc_umap_for_slice_of_variant_calls(
+            slice_of_variant_calls = _result.numbers_of_alternate_alleles, 
+            samples_selected = _result.samples_selected_mapped,
+            n_neighbors = umap_n_neighbors
+        )
 
         result = {
-            'pca_result': pca_result.tolist()
+            'pca_result': pca_result.tolist(),
+            'pca_explained_variance': pca_explained_variance.tolist(),
+            'umap_result': umap_result.tolist(),
         }
 
         return jsonify(result)
@@ -438,6 +453,91 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
 
 
+    @app.route("/gff3_export", methods = ['GET', 'POST', 'OPTIONS'])
+    def __gff3_export():
+
+        if request.method == 'POST':
+            print(request.form)
+            print(request.form.to_dict())
+            input = process_request_vars(request.form.to_dict())
+        else:
+            #raise ApiError('Method not allowed', status_code=405)
+            return ''
+
+        if input['chrom'] not in gd.list_chrom:
+            return jsonify({
+                'success': False, 
+                'status': 'error_missing_chromosome', 
+                'message': 'The provided chromosome number '+str(input['chrom'])+' is not included in the SNP matrix.'
+            })
+
+        #df_gff3_slice = self.genes[ (self.genes['seqid'] == 0) & (self.genes['start'] >= 0) & (self.genes['end'] <= 0) ]
+
+        curr_start = input['startpos']
+        curr_end = input['endpos']
+
+        genes_within_slice = ad.genes.loc[ ( ad.genes['start'] <= curr_start) & (ad.genes['end'] >= curr_end ) ]
+        genes_starting_in_slice = ad.genes.loc[ ( ad.genes['start'] >= curr_start) & (ad.genes['start'] <= curr_end ) ]
+        genes_ending_in_slice = ad.genes.loc[ ( ad.genes['end'] >= curr_start) & (ad.genes['end'] <= curr_end ) ]
+        genes_all_in_slice = pd.concat([genes_within_slice, genes_starting_in_slice, genes_ending_in_slice]).drop_duplicates().reset_index(drop=True)
+        genes_all_in_slice = genes_all_in_slice.loc[ (genes_all_in_slice['seqid'] == ad.chrom_gff3_map[input['chrom']]) ]
+
+        genes_all_in_slice = genes_all_in_slice.sort_values('start')
+
+        print(genes_all_in_slice)
+        
+        '''
+        key_confidence = 'primary_confidence_class'
+        if config['gff3']['key_confidence']:
+            key_confidence = str(config['gff3']['key_confidence'])
+
+        key_ontology = 'Ontology_term'
+        if config['gff3']['key_ontology']:
+            key_ontology = str(config['gff3']['key_ontology'])
+        '''
+
+
+        def generate():
+
+            for index, row in genes_all_in_slice.iterrows():
+
+                gff3_attributes = []
+                if row['ID'] != '.':
+                    gff3_attributes.append('ID='+str(row['ID']))
+
+                if row['Parent'] != '.':
+                    gff3_attributes.append('Parent='+str(row['Parent']))
+
+                if row['description'] != '.':
+                    gff3_attributes.append('description='+str(row['description']))
+
+                if row['Ontology_term'] != '.':
+                    gff3_attributes.append('Ontology_term='+str(row['Ontology_term']))
+
+                if row['primary_confidence_class'] != '.':
+                    gff3_attributes.append('primary_confidence_class='+str(row['primary_confidence_class']))
+
+                _score = str(row['score'])
+                _phase = str(row['phase'])
+
+                gff3_line = [
+                    str(row['seqid']),
+                    str(row['source']),
+                    str(row['type']),
+                    str(row['start']),
+                    str(row['end']),
+                    _score if _score != '-1' else '.',
+                    str(row['strand']),
+                    _phase if _phase != '-1' else '.',
+                    ';'.join(gff3_attributes)
+                ]
+
+                yield "\t".join(gff3_line)+"\n"
+
+        return Response(generate(), mimetype='text/csv', headers={"Content-Disposition":"attachment; filename=custom_export.gff3"})
+
+
+
 
 
     @app.route("/blast", methods = ['GET', 'POST', 'OPTIONS'])
@@ -453,11 +553,18 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
         json_request_vars = request.get_json(force=True, silent=True)
 
+        blast_types = {
+            'ncbi_blastn_wrapper_barley': 'megablast',
+            'ncbi_tblastn_wrapper_barley': 'tblastn-fast'
+        }
+
         blast_parameters = {
             'query': str(json_request_vars['query']),
             'database': str(config['blast']['blast_database']),
-            'type': config['blast']['blast_type'],
-            'galaxy_tool_id': config['blast']['galaxy_tool_id']
+            #'type': config['blast']['blast_type'],
+            'type': blast_types[str(json_request_vars['blast_type'])],
+            #'galaxy_tool_id': config['blast']['galaxy_tool_id']
+            'galaxy_tool_id': str(json_request_vars['blast_type'])
         }
 
         histories = gi.histories.get_histories()

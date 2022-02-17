@@ -6,77 +6,28 @@ let { controller, eventbus } = context.app();
 import getStores from '/utils/store';
 const { variantFilterSettings, filteredVariantsCoordinates } = getStores();
 
-import SelectSnpsDialogue from '/components/modals/SelectSnpsDialogue.svelte';
+import SelectVariantsComponent from '/components/modals/SelectVariantsComponent.svelte';
+
+import DataAnalysisModalContent from '/components/modals/DataAnalysisModalContent.svelte';
+const { open } = getContext('2nd-modal');
+
+let vcfExportHiddenForm;
+let apiUrlVcfExport = controller.config.apiBaseUrl+'/vcf_export';
+
+let gffExportHiddenForm;
+let apiUrlGffExport = controller.config.apiBaseUrl+'/gff3_export';
 
 let showPcaResultPlot = 'none';
 let selectedAccessions = [];
+let startpos, endpos, useVariantFilter;
 
-function drawPlot(params) {
-
-    let axesOpts = {
-        zeroline: false,
-        ticks: '',
-        showticklabels: true,
-        showline: true,
-        zeroline: false,
-        mirror: false,
-        showgrid: false
-    }
-
-    let layout = {
-        width: 500, // 800
-        height: 500, // 800
-        autosize: false,
-        title: '',
-        hovermode: 'closest',
-        showlegend: false,
-        margin: {
-            t: 25, r: 10, b: 20, l: 45
-        },
-        xaxis: {
-            ...axesOpts
-        },
-        yaxis: {
-            scaleanchor: "x",
-            ...axesOpts
-        },
-    };
-
-    let buttons = {
-        modeBarButtonsToRemove: ['sendDataToCloud', 'hoverCompareCartesian', 'hoverClosestCartesian', 'hoverClosestGl2d'],
-        displaylogo: false
-    }
-
-    let traces = [{
-        x: params.x,
-        y: params.y,
-        text: params.labels,
-        mode: 'markers',
-        type: 'scatter',
-        marker: { size: 2, color: '#000000' },
-    }];
-
-    Plotly.newPlot('plotDivModal', traces, layout, buttons);
-    let plotDiv = document.getElementById('plotDivModal');
-
-    plotDiv.on('plotly_selected', function(eventData) {
-        if (eventData !== undefined) {
-            eventData.points.forEach(function(pt) {
-                selectedAccessions = [...selectedAccessions, pt.text];
-            });
-            if (selectedAccessions.length > 0) {
-                if (controller.config.samplesSelectedCallback !== undefined && typeof controller.config.samplesSelectedCallback === "function") {
-                    controller.config.samplesSelectedCallback(selectedAccessions);
-                }
-            }
-        } else {
-            //handler(false);
-        }
-    });
-}
+let instanceSelectVariantComponent;
 
 
-function onCallToAction(startpos, endpos, useVariantFilter, callbackSuccess) {
+
+
+
+function openDataAnalysisModal(startpos, endpos, useVariantFilter, callbackSuccess) {
 
     let params = {
         startpos: startpos,
@@ -86,26 +37,60 @@ function onCallToAction(startpos, endpos, useVariantFilter, callbackSuccess) {
         params['variantFilterSettings'] = $variantFilterSettings;
     }
 
-    controller.pca(params, result => {
-        callbackSuccess();
+    open(DataAnalysisModalContent, {params: params}, {styleWindow: { width: '100%', height: '92vh' }}, {onClosed: () => { console.log('CLOSED') }});
+}
 
-        let pcaLabels;
 
-        if (controller.config.sampleDisplayNameTransformer !== undefined && typeof controller.config.sampleDisplayNameTransformer === "function") {
-            pcaLabels = result.pca_result.map(item => controller.config.sampleDisplayNameTransformer(item[0]));
-        } else {
-            pcaLabels = result.pca_result.map(item => item[0]);
+
+function callbackExportVcf(_startpos, _endpos, _useVariantFilter, callbackSuccess) {
+    startpos = _startpos;
+    endpos = _endpos;
+    useVariantFilter = _useVariantFilter;
+
+    let params = {
+        startpos: startpos,
+        endpos: endpos,
+    }
+    if (_useVariantFilter) {
+        params['variantFilterSettings'] = $variantFilterSettings;
+    }
+
+    instanceSelectVariantComponent.loadingAnimation.show();
+    controller.vcf_export_check(params, result => {
+        //callbackSuccess();
+        instanceSelectVariantComponent.loadingAnimation.hide();
+        if (result.success === true && result.status === 'export_possible') {
+            vcfExportHiddenForm.submit();
+        } else if (result.success === false && result.status === 'error_snp_window_too_big') {
+            instanceSelectVariantComponent.setErrorMsg(result.message);
         }
-
-        let pcaXvals = result.pca_result.map(item => item[1]);
-        let pcaYvals = result.pca_result.map(item => item[2]);
-        showPcaResultPlot = 'block';
-        drawPlot({x: pcaXvals, y: pcaYvals, labels: pcaLabels});
     });
 }
 
+
+function callbackExportGff(_startpos, _endpos, _useVariantFilter, callbackSuccess) {
+
+    startpos = _startpos;
+    endpos = _endpos;
+
+    /*let params = {
+        startpos: startpos,
+        endpos: endpos,
+    }*/
+
+    //controller.gff_export_check(params, result => {
+        //callbackSuccess();
+        //if (result.success === true && result.status === 'export_possible') {
+            //gffExportHiddenForm.submit();
+            setTimeout(() => gffExportHiddenForm.submit(), 500);
+        //}
+    //});
+}
+
+
+
 let settingsSelectSnpsDialogue = {
-    modeSelectLabel: 'Calculate PCA for:',
+    modeSelectLabel: 'Setup genomic region:',
     ctaBtnLabel: 'Perform calculation now'
 }
 
@@ -113,18 +98,73 @@ let settingsSelectSnpsDialogue = {
  
 
 <div>
-    <div class="divbrowse-modal-dialogue-headline">Principle Component Analysis</div>
+    <div class="divbrowse-modal-dialogue-headline">Data Analysis and Export</div>
 
-    <SelectSnpsDialogue onCallToAction={onCallToAction} settings={settingsSelectSnpsDialogue} />
+    <SelectVariantsComponent 
+        bind:this={instanceSelectVariantComponent} 
+        onCallToAction={openDataAnalysisModal} 
+        callbackExportVcf={callbackExportVcf} 
+        callbackExportGff={callbackExportGff} 
+        settings={settingsSelectSnpsDialogue} 
+    />
 
     {#if selectedAccessions.length > 0}
     <div>You have selected {selectedAccessions.length} samples.</div>
     {/if}
 
-    <div id="plotDivModal" style="display: {showPcaResultPlot}; height: 520px; margin-top:20px; padding: 5px; border: 1px solid black;"></div>
+    <div id="plotDivModal" style="display: {showPcaResultPlot}; width: 520px; height: 520px; margin-top:20px; padding: 5px; border: 1px solid black;"></div>
+
+
+    <form bind:this={vcfExportHiddenForm} ref="form-vcfexport-download" action="{apiUrlVcfExport}" method="post">
+        <input type="hidden" name="chrom" value="{controller.chromosome}" />
+        <input type="hidden" name="startpos" value="{startpos}" />
+        <input type="hidden" name="endpos" value="{endpos}" />
+        <input type="hidden" name="samples" value="{JSON.stringify(controller.config.samples)}" />
+        {#if useVariantFilter}
+        <input type="hidden" name="variant_filter_settings" value="{JSON.stringify($variantFilterSettings)}" />
+        {/if}
+    </form>
+
+
+    <form bind:this={gffExportHiddenForm} ref="form-gffexport-download" action="{apiUrlGffExport}" method="post">
+        <input type="hidden" name="chrom" value="{controller.chromosome}" />
+        <input type="hidden" name="startpos" value="{startpos}" />
+        <input type="hidden" name="endpos" value="{endpos}" />
+    </form>
+
 
 </div>
 
-<style>
+<style lang="less">
+
+a.dim-red-select-range {
+    color: rgb(150,150,150);
+
+    div {
+        display: inline-block;
+        width: 200px;
+        border: 1px solid rgb(200,200,200);
+        border-radius: 8px;
+        width: 200px;
+        padding: 10px;
+    }
+
+    &.active {
+        color: black;
+
+        div {
+            background: rgb(230,230,230);
+        }
+    }
+
+    &:hover {
+        color: black;
+
+        div {
+            /*border: 1px solid rgb(235,235,235);*/
+            background: rgb(230,230,230);
+        }
+    }
+}
 
 </style>

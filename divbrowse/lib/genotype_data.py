@@ -10,6 +10,7 @@ import pandas as pd
 import zarr
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import RobustScaler
+import umap
 
 from divbrowse import log
 from divbrowse.lib.utils import ApiError
@@ -65,11 +66,49 @@ def calc_pca_for_slice_of_variant_calls(slice_of_variant_calls, samples_selected
     scaler = RobustScaler()
     calls_imputed_scaled = np.nan_to_num(scaler.fit_transform(calls_imputed))
     start = timer()
-    pca_model = PCA(n_components=2, whiten=False, svd_solver='randomized', iterated_power=6).fit(calls_imputed_scaled)
-    pca_result = pca_model.transform(calls_imputed_scaled)
-    log.debug("==== PCA calculation time: %f", timer() - start)
-    pca_result_combined = np.concatenate((sample_ids, pca_result), axis=1)
-    return pca_result_combined
+
+    n_components = 10
+    if calls_imputed_scaled.shape[1] < n_components:
+        n_components = calls_imputed_scaled.shape[1]
+
+    try:
+        pca_model = PCA(n_components=n_components, whiten=False, svd_solver='randomized', iterated_power=6).fit(calls_imputed_scaled)
+        pca_result = pca_model.transform(calls_imputed_scaled)
+        log.debug("==== PCA calculation time: %f", timer() - start)
+        pca_result_combined = np.concatenate((sample_ids, pca_result), axis=1)
+        return pca_result_combined, pca_model.explained_variance_ratio_
+
+    except ValueError:
+        return False
+
+
+
+
+def calc_umap_for_slice_of_variant_calls(slice_of_variant_calls, samples_selected, n_neighbors=15):
+    """Calculate UMAP for a variant matrix array
+
+    Args:
+        slice_of_variant_calls (numpy.ndarray): Numpy array representing a variant matrix holding the number of alternate allele calls
+
+    Returns:
+        numpy.ndarray: PCA result aligned with the sample IDs in the first column
+    """
+
+    sample_ids = np.array(samples_selected).reshape((-1, 1)).copy()
+    calls_imputed = impute_with_mean(slice_of_variant_calls)
+
+    #start = timer()
+    #pca_model = PCA(n_components=2, whiten=False, svd_solver='randomized', iterated_power=6).fit(calls_imputed_scaled)
+    #pca_result = pca_model.transform(calls_imputed_scaled)
+    #log.debug("==== PCA calculation time: %f", timer() - start)
+    #pca_result_combined = np.concatenate((sample_ids, pca_result), axis=1)
+    #return pca_result_combined
+
+    start = timer()
+    umap_result = umap.UMAP(n_components = 2, n_neighbors=n_neighbors, metric='euclidean', random_state=42).fit_transform(calls_imputed) # , random_state=42, densmap=True  , min_dist=0.5   , dens_lambda=5
+    log.debug("==== UMAP calculation time: %f", timer() - start)
+    umap_result_combined = np.concatenate((sample_ids, umap_result), axis=1)
+    return umap_result_combined
 
 
 
@@ -78,6 +117,8 @@ class GenotypeData:
     """Class for managing all genotype data related data structures and methods"""
 
     def __init__(self, config):
+
+        log.debug("GenotypeData::__init__()")
 
         self.config = config
 
@@ -90,6 +131,7 @@ class GenotypeData:
         if not os.path.exists(path_zarr_variants):
             exit('ERROR: the configured path for the Zarr-archive of variants does not exist or is not accessible')
 
+        log.debug("GenotypeData::zarr.open_group()")
         self.callset = zarr.open_group(path_zarr_variants, mode='r')
         log.debug(self.callset.tree(expand=True))
 
@@ -419,7 +461,6 @@ class GenotypeData:
     def apply_variant_filter_settings(self, fs, numbers_of_alternate_alleles, _slice_variant_calls):
         variants_summary_stats = self.calc_variants_summary_stats(numbers_of_alternate_alleles)
 
-        #### QUAL #########################
         if 'QUAL' in self.available_variants_metadata:
             sliced_qual = self.variants_qual.get_basic_selection(_slice_variant_calls)
             variants_summary_stats['vcf_qual'] = sliced_qual.tolist()
