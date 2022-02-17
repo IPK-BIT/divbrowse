@@ -2,12 +2,12 @@
     export let disabled;
 
     import { getContext } from 'svelte';
-    import PcaModalContent from '/components/modals/PcaModalContent.svelte';
+    import DataAnalysisAndExportModalContent from '/components/modals/DataAnalysisAndExportModalContent.svelte';
  
     const { open } = getContext('simple-modal');
  
     const showModal = () => {
-        open(PcaModalContent, {}, {styleWindow: { width: '50%' /*, height: '92vh'*/ }});
+        open(DataAnalysisAndExportModalContent, {}, {styleWindow: { width: '50%' /*, height: '92vh'*/ }});
     };
 </script> 
  

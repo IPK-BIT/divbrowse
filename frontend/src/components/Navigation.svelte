@@ -1,5 +1,4 @@
 <script>
-export let config;
 export let settings;
 
 import { onMount, getContext, afterUpdate } from 'svelte';
@@ -14,7 +13,7 @@ import Modal from 'svelte-simple-modal';
 import SettingsModal from '/components/modals/SettingsModal.svelte';
 import SortSamplesModal from '/components/modals/SortSamplesModal.svelte';
 import VariantFilterModal from '/components/modals/VariantFilterModal.svelte';
-import PcaModal from '/components/modals/PcaModal.svelte';
+import DataAnalysisAndExportModal from '/components/modals/DataAnalysisAndExportModal.svelte';
 import BlastModal from '/components/modals/BlastModal.svelte';
 import VcfExportModal from '/components/modals/VcfExportModal.svelte';
 import GffExportModal from '/components/modals/GffExportModal.svelte';
@@ -181,14 +180,11 @@ eventbus.on('data:genes:loaded', _data => {
         </Modal>
         </div>
 
-        {#if config.allowPca !== false}
         <div style="float:left; margin-left:10px;">
         <Modal>
-            <PcaModal disabled={data !== false ? false : true} />
+            <DataAnalysisAndExportModal disabled={data !== false ? false : true} />
         </Modal>
         </div>
-        {/if}
-
 
         <div style="float:left; margin-left: 30px;">
             <Modal>
@@ -201,24 +197,6 @@ eventbus.on('data:genes:loaded', _data => {
             <SettingsModal />
         </Modal>
         </div>
-
-        <!--
-        {#if config.allowVcfExport !== false}
-        <div style="float:left; margin-left:20px; margin-top: 2px;">
-        <Modal>
-            <VcfExportModal disabled={data !== false ? false : true} />
-        </Modal>
-        </div>
-        {/if}
-
-
-        <div style="float:left; margin-left:20px; margin-top: 2px;">
-        <Modal>
-            <GffExportModal disabled={data !== false ? false : true} />
-        </Modal>
-        </div>
-        -->
-
 
         <div class="clearfix"></div>
         </Modal>

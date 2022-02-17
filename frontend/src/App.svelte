@@ -36,13 +36,6 @@ import Navigation from '/components/Navigation.svelte';
 import LoadingAnimation from '/components/utils/LoadingAnimation.svelte';
 import RendererGapless from './renderer/RendererGapless.svelte';
 
-import SortSamplesModal from './components/modals/SortSamplesModal.svelte';
-import VariantFilterModal from './components/modals/VariantFilterModal.svelte';
-import PcaModal from './components/modals/PcaModal.svelte';
-import BlastModal from './components/modals/BlastModal.svelte';
-import VcfExportModal from './components/modals/VcfExportModal.svelte';
-import DataSummaryModal from './components/modals/DataSummaryModal.svelte';
-import GeneSearchModal from './components/modals/GeneSearchModal.svelte';
 import Modal from 'svelte-simple-modal';
 
 
