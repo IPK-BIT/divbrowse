@@ -200,7 +200,7 @@ const openGeneDetailsModal = (featureId) => {
                 <!--<path class="curve" d="M1,{yOffset.curveTop} C1,{yOffset.controlPoint} {xbot},{yOffset.controlPoint} {xbot},{yOffset.curveBottom}" />-->
 
                 {#each data.variants_coordinates as position, col}
-                <path class="curve" d="M{(( ((position - data.coordinate_first) / maxmin) * (widthAllVariants-5) ) + 3)},{yOffset.curveTop} C{(( ((position - data.coordinate_first) / maxmin) * (widthAllVariants-5) ) + 3)},{yOffset.controlPoint} {((col * $variantWidth) + 10)},{yOffset.controlPoint} {((col * $variantWidth) + 10)},{yOffset.curveBottom}" />
+                <path id="variant-bezier-{position}" class="curve" d="M{(( ((position - data.coordinate_first) / maxmin) * (widthAllVariants-5) ) + 3)},{yOffset.curveTop} C{(( ((position - data.coordinate_first) / maxmin) * (widthAllVariants-5) ) + 3)},{yOffset.controlPoint} {((col * $variantWidth) + 10)},{yOffset.controlPoint} {((col * $variantWidth) + 10)},{yOffset.curveBottom}" />
                 {/each}
 
 
@@ -227,6 +227,8 @@ const openGeneDetailsModal = (featureId) => {
     fill: #0000FF;
     stroke: #0000FF;
 }
+
+
 
 div.track.genomic-region {
     height: 100px;
@@ -262,6 +264,10 @@ path.curve {
 
 path.curve.fill {
 	fill: rgb(215,215,215);
+}
+
+:global(.highlight-variant-bezier) {
+    stroke: #0000FF !important;
 }
 
 </style>

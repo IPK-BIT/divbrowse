@@ -120,6 +120,9 @@ onMount(async () => {
             let position = event.target.dataset.position;
             let elem = document.querySelector("#snp-"+position);
             elem.classList.add('highlight-snp');
+
+            elem = document.querySelector("#variant-bezier-"+position);
+            elem.classList.add('highlight-variant-bezier');
         }
     }, true);
 
@@ -128,6 +131,9 @@ onMount(async () => {
             let position = event.target.dataset.position;
             let elem = document.querySelector("#snp-"+position);
             elem.classList.remove('highlight-snp');
+
+            elem = document.querySelector("#variant-bezier-"+position);
+            elem.classList.remove('highlight-variant-bezier');
         }
     }, true);
 
