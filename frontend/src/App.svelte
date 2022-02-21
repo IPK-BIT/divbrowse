@@ -12,10 +12,10 @@ import DataFrame from "dataframe-js";
 //import Plotly from 'plotly.js-dist';
 
 import EventEmitter from '/utils/eventbus';
-import SnpbrowserController from '/lib/SnpbrowserController';
+import Controller from '/lib/Controller';
 
 const eventbus = new EventEmitter();
-const controller = new SnpbrowserController(eventbus);
+const controller = new Controller(eventbus);
 
 const app = {
     appId: appId,
@@ -54,7 +54,7 @@ export function setGroups(_groups) {
     groups.set(_groups);
 }
 
-let snpbrowserMatrixContainer;
+let tracksRendererContainer;
 
 
 
@@ -62,7 +62,7 @@ onMount(async () => {
     console.log('Svelte App mounted!');
 
     controller.setup({
-        container: snpbrowserMatrixContainer,
+        tracksRendererContainer: tracksRendererContainer,
         config: config
     });
 
@@ -99,13 +99,13 @@ onMount(async () => {
                 }
             }
         }));
-        containerResizeObserver.observe(snpbrowserMatrixContainer);
+        containerResizeObserver.observe(tracksRendererContainer);
     }
     setTimeout( () => initResizeObserver(), 1000);
 
     
    let script = document.createElement('script');
-   script.src = "https://cdn.plot.ly/plotly-latest.min.js"
+   script.src = "https://cdn.plot.ly/plotly-latest.min.js" // TODO: manage this via NPM dependency
    document.head.append(script);
 
    /*script.onload = function() {
@@ -172,7 +172,7 @@ function handleWindowResize(event) {
 
         <Navigation config={config} bind:settings={$settings} />
 
-        <div id="snpbrowser-matrix-container" bind:this={snpbrowserMatrixContainer} ref="matrix-pane-container" class:colorblind={$settings.statusColorblindMode} class:nucleotides={$settings.variantDisplayMode === 'nucleotides'}>
+        <div id="tracks-renderer-container" bind:this={tracksRendererContainer} ref="matrix-pane-container" class:colorblind={$settings.statusColorblindMode} class:nucleotides={$settings.variantDisplayMode === 'nucleotides'}>
             {#if errorTooManySamples === true}
             <div><p style="padding:30px;">The size of your collection exceeds the maximum of {maxSamplesDisplayable} samples to be displayed simultaneously.
             Please decrease the size of your collection below the value of {maxSamplesDisplayable} samples.</p></div>
@@ -229,7 +229,7 @@ h1 {
     background: rgb(220,220,220);
 }
 
-#snpbrowser-matrix-container {
+#tracks-renderer-container {
     /*border: 1px dashed rgb(150,150,150);*/
     border: 1px solid rgb(70, 70, 70);
     background: rgb(255,255,255);
@@ -237,25 +237,6 @@ h1 {
 }
 
 
-:global(.snpbrowser-nav label) {
-    font-size: 14px;
-    line-height: 0.8 !important;
-}
-
-:global(.snpbrowser-nav input) {
-    font-size: 14px;
-    line-height: 0.8 !important;
-}
-
-:global(.snpbrowser-nav select) {
-    font-size: 14px;
-    line-height: 0.8 !important;
-}
-
-:global(.snpbrowser-nav button) {
-    font-size: 13px;
-    line-height: 0.8 !important;
-}
 
 
 :global(.divbrowse-modal-dialogue-headline) {
@@ -524,7 +505,7 @@ h1 {
 }
 
 :global {
-    #snpbrowser-matrix-container.colorblind span.reference {
+    #tracks-renderer-container.colorblind span.reference {
         .ref-mixin.backgrounds.colorblind();
     }
 }
@@ -625,7 +606,7 @@ h1 {
 }
 
 :global {
-    #snpbrowser-matrix-container.nucleotides {
+    #tracks-renderer-container.nucleotides {
         span.snp {
             &.snp--1 {
                 background-color: white;
@@ -650,7 +631,7 @@ h1 {
 }
 
 :global {
-    #snpbrowser-matrix-container.colorblind.nucleotides {
+    #tracks-renderer-container.colorblind.nucleotides {
         span.snp {
             &.snp--1 {
                 background-color: white;

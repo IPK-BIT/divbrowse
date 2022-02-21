@@ -97,7 +97,7 @@ eventbus.on('data:genes:loaded', _data => {
 
 
 
-<nav class="snpbrowser-nav clearfix" style="position: relative;">
+<nav class="navigation clearfix" style="position: relative;">
 
     {#if showLoadingAnimation}
     <div style="position: absolute; top: 0px; right: 0px;">
@@ -105,7 +105,7 @@ eventbus.on('data:genes:loaded', _data => {
     </div>
     {/if}
 
-    <div class="snpbrowser-nav-row clearfix">
+    <div class="navigation-row clearfix">
 
         <div style="">
             <label class="form-label" for="chromosome-selector">Chromosome: </label>
@@ -149,7 +149,7 @@ eventbus.on('data:genes:loaded', _data => {
 
     </div>
 
-    <div class="snpbrowser-nav-row clearfix" style="margin-top:12px;">
+    <div class="navigation-row clearfix" style="margin-top:12px;">
         <Modal key="2nd-modal" styleBg={{'z-index': '2000', 'top': '0px', 'left': '0px'}} closeOnOuterClick={false}>
         
         <!--<div style="float:left; width: 1px; height: 20px; border-left:2px solid rgb(150,150,150); margin-left: 20px; margin-right:0px; margin-top:6px;"></div>-->
@@ -209,19 +209,42 @@ eventbus.on('data:genes:loaded', _data => {
   box-sizing: border-box;
 }
 
-.snpbrowser-nav {
+
+.navigation label {
+    font-size: 14px;
+    line-height: 0.8 !important;
+}
+
+.navigation input {
+    font-size: 14px;
+    line-height: 0.8 !important;
+}
+
+.navigation select {
+    font-size: 14px;
+    line-height: 0.8 !important;
+}
+
+.navigation button {
+    font-size: 13px;
+    line-height: 0.8 !important;
+}
+
+
+
+.navigation {
     margin-bottom: 10px;
     /*background:rgb(190,190,190);
     padding: 10px 15px;
     border: 1px solid rgb(120, 120, 120);*/
 }
 
-.snpbrowser-nav-row {
+.navigation-row {
     width: 100%;
     border: 0px solid black;
 }
 
-.snpbrowser-nav-row > div {
+.navigation-row > div {
     float: left;
     border: 0px solid black;
 }

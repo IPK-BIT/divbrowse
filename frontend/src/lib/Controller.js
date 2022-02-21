@@ -1,7 +1,7 @@
 import axios from 'axios';
 import DataFrame from 'dataframe-js';
 
-export default class SnpbrowserController {
+export default class Controller {
 
     constructor(eventbus) {
         this.eventbus = eventbus;
@@ -21,7 +21,7 @@ export default class SnpbrowserController {
     }
 
     setup(setupObj) {
-        this.container = setupObj.container;
+        this.tracksRendererContainer = setupObj.tracksRendererContainer;
         this.config = setupObj.config;
         this.config.samplesMetadata = false;
 
@@ -139,7 +139,7 @@ export default class SnpbrowserController {
 
 
     _calculateSnpCountInVisibleArea() {
-        let width = this.container.getBoundingClientRect().width - 2;
+        let width = this.tracksRendererContainer.getBoundingClientRect().width - 2;
         return Math.floor( (width - 200) / this.snpWidth );
     }
 
