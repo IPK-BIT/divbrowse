@@ -1,13 +1,11 @@
 <script>
-export let data;
-export let statusShowMinimap;
 
 import { onMount, getContext, afterUpdate } from 'svelte';
 const context = getContext('app');
 let { appId, eventbus, controller } = context.app();
 
 import getStores from '/utils/store';
-const { groups, sortSettings, variantFilterSettings, filteredVariantsCoordinates } = getStores();
+const { settings, groups, sortSettings, variantFilterSettings, filteredVariantsCoordinates } = getStores();
 
 import DataFrame from 'dataframe-js';
 import tippy from "sveltejs-tippy";
@@ -304,6 +302,11 @@ eventbus.on('minimap:click', payload => {
 });
 
 
+let data = false;
+eventbus.on('data:display:changed', _data => {
+    data = _data;
+});
+
 </script>
 
 
@@ -330,7 +333,7 @@ eventbus.on('minimap:click', payload => {
 
         <div id="sample-tracks-container" class={appId} bind:this={sampleTracksContainer}>
 
-            {#if statusShowMinimap}
+            {#if $settings.statusShowMinimap}
             <SampleVariantsMinimap data={data} variants={variants} />
             {/if}
 

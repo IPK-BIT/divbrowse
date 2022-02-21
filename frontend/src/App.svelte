@@ -8,7 +8,6 @@ export let config;
 export let appId;
 
 import { onMount, setContext, getContext } from 'svelte';
-import jquery from 'jquery';
 import DataFrame from "dataframe-js";
 //import Plotly from 'plotly.js-dist';
 
@@ -57,26 +56,15 @@ export function setGroups(_groups) {
 
 let snpbrowserMatrixContainer;
 
-/*let settings = {
-    statusShowMinimap: false,
-    statusColorblindMode: false,
-    variantDisplayMode: 'reference_mismatch'
-};*/
+
 
 onMount(async () => {
     console.log('Svelte App mounted!');
-    let availableWidth = jquery(snpbrowserMatrixContainer).width(); // jquery('#snpbrowser-matrix-container').width();
 
     controller.setup({
-        container: jquery(snpbrowserMatrixContainer), // jquery('#snpbrowser-matrix-container')
+        container: snpbrowserMatrixContainer,
         config: config
     });
-
-    /*let elt = document.body.querySelector("#snpbrowser-matrix-container");
-    let rect = elt.getBoundingClientRect();
-    //console.log(elt);
-    //console.log(rect);
-    //console.log(elt.clientWidth);*/
 
     let _debounce = function(ms, fn) {
         let timer;
@@ -124,11 +112,29 @@ onMount(async () => {
        //drawPlot();
    };*/
 
+
+
+    document.body.addEventListener('mouseenter', function(event) {
+        if (event.target.matches("div#"+appId+" .variant-hover")) {
+            //console.log(event.target.dataset.position);
+            let position = event.target.dataset.position;
+            let elem = document.querySelector("#snp-"+position);
+            elem.classList.add('highlight-snp');
+        }
+    }, true);
+
+    document.body.addEventListener('mouseleave', function(event) {
+        if (event.target.matches("div#"+appId+" .variant-hover")) {
+            let position = event.target.dataset.position;
+            let elem = document.querySelector("#snp-"+position);
+            elem.classList.remove('highlight-snp');
+        }
+    }, true);
+
 });
 
-let data = false;
-let variants = false;
 
+let data = false;
 eventbus.on('data:display:changed', _data => {
     data = _data;
 });
@@ -139,21 +145,6 @@ eventbus.on('loading:animation', msg => {
     showLoadingAnimation = msg.status;
 });
 
-
-jquery(document).on({
-    mouseenter: function (event) {
-        let elem = jquery(this);
-        let position = elem.data('position');
-        jquery("div#"+appId+" span.positions[data-position="+position+"]").addClass('highlight');
-        jquery("#snp-"+position).addClass('highlight-snp');
-    },
-    mouseleave: function () {
-        let elem = jquery(this);
-        let position = elem.data('position');
-        jquery("div#"+appId+" span.positions[data-position="+position+"]").removeClass('highlight');
-        jquery("#snp-"+position).removeClass('highlight-snp');
-    }
-}, "div#"+appId+" span.snp,div#"+appId+" span.snpeff-indicator,div#"+appId+" span.maf-indicator");
 
 
 let timer;
@@ -183,7 +174,7 @@ function handleWindowResize(event) {
             <div><p style="padding:30px;">Error: {data.error}</p></div>
             {:else}
             <Modal>
-                <RendererGapless data={data} statusShowMinimap={$settings.statusShowMinimap} />
+                <RendererGapless />
             </Modal>
             {/if}
         </div>

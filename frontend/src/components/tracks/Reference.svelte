@@ -55,7 +55,7 @@ $: {
 
 <div class="track reference"><div class="label">Reference allele</div>
     {#each reference as nucleotide, i}
-    <span class="snp reference ref-{nucleotide}" data-tippy-content="Position: {data.variants_coordinates[i]}" data-position="{data.variants_coordinates[i]}" style="width: {$variantWidth}px; {isFiltered(data.variants_coordinates[i])}"></span>
+    <span class="variant-hover snp reference ref-{nucleotide}" data-tippy-content="Position: {data.variants_coordinates[i]}" data-position="{data.variants_coordinates[i]}" style="width: {$variantWidth}px; {isFiltered(data.variants_coordinates[i])}"></span>
     {/each}
 </div>
 

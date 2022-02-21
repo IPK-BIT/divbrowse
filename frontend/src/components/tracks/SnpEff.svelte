@@ -80,7 +80,7 @@ let viewBox = "0 0 24 24";
 <div class="track snpeff" style="height: 23px;"><div class="label">SnpEff annotations</div>
     {#if data.snpeff_variants !== undefined}
     {#each data.variants_coordinates as position}
-    <span on:click|preventDefault={showModal(position)} class="snpeff-indicator-test" data-tippy-content="SnpEff annotation" data-position="{position}" style="width: {$variantWidth}px;">
+    <span on:click|preventDefault={showModal(position)} class="variant-hover snpeff-indicator-test" data-tippy-content="SnpEff annotation" data-position="{position}" style="width: {$variantWidth}px;">
     <svg width="{width}" height="{height}" viewBox="{viewBox}">
     <path fill="{iconColor(position)}" d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
     </svg>

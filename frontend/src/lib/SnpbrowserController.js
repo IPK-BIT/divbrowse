@@ -20,10 +20,6 @@ export default class SnpbrowserController {
         this.blastResultHistory = [];
     }
 
-    setupContainerElement(container) {
-
-    }
-
     setup(setupObj) {
         this.container = setupObj.container;
         this.config = setupObj.config;
@@ -143,7 +139,8 @@ export default class SnpbrowserController {
 
 
     _calculateSnpCountInVisibleArea() {
-        return Math.floor( (this.container.width() - 200) / this.snpWidth );
+        let width = this.container.getBoundingClientRect().width - 2;
+        return Math.floor( (width - 200) / this.snpWidth );
     }
 
     getCurrentWidthOfVariants() {

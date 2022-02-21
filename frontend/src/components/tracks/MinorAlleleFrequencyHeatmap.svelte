@@ -40,7 +40,7 @@ $: {
 
 <div class="track mafvis" style="height: 23px;"><div class="label">MAF indicator</div>
     {#each mafs as maf, i}
-    <span class="maf-indicator" data-tippy-content="MAF = {(maf).toFixed(3)}" data-position="{data.variants_coordinates[i]}" style="background-color: rgba(220,0,0, { scale(maf) }); width: {$variantWidth}px;">&nbsp;</span>
+    <span class="variant-hover maf-indicator" data-tippy-content="MAF = {(maf).toFixed(3)}" data-position="{data.variants_coordinates[i]}" style="background-color: rgba(220,0,0, { scale(maf) }); width: {$variantWidth}px;">&nbsp;</span>
     {/each}
 </div>
 
