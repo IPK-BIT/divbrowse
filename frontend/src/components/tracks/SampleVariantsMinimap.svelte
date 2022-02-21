@@ -1,8 +1,6 @@
 <script>
 export let data;
-export let variants;
-
-console.log(variants);
+export let samples;
 
 import { onMount, getContext } from 'svelte';
 
@@ -16,7 +14,7 @@ let widthAllVariants;
 let framesPerSecond = 10;
 let timeoutHandle;
 let frame;
-let canvasHeight = variants.length;
+let canvasHeight = samples.length;
 
 
 const ploidy = controller.metadata.ploidy;
@@ -37,10 +35,10 @@ function isFiltered(pos, gt) {
 
 
 
-function drawVariants(variants) {
+function drawSampleVariants(samples) {
 
     if (canvas === undefined) {
-        console.log('drawVariants() EARLY EXIT no canvas available');
+        console.log('drawSampleVariants() EARLY EXIT no canvas available');
         return false;
     }
 
@@ -57,7 +55,7 @@ function drawVariants(variants) {
             frame = requestAnimationFrame(loop);
 
             let row = 0;
-            for (let sample of variants) {
+            for (let sample of samples) {
                 let sampleId = sample[0];
                 let col = 0;
                 let xPos = 0;
@@ -106,16 +104,16 @@ function drawVariants(variants) {
 }
 
 
-let _data, _variants;
+let _data, _samples;
 $: {
     _data = data;
-    _variants = variants;
+    _samples = samples;
     
     /*if (canvasHeight > 400) {
         canvasHeight = 400;
     }*/
     widthAllVariants = controller.getCurrentWidthOfVariants();
-    drawVariants(_variants);
+    drawSampleVariants(_samples);
 }
 
 function getMousePos(canvas, evt) {
@@ -127,7 +125,7 @@ function getMousePos(canvas, evt) {
 }
 
 onMount(() => {
-    drawVariants(_variants);
+    drawSampleVariants(_samples);
 
     canvas.addEventListener('click', function(evt) { // mousemove
         let mousePos = getMousePos(canvas, evt);

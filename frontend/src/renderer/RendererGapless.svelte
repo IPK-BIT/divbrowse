@@ -46,7 +46,7 @@ function sortSamples(params) {
     let groupColors = ['#F9ACAA', '#FCD9B6', '#FFF9C2', '#A2F5BF', '#A0F0ED', '#BCDEFA', '#B2B7FF', 
         '#FFBBCA', '#EF5753', '#FAAD63', '#FFF382', '#51D88A', '#64D5CA', '#6CB2EB', '#7886D7', '#FA7EA8'];
 
-    let allIds = Object.keys(params.variants);
+    let allIds = params.sampleIds;
     let allIdsOut = allIds.slice();
     let sorted = [];
     let allIdsInGroup = [];
@@ -71,22 +71,19 @@ function sortSamples(params) {
 
             // extract only the sampleIDs
             allIdsOut = pairsIdDisplayName.map(item => item[0]);
-            
-            if (params.sortSettings.sortorder === 'DESC') {
-                allIdsOut.reverse();
-            }
         
         } else {
             // only sample IDs provided => simply sort by the IDs
             if (params.sortSettings.sortorder !== undefined) {
                 allIdsUnsorted.sort( (a, b) => a.localeCompare(b) );
                 allIdsOut = allIdsUnsorted.slice();
-
-                if (params.sortSettings.sortorder === 'DESC') {
-                    allIdsOut.reverse();
-                }
             }
         }
+
+        if (params.sortSettings.sortorder === 'DESC') {
+            allIdsOut.reverse();
+        }
+        
     }
 
     if (params.sortSettings.sortmode === 'genetic_distance' && params.sortSettings.sortorder !== undefined) {
@@ -117,7 +114,6 @@ function sortSamples(params) {
     for (let id of allIdsOut) {
         let sampleData = {};
 
-        let _variants = (params.variants[id] !== undefined) ? params.variants[id] : [];
         let color;
         let groupColorMap = {};
 
@@ -128,13 +124,11 @@ function sortSamples(params) {
             sampleData = {
                 status: 'group-root',
                 color: groupColorMap[id],
-                variants: []
             }
         } else {
             sampleData = {
                 status: 'single',
                 color: '#FFFFFF',
-                //variants: _variants
             }
 
             if (controller.config.samplesMetadata !== undefined) {
@@ -153,7 +147,6 @@ function sortSamples(params) {
             let i = 1;
 
             for (let idNode of groupMembers) {
-                _variants = (params.variants[idNode] !== undefined) ? params.variants[idNode] : [];
 
                 let isLastNode = false;
                 if (i == groupSize) {
@@ -163,7 +156,6 @@ function sortSamples(params) {
                 sampleData = {
                     status: 'group-node',
                     color: groupColorMap[id],
-                    //variants: _variants,
                     isLastNode: isLastNode
                 }
                 sorted.push([idNode, sampleData]);
@@ -222,7 +214,7 @@ function handleVariantFilterSettings(variantFilterSettings) {
 const debouncedHandleVariantFilterSettings = debounce(handleVariantFilterSettings, 500);
 $: debouncedHandleVariantFilterSettings($variantFilterSettings);
 
-let variants;
+let samples;
 
 $: {
     if (data !== false && data.error === undefined) {
@@ -230,12 +222,14 @@ $: {
         // Apply/add variant filter data
         data.filtered_variants_coordinates = getFilteredVariants(setupVariantFilterDataframe(data));
 
-        variants = sortSamples({
-            variants: data.variants,
+        samples = sortSamples({
+            sampleIds: Object.keys(data.variants),
             distances: data.hamming_distances_to_reference,
             groups: $groups,
             sortSettings: $sortSettings
         });
+
+        console.log(samples);
 
         data.ref_and_alt = data.alternates.map((variant, idx) => {
             let tmp = variant.slice();
@@ -284,22 +278,19 @@ let tippyInstances;
 let tippyInstancesInitialized = false;
 
 onMount(async () => {
-    //if (sampleTracksContainer !== undefined) {
-        //sampleTracksContainerClassname = sampleTracksContainer.getAttribute('class');
-        if (tippyInstancesInitialized === false) {
-            tippyInstances = delegate('body', tippyProps);
-            tippyInstancesInitialized = true;
-        }
-    //}
-
+    if (tippyInstancesInitialized === false) {
+        tippyInstances = delegate('body', tippyProps);
+        tippyInstancesInitialized = true;
+    }
 });
 
-let viewport;
 
+let viewport;
 eventbus.on('minimap:click', payload => {
     console.log('EVENT: minimap:click');
     viewport.scrollTo(0, payload.y * 23);
 });
+
 
 
 let data = false;
@@ -334,10 +325,11 @@ eventbus.on('data:display:changed', _data => {
         <div id="sample-tracks-container" class={appId} bind:this={sampleTracksContainer}>
 
             {#if $settings.statusShowMinimap}
-            <SampleVariantsMinimap data={data} variants={variants} />
+            <SampleVariantsMinimap data={data} samples={samples} />
             {/if}
 
-            <VirtualList bind:viewport={viewport} itemHeight={20} items={variants} bind:start bind:end let:item>
+            <!-- TODO: make itemHeight configureable or dynamically -->
+            <VirtualList bind:viewport={viewport} itemHeight={20} items={samples} bind:start bind:end let:item>
                 <SampleVariants data={data} item={item} sampleId={item[0]} />
             </VirtualList>
         </div>

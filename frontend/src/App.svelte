@@ -1,14 +1,8 @@
-<!--
-<svelte:head>
-  <script src="https://cdn.plot.ly/plotly-latest.min.js" type="text/javascript"></script>
-</svelte:head>
--->
 <script>
 export let config;
 export let appId;
 
 import { onMount, setContext, getContext } from 'svelte';
-import DataFrame from "dataframe-js";
 //import Plotly from 'plotly.js-dist';
 
 import EventEmitter from '/utils/eventbus';

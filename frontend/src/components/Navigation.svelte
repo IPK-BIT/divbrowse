@@ -28,10 +28,6 @@ let chromosomes = [];
 let statusBlastButton = false;
 
 
-onMount(async () => {
-    console.log('Navigation mounted!');
-})
-
 eventbus.on('metadata:loaded', metadata => {
     chromosomes = metadata.chromosomes;
     statusBlastButton = metadata.features.blast;
