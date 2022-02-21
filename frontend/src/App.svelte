@@ -164,7 +164,7 @@ function handleWindowResize(event) {
 
     <div id="{appId}" class="divbrowse-container">
 
-        <Navigation config={config} bind:settings={$settings} />
+        <Navigation />
 
         <div id="tracks-renderer-container" bind:this={tracksRendererContainer} ref="matrix-pane-container" class:colorblind={$settings.statusColorblindMode} class:nucleotides={$settings.variantDisplayMode === 'nucleotides'}>
             {#if errorTooManySamples === true}

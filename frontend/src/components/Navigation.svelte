@@ -1,12 +1,11 @@
 <script>
-export let settings;
 
 import { onMount, getContext, afterUpdate } from 'svelte';
 const context = getContext('app');
 let { appId, eventbus, controller } = context.app();
 
 import getStores from '/utils/store';
-const { variantWidth, groups } = getStores();
+const { settings, variantWidth, groups } = getStores();
 
 import Modal from 'svelte-simple-modal';
 
@@ -138,7 +137,7 @@ eventbus.on('data:genes:loaded', _data => {
 
         <div style="margin-left:30px;margin-top:5px;">
             <label class="form-label" for="minimap-mode" style="vertical-align: middle;">Show compressed view: </label>
-            <input style="vertical-align: middle;" id="minimap-mode" type=checkbox bind:checked={settings.statusShowMinimap}>
+            <input style="vertical-align: middle;" id="minimap-mode" type=checkbox bind:checked={$settings.statusShowMinimap}>
         </div>
 
         <div class="clearfix"></div>
