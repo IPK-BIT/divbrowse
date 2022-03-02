@@ -7,7 +7,10 @@ import { onMount, getContext } from 'svelte';
 const context = getContext('app');
 let { eventbus, controller } = context.app();
 
-import { numberOfAltAllelesFactory } from '/utils/helpers';
+import getStores from '/utils/store';
+const { sortSettings, variantFilterSettings, filteredVariantsCoordinates } = getStores();
+
+import { debounce, numberOfAltAllelesFactory } from '/utils/helpers';
 
 let canvas;
 let widthAllVariants;
@@ -15,6 +18,9 @@ let framesPerSecond = 10;
 let timeoutHandle;
 let frame;
 let canvasHeight = samples.length;
+let canvasScrollTop = 0;
+
+let ctx = false;
 
 
 const ploidy = controller.metadata.ploidy;
@@ -35,6 +41,8 @@ function isFiltered(pos, gt) {
 
 
 
+
+
 function drawSampleVariants(samples) {
 
     if (canvas === undefined) {
@@ -42,78 +50,95 @@ function drawSampleVariants(samples) {
         return false;
     }
 
-    let ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, widthAllVariants, canvasHeight);
+    //console.info('drawSampleVariants() CALLED');
 
-    clearTimeout(timeoutHandle);
-    cancelAnimationFrame(frame);
+    //ctx.clearRect(0, 0, widthAllVariants, canvasHeight);
 
-    let frameCounter = 0;
+    ////clearTimeout(timeoutHandle);
+    //cancelAnimationFrame(frame);
 
-    (function loop() {
-    	
-            frame = requestAnimationFrame(loop);
+    //let frameCounter = 0;
 
-            let row = 0;
-            for (let sample of samples) {
-                let sampleId = sample[0];
-                let col = 0;
-                let xPos = 0;
+    samples = samples.slice(canvasScrollTop, canvasScrollTop + 500);
 
-                for (let col = 0; col < data.variants_coordinates.length; col++) {
-                    xPos = col * 20;
+    let _sampleIds = samples.map(elem => elem[0]);
+    controller.DataLoader.lazyLoadVariantCalls(_sampleIds, () => { return false; });
 
-                    let numAltAlleles = numberOfAlternateAlleles(data.calls[sampleId][col])
+    //console.log(canvasScrollTop);
 
-                    if (numAltAlleles == -1) {
-                        ctx.fillStyle = "rgb(255,255,255)";
-                    }
+    //(function loop() {
 
-                    if (numAltAlleles == 0) {
-                        ctx.fillStyle = "rgb(219, 240, 216)";
-                        //ctx.fillStyle = "rgb(255,255,255)";
-                    }
+        //let row = 0;
+        let row = canvasScrollTop;
+        //console.warn(row);
 
-                    if (numAltAlleles == 1) {
-                        ctx.fillStyle = "rgb(255, 136, 71)";
-                    }
+        for (let sample of samples) {
+            let sampleId = sample[0];
+            let col = 0;
+            let xPos = 0;
 
-                    if (numAltAlleles == 2) {
-                        //ctx.fillStyle = "rgb(153, 191, 222)";
-                        ctx.fillStyle = "rgb(133, 171, 222)";
-                    }
+            for (let col = 0; col < data.variants_coordinates.length; col++) {
+                xPos = col * 20;
 
-                    if (isFiltered(data.variants_coordinates[col], data.calls[sampleId][col])) {
-                        ctx.fillStyle = "rgb(255,255,255)";
-                    }
-
-                    ctx.fillRect(xPos, row, 20, 1);
+                //console.log(data.calls.get(sampleId));
+                if (data.calls.get(sampleId) === null) {
+                    continue;
                 }
-                row += 1;
-            }
-            //ctx.fillStyle = "rgb(0, 0, 0)";
-            //ctx.fillRect(20, 20, 100, 50);
 
-            frameCounter += 1;
-            if (frameCounter > 60) {
-                cancelAnimationFrame(frame);
-            }
+                let numAltAlleles = numberOfAlternateAlleles(data.calls.get(sampleId)[col])
 
-    }());
+                if (numAltAlleles == -1) {
+                    ctx.fillStyle = "rgb(255,255,255)";
+                }
+
+                if (numAltAlleles == 0) {
+                    ctx.fillStyle = "rgb(219, 240, 216)";
+                    //ctx.fillStyle = "rgb(255,255,255)";
+                }
+
+                if (numAltAlleles == 1) {
+                    ctx.fillStyle = "rgb(255, 136, 71)";
+                }
+
+                if (numAltAlleles == 2) {
+                    //ctx.fillStyle = "rgb(153, 191, 222)";
+                    ctx.fillStyle = "rgb(133, 171, 222)";
+                }
+
+                if (isFiltered(data.variants_coordinates[col], data.calls.get(sampleId)[col])) {
+                    ctx.fillStyle = "rgb(255,255,255)";
+                }
+
+                ctx.fillRect(xPos, row, 20, 1);
+            }
+            row += 1;
+        }
+
+        //frame = requestAnimationFrame(loop);
+
+        //frameCounter += 1;
+        //if (frameCounter > 60) {
+        //    cancelAnimationFrame(frame);
+        //}
+
+    //}());
 
 }
 
 
-let _data, _samples;
+
+sortSettings.subscribe(value => {
+    if (ctx !== false) {
+        ctx.clearRect(0, 0, widthAllVariants, canvasHeight);
+    }
+});
+
+
 $: {
-    _data = data;
-    _samples = samples;
-    
-    /*if (canvasHeight > 400) {
-        canvasHeight = 400;
-    }*/
+    samples;
+
     widthAllVariants = controller.getCurrentWidthOfVariants();
-    drawSampleVariants(_samples);
+    drawSampleVariants(samples);
 }
 
 function getMousePos(canvas, evt) {
@@ -125,7 +150,12 @@ function getMousePos(canvas, evt) {
 }
 
 onMount(() => {
-    drawSampleVariants(_samples);
+    ctx = canvas.getContext('2d');
+
+    let sampleIds = samples.slice(0, 500).map(elem => elem[0]);
+    controller.DataLoader.lazyLoadVariantCalls(sampleIds);
+
+    drawSampleVariants(samples);
 
     canvas.addEventListener('click', function(evt) { // mousemove
         let mousePos = getMousePos(canvas, evt);
@@ -134,11 +164,24 @@ onMount(() => {
     }, false);
 });
 
+
+
+const canvasOnScrollDebounced = debounce((event) => {
+    //console.log(event.target.scrollTop);
+    let _start = parseInt(event.target.scrollTop);
+    canvasScrollTop = _start;
+    let _end = _start + 500;
+    let sampleIds = samples.slice(_start, _end).map(elem => elem[0]);
+    controller.DataLoader.lazyLoadVariantCalls(sampleIds, () => {
+        drawSampleVariants(samples);
+    });
+}, 500);
+
 </script>
 
 <div class="track minimap" style="position: absolute; top: 0px; left: 0px; z-index: 900; height: 400px; width: 100%;">
     <div class="label">Compressed view</div>
-    <div style="max-height: 399px; overflow-y: scroll; flex-grow: 1; margin-top: 1px;">
+    <div on:scroll={ (event) => canvasOnScrollDebounced(event) } style="max-height: 399px; overflow-y: scroll; flex-grow: 1; margin-top: 1px;">
         <canvas bind:this={canvas} width={widthAllVariants} height={canvasHeight} ></canvas>
     </div>
 </div>

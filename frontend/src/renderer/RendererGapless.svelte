@@ -7,6 +7,8 @@ let { appId, eventbus, controller } = context.app();
 import getStores from '/utils/store';
 const { settings, groups, sortSettings, variantFilterSettings, filteredVariantsCoordinates } = getStores();
 
+import { debounce } from '/utils/helpers';
+
 import DataFrame from 'dataframe-js';
 import tippy from "sveltejs-tippy";
 import { delegate } from 'tippy.js';
@@ -26,19 +28,11 @@ import SampleVariants from '/components/tracks/SampleVariants.svelte';
 import LoadingAnimation from '/components/utils/LoadingAnimation.svelte';
 
 
+let data = false;
+let samples;
 let start;
 let end;
 let sampleTracksContainer;
-
-const debounce = (callback, wait) => {
-    let timeoutId = null;
-    return (...args) => {
-        window.clearTimeout(timeoutId);
-        timeoutId = window.setTimeout(() => {
-        callback.apply(null, args);
-        }, wait);
-    };
-}
 
 
 function sortSamples(params) {
@@ -167,10 +161,7 @@ function sortSamples(params) {
     return sorted;
 }
 
-let showLoadingAnimation = false;
-eventbus.on('loading:animation', msg => {
-    showLoadingAnimation = msg.status;
-});
+
 
 function setupVariantFilterDataframe(data) {
     if (data === false) return false;
@@ -201,35 +192,41 @@ function getFilteredVariants(df) {
     }
     let filteredVariantsCoordinatesArray = df.toArray('variants_coordinates');
     filteredVariantsCoordinates.set(filteredVariantsCoordinatesArray);
-    //return df.toArray('variants_coordinates');
     return filteredVariantsCoordinatesArray;
 }
 
-function handleVariantFilterSettings(variantFilterSettings) {
-    if (data !== false) {
-        data = data;
+
+
+
+
+
+function lazyLoadVariantCalls(samples) {
+    if (start !== undefined && end !== undefined) {
+        if ($settings.statusShowMinimap === false && samples !== undefined && samples.length > 0) {
+            //console.warn(start, end);
+            let sampleIds = samples.slice(start, end).map(elem => elem[0]);
+            //console.log(sampleIds);
+            controller.DataLoader.lazyLoadVariantCalls(sampleIds);
+        }
     }
 }
 
-const debouncedHandleVariantFilterSettings = debounce(handleVariantFilterSettings, 500);
-$: debouncedHandleVariantFilterSettings($variantFilterSettings);
 
-let samples;
+function dataChanged() {
 
-$: {
     if (data !== false && data.error === undefined) {
 
         // Apply/add variant filter data
         data.filtered_variants_coordinates = getFilteredVariants(setupVariantFilterDataframe(data));
 
         samples = sortSamples({
-            sampleIds: Object.keys(data.variants),
+            sampleIds: controller.config.samples, // Object.keys(data.variants)
             distances: data.hamming_distances_to_reference,
             groups: $groups,
             sortSettings: $sortSettings
         });
 
-        console.log(samples);
+        lazyLoadVariantCalls(samples);
 
         data.ref_and_alt = data.alternates.map((variant, idx) => {
             let tmp = variant.slice();
@@ -240,11 +237,40 @@ $: {
 }
 
 
-let _data;
-$: {
-    _data = data;
-}
+sortSettings.subscribe(value => {
+    dataChanged();
+});
 
+
+const debouncedHandleVariantFilterSettings = debounce(() => dataChanged(), 500);
+variantFilterSettings.subscribe(() => {
+    debouncedHandleVariantFilterSettings();
+});
+
+eventbus.on('data:display:changed', _data => {
+    data = _data;
+    dataChanged();
+});
+
+
+const tracksScrolledDebounced = debounce((_start) => {
+    lazyLoadVariantCalls(samples);
+}, 200);
+
+
+$: tracksScrolledDebounced(start);
+
+
+let showLoadingAnimation = false;
+eventbus.on('loading:animation', msg => {
+    showLoadingAnimation = msg.status;
+});
+
+
+
+/*************************************
+ * Tippy related code following
+ *************************************/
 
 let tippyProps = {
     delay: 0,
@@ -262,14 +288,17 @@ let tippyProps = {
 
         let content = [];
         content.push('Position: '+currentPos);
-        content.push('Reference Allele: '+_data.reference[currentPosIdx]);
+        content.push('Reference Allele: '+data.reference[currentPosIdx]);
 
-        if (_data.dp !== undefined) {
-            content.push('DP: '+_data.dp[currentSampleId][currentPosIdx]);
+        if (data.calls_metadata !== undefined) {
+            if (data.calls_metadata.dp !== undefined) {
+                content.push('DP: '+data.calls_metadata.dp.get(currentSampleId)[currentPosIdx]);
+            }
+            if (data.calls_metadata.dv !== undefined) {
+                content.push('DV: '+data.calls_metadata.dv.get(currentSampleId)[currentPosIdx]);
+            }
         }
-        if (_data.dv !== undefined) {
-            content.push('DV: '+_data.dv[currentSampleId][currentPosIdx]);
-        }
+
         instance.setContent(content.join("<br />"));
     }
 };
@@ -285,6 +314,7 @@ onMount(async () => {
 });
 
 
+
 let viewport;
 eventbus.on('minimap:click', payload => {
     console.log('EVENT: minimap:click');
@@ -293,10 +323,8 @@ eventbus.on('minimap:click', payload => {
 
 
 
-let data = false;
-eventbus.on('data:display:changed', _data => {
-    data = _data;
-});
+
+
 
 </script>
 
@@ -326,12 +354,13 @@ eventbus.on('data:display:changed', _data => {
 
             {#if $settings.statusShowMinimap}
             <SampleVariantsMinimap data={data} samples={samples} />
-            {/if}
-
+            {:else}
             <!-- TODO: make itemHeight configureable or dynamically -->
             <VirtualList bind:viewport={viewport} itemHeight={20} items={samples} bind:start bind:end let:item>
                 <SampleVariants data={data} item={item} sampleId={item[0]} />
             </VirtualList>
+            {/if}
+
         </div>
 
     {:else}

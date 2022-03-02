@@ -268,6 +268,7 @@ path.curve.fill {
 
 :global(.highlight-variant-bezier) {
     stroke: #0000FF !important;
+    stroke-width: 2 !important;
 }
 
 </style>

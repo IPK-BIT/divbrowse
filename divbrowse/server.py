@@ -137,7 +137,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         )
 
         pca_result, pca_explained_variance = calc_pca_for_slice_of_variant_calls(_result.numbers_of_alternate_alleles, _result.samples_selected_mapped)
-        
+
         umap_result = calc_umap_for_slice_of_variant_calls(
             slice_of_variant_calls = _result.numbers_of_alternate_alleles, 
             samples_selected = _result.samples_selected_mapped,
@@ -149,6 +149,77 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             'pca_explained_variance': pca_explained_variance.tolist(),
             'umap_result': umap_result.tolist(),
         }
+
+        return jsonify(result)
+
+
+
+
+    @app.route("/variant_calls", methods = ['GET', 'POST', 'OPTIONS'])
+    def __variant_calls():
+
+        if request.method == 'POST':
+            input = process_request_vars(request.get_json(silent=True))
+        else:
+            #raise ApiError('Method not allowed', status_code=405)
+            return ''
+
+        if input['chrom'] not in gd.list_chrom:
+            return jsonify({
+                'success': False, 
+                'status': 'error', 
+                'message': 'The provided chromosome number '+str(input['chrom'])+' is not included in the variant matrix.'
+            })
+        
+        slice = gd.get_slice_of_variant_calls(
+            chrom = input['chrom'],
+            startpos = input['startpos'],
+            endpos = input['endpos'],
+            count = input['count'],
+            samples = input['samples'],
+            variant_filter_settings = input['variant_filter_settings']
+        )
+
+        calls = {}
+        if slice.sliced_variant_calls.ndim == 2:
+            slice.sliced_variant_calls = slice.sliced_variant_calls.T # transpose GenotypeArray so that samples are in the 1st dimension and not the variant-calls
+
+        if slice.sliced_variant_calls.ndim == 3:
+            slice.sliced_variant_calls = slice.sliced_variant_calls.transpose(1, 0, 2) # transpose GenotypeArray so that samples are in the 1st dimension and not the variant-calls
+
+        i = 0
+        
+        for sample in slice.samples_selected_mapped:
+            calls[sample] = slice.sliced_variant_calls[i].tolist()
+            i += 1
+
+        result = {
+            'calls': calls,
+            'calls_metadata': {}
+        }
+
+        # get DP values
+        if 'DP' in gd.available_calldata:
+            DP_values = {}
+            sliced_DP = gd.callset['calldata/DP'].get_orthogonal_selection((slice.slice_variant_calls, slice.samples_mask)).T
+            DP_values = {}
+            i = 0
+            for sample in  slice.samples_selected_mapped:
+                DP_values[sample] = sliced_DP[i].tolist()
+                i += 1
+            result['calls_metadata']['dp'] = DP_values
+
+
+        # get DV values
+        if 'DV' in gd.available_calldata:
+            DV_values = {}
+            sliced_DV = gd.callset['calldata/DV'].get_orthogonal_selection((slice.slice_variant_calls, slice.samples_mask)).T
+            DV_values = {}
+            i = 0
+            for sample in  slice.samples_selected_mapped:
+                DV_values[sample] = sliced_DV[i].tolist()
+                i += 1
+            result['calls_metadata']['dv'] = DV_values
 
         return jsonify(result)
 
@@ -215,7 +286,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         # Get the alternate nucleotides (as letters ATCG)
         sliced_alternates = gd.alternate_alleles[_slice_variant_calls]
 
-
+        '''
         variants_samples = {}
         calls = {}
         if _sliced_variant_calls.ndim == 2:
@@ -230,6 +301,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             variants_samples[sample] = numbers_of_alternate_alleles[i].tolist()
             calls[sample] = _sliced_variant_calls[i].tolist()
             i += 1
+        '''
 
         start = timer()
 
@@ -241,13 +313,14 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             'coordinate_first_chromosome': gd.chrom[location_start],
             'coordinate_last_chromosome': gd.chrom[location_end],
             'variants_coordinates': positions.tolist(),
-            'variants': variants_samples,
-            'calls': calls,
+            #'variants': variants_samples,
+            #'calls': calls,
             'reference': sliced_reference.tolist(),
             'alternates': sliced_alternates.tolist(),
             'hamming_distances_to_reference': distances_combined.tolist()
         }
 
+        '''
         # get DP values
         if 'DP' in gd.available_calldata:
             DP_values = {}
@@ -270,7 +343,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
                 DV_values[sample] = sliced_DV[i].tolist()
                 i += 1
             result['dv'] = DV_values
-
+        '''
 
         #### QUAL #########################
         if 'QUAL' in gd.available_variants_metadata:

@@ -9,11 +9,13 @@ let { controller } = context.app();
 import getStores from '/utils/store';
 const { snpPosHighlights } = getStores();
 
+import { debounce } from '/utils/helpers';
+
 import LoadingAnimation from '/components/utils/LoadingAnimation.svelte';
 let showLoadingAnimation = false;
 
 import DataFrame from 'dataframe-js';
-import Fuse from 'fuse.js'
+//import Fuse from 'fuse.js'
 import { Datatable, rows } from 'svelte-simple-datatables';
 
 import { pageNumber } from 'svelte-simple-datatables/src/stores/state.js'
@@ -32,15 +34,7 @@ const openGeneDetailsModal = (featureId) => {
 const flip = obj => Object.assign({}, ...Object.entries(obj).map(([a,b]) => ({[b]: a })));
 const chromMap = flip(controller.metadata.gff3.gff3_to_vcf_chromosome_mapping);
 
-const debounce = (callback, wait) => {
-    let timeoutId = null;
-    return (...args) => {
-        window.clearTimeout(timeoutId);
-        timeoutId = window.setTimeout(() => {
-        callback.apply(null, args);
-        }, wait);
-    };
-};
+
 
 let query = '';
 let result = null;
@@ -71,7 +65,7 @@ onMount(async () => {
     df = controller.metadata.gff3._dataframe;
     //data = df.toCollection();
     result = df.toCollection();
-    fuse = new Fuse(data, fuseOptions);
+    //fuse = new Fuse(data, fuseOptions);
 });
 
 function setupSearchInInterval() {

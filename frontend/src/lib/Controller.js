@@ -1,6 +1,8 @@
 import axios from 'axios';
 import DataFrame from 'dataframe-js';
 
+import DataLoader from '/lib/DataLoader';
+
 export default class Controller {
 
     constructor(eventbus) {
@@ -24,6 +26,8 @@ export default class Controller {
         this.tracksRendererContainer = setupObj.tracksRendererContainer;
         this.config = setupObj.config;
         this.config.samplesMetadata = false;
+
+        this.DataLoader = new DataLoader(this.config, this.eventbus);
 
         this.loadMetadata(metadata => {
             this.metadata = metadata;
@@ -306,6 +310,11 @@ export default class Controller {
     }
 
 
+    lazyLoadSamplesInterceptor(samples) {
+        return samples.slice(0,30);
+    }
+
+
     async loadData(callback) {
         let count = this._calculateSnpCountInVisibleArea();
 
@@ -332,7 +341,8 @@ export default class Controller {
             return;
         }
 
-        let url = this.config.apiBaseUrl+'/variants'
+        //samples = this.lazyLoadSamplesInterceptor(samples);
+        
         const payload = {
             chrom: this.chromosome,
             samples: samples,
@@ -348,15 +358,13 @@ export default class Controller {
 
         this.eventbus.emit('loading:animation', {status: true});
 
-        axios.post(url, payload).then(function (response) {
-            callback(response.data);
-        })
-        .catch(error => {
-            console.log(error);
-            //self.raiseError('Error: Could not load any data from the server / backend.')
-            this.eventbus.emit('loading:animation', {status: false});
+        this.DataLoader.loadVariantsAndCalls(payload, data => {
+            //console.warn('DataLoader.loadVariantsAndCalls()');
+            //console.warn(_data);
+            callback(data);
         });
     }
+
 
     draw() {
         this.loadData(data => {
@@ -389,6 +397,7 @@ export default class Controller {
                 this.eventbus.emit('data:display:changed', data);
                 this.eventbus.emit('loading:animation', {status: false});
             }
+
         });
     }
 

@@ -24,6 +24,8 @@ setContext('app', {
 import getStores from '/utils/store';
 const { settings, variantWidth, groups } = getStores();
 
+import { debounce } from '/utils/helpers';
+
 import Navigation from '/components/Navigation.svelte';
 
 import LoadingAnimation from '/components/utils/LoadingAnimation.svelte';
@@ -60,24 +62,15 @@ onMount(async () => {
         config: config
     });
 
-    let _debounce = function(ms, fn) {
-        let timer;
-        return function() {
-            clearTimeout(timer);
-            let args = Array.prototype.slice.call(arguments);
-            args.unshift(this);
-            timer = setTimeout(fn.bind.apply(fn, args), ms);
-        };
-    };
-
-    /*let ro = new ResizeObserver(_debounce(500, function(muts) {
+    /*let ro = new ResizeObserver(debounce(function(muts) {
         console.log(muts);
-    }));*/
+    }, 500));*/
     
     let resizeObserverStarted = false;
     let initResizeObserver = () => {
         console.log('ResizeObserver INITIATED ('+appId+')');
-        const containerResizeObserver = new ResizeObserver(_debounce(500, function(entries) {
+
+        const containerResizeObserver = new ResizeObserver(debounce(function(entries) {
             if (resizeObserverStarted === false) {
                 resizeObserverStarted = true;
                 console.log('ResizeObserver OMITTED FIRST CALL ('+appId+')');
@@ -92,7 +85,8 @@ onMount(async () => {
                     controller.draw();
                 }
             }
-        }));
+        }, 500));
+
         containerResizeObserver.observe(tracksRendererContainer);
     }
     setTimeout( () => initResizeObserver(), 1000);
@@ -147,18 +141,9 @@ eventbus.on('loading:animation', msg => {
 
 
 
-let timer;
-function handleWindowResize(event) {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-        //console.log('handleWindowResize() was triggered');
-        //controller.draw();
-    }, 200);
-}
-
 </script>
 
-<svelte:window on:resize={handleWindowResize}/>
+
 
 <div>
 
