@@ -23,6 +23,7 @@ let canvasScrollTop = 0;
 let ctx = false;
 
 
+
 const ploidy = controller.metadata.ploidy;
 
 const numberOfAlternateAlleles = numberOfAltAllelesFactory.getFunction(ploidy);
@@ -137,6 +138,7 @@ sortSettings.subscribe(value => {
 $: {
     samples;
 
+    canvasHeight = samples.length;
     widthAllVariants = controller.getCurrentWidthOfVariants();
     drawSampleVariants(samples);
 }

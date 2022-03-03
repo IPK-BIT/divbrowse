@@ -4,7 +4,6 @@ import cloneDeep from 'lodash/cloneDeep';
 export default class DataLoader {
 
     constructor(config, eventbus) {
-        console.log('DataLoader constructor called!');
         this.config = config;
         this.eventbus = eventbus;
 

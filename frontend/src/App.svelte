@@ -54,18 +54,30 @@ let tracksRendererContainer;
 
 
 
-onMount(async () => {
-    console.log('Svelte App mounted!');
 
-    controller.setup({
-        tracksRendererContainer: tracksRendererContainer,
-        config: config
+
+
+function onVisible(element, callback) {
+    new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if(entry.intersectionRatio > 0) {
+                callback(element);
+                observer.disconnect();
+            }
+        });
+    }).observe(element);
+}
+
+
+
+eventbus.on('metadata:loaded', metadata => {
+    console.log('Metadata loaded!');
+
+    onVisible(tracksRendererContainer, () => {
+        controller.draw();
     });
 
-    /*let ro = new ResizeObserver(debounce(function(muts) {
-        console.log(muts);
-    }, 500));*/
-    
+
     let resizeObserverStarted = false;
     let initResizeObserver = () => {
         console.log('ResizeObserver INITIATED ('+appId+')');
@@ -73,15 +85,14 @@ onMount(async () => {
         const containerResizeObserver = new ResizeObserver(debounce(function(entries) {
             if (resizeObserverStarted === false) {
                 resizeObserverStarted = true;
-                console.log('ResizeObserver OMITTED FIRST CALL ('+appId+')');
-                console.log(entries);
+                console.log('ResizeObserver: omitted first event ('+appId+')');
+
             } else {
-                console.log('ResizeObserver INVOKED ('+appId+')');
-                console.log(entries);
+                console.log('ResizeObserver: invoked ('+appId+')');
                 
                 let containerWidth = entries[0].contentBoxSize[0].inlineSize;
                 if (containerWidth > 0) {
-                    console.log('ResizeObserver controller.draw() INVOKED ('+appId+')');
+                    console.log('ResizeObserver: controller.draw() called ('+appId+')');
                     controller.draw();
                 }
             }
@@ -90,6 +101,18 @@ onMount(async () => {
         containerResizeObserver.observe(tracksRendererContainer);
     }
     setTimeout( () => initResizeObserver(), 1000);
+
+});
+
+
+
+onMount(async () => {
+    console.log('DivBrowse App mounted!');
+
+    controller.setup({
+        tracksRendererContainer: tracksRendererContainer,
+        config: config
+    });
 
     
    let script = document.createElement('script');

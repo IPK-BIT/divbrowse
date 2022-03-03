@@ -37,11 +37,10 @@ export default class Controller {
 
             this.eventbus.emit('metadata:loaded', metadata);
 
-            if (this.config.showAllSamplesOnInit === true) {
-                this.config.samples = this.metadata.samples;
+            this.config.samples = this.metadata.samples;
+            if (this.config.showAllSamplesOnInit !== undefined && this.config.showAllSamplesOnInit === false) {
+                this.config.samples = undefined;
             }
-
-            this.draw();
 
             this.loadGenes(genes => {
                 this.eventbus.emit('data:genes:loaded', true);
@@ -310,11 +309,6 @@ export default class Controller {
     }
 
 
-    lazyLoadSamplesInterceptor(samples) {
-        return samples.slice(0,30);
-    }
-
-
     async loadData(callback) {
         let count = this._calculateSnpCountInVisibleArea();
 
@@ -323,15 +317,6 @@ export default class Controller {
         }
 
         let samples = [];
-        /*if (this.config.samples === undefined || this.config.samples.length == 0) {
-            samples = this.metadata.samples;
-        } else {
-            samples = this.config.samples;
-        }*/
-
-        if (this.config.showAllSamplesOnInit === true) {
-            samples = this.metadata.samples;
-        }
 
         if (this.config.samples !== undefined && this.config.samples.length > 0) {
             samples = this.config.samples;
@@ -341,7 +326,6 @@ export default class Controller {
             return;
         }
 
-        //samples = this.lazyLoadSamplesInterceptor(samples);
         
         const payload = {
             chrom: this.chromosome,
@@ -359,14 +343,13 @@ export default class Controller {
         this.eventbus.emit('loading:animation', {status: true});
 
         this.DataLoader.loadVariantsAndCalls(payload, data => {
-            //console.warn('DataLoader.loadVariantsAndCalls()');
-            //console.warn(_data);
             callback(data);
         });
     }
 
 
     draw() {
+        console.log('Controller::draw() called');
         this.loadData(data => {
             
             if (data.status == 'error') {
