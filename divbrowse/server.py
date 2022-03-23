@@ -727,10 +727,10 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
     @app.route("/genes", methods = ['GET', 'POST', 'OPTIONS'])
     def __genes():
-        result = {
-            'genes': ad.genes_list,
-        }
-        return jsonify(result)
+        r = Response(response=ad.genes_list_json_dumped, status=200, mimetype="application/json")
+        r.headers["Content-Type"] = "application/json; charset=utf-8"
+        return r
+        
 
 
     @app.route("/", methods = ['GET', 'POST', 'OPTIONS'])

@@ -124,6 +124,7 @@ class AnnotationData:
             genes_start_positions[_chr] = genes_start_positions[_chr].sort_index()
 
         self.genes_list = genes_list
+        self.genes_list_json_dumped = json.dumps({'genes': genes_list})
         self.genes_grouped_by_seqid = genes_grouped_by_seqid
         self.genes_start_positions = genes_start_positions
 
