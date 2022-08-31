@@ -205,11 +205,17 @@ const datatableSettings = {
         <Datatable  settings={datatableSettings} data={result}>
             <thead>
                 <th data-key="id">ID</th>
+                <th data-key="type">Type</th>
                 <th data-key="description">Description</th>
                 <th data-key="seqid">Chromosome</th>
                 <th data-key="start">Start position</th>
                 <th data-key="end">End position</th>
+
+                {#if controller.metadata.gff3.key_confidence !== false}
                 <th data-key="primary_confidence_class">Primary confidence class</th>
+                {/if}
+                
+                
                 {#if controller.metadata.gff3.count_exon_variants !== undefined && controller.metadata.gff3.count_exon_variants === true}
                 <th data-key="number_of_variants">Number of variants / exon variants</th>
                 {/if}
@@ -219,11 +225,16 @@ const datatableSettings = {
                 {#each $rows as row}
                 <tr>
                     <td class="id" style="width:230px;"><a href="#" on:click|preventDefault={openGeneDetailsModal(row.ID)}>{row.ID}</a></td>
+                    <td class="desc" style="width:80px;">{row.type}</td>
                     <td class="desc" style="width:330px;">{row.description}</td>
                     <td class="centered">{row.seqid}</td>
                     <td class="centered">{row.start}</td>
                     <td class="centered">{row.end}</td>
+                    
+                    {#if controller.metadata.gff3.key_confidence !== false}
                     <td class="centered">{row.primary_confidence_class}</td>
+                    {/if}
+
                     {#if controller.metadata.gff3.count_exon_variants !== undefined && controller.metadata.gff3.count_exon_variants === true}
                     <td class="centered">{row.number_of_variants} / {row.number_of_exon_variants}</td>
                     {/if}

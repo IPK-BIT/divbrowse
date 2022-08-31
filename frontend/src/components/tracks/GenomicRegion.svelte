@@ -40,13 +40,14 @@ const tippyProps = {
     placement: "bottom",
     allowHTML: true,
     onShow(instance) {
-        let content = instance.reference.dataset.featureId;
+        let content = 'Type: '+featuresKeyedById[instance.reference.dataset.featureId].type;
+        content += '<br /><br />ID: '+instance.reference.dataset.featureId;
         
         if (featuresKeyedById[instance.reference.dataset.featureId].description !== '.') {
-            content += '<br /><br />'+featuresKeyedById[instance.reference.dataset.featureId].description;
+            content += '<br /><br />Description: '+featuresKeyedById[instance.reference.dataset.featureId].description;
         }
 
-        content += '<br /><br />Click to show gene details.';
+        content += '<br /><br />Click to show more details.';
 
         instance.setContent(content);
     }
@@ -89,7 +90,7 @@ $: {
                 x2 = (feature.end - data.coordinate_first) / maxmin;
             }
 
-            if (feature.type == controller.metadata.gff3.main_feature_type_for_genes_track) {
+            if (controller.metadata.gff3.main_feature_types_for_genes_track.includes(feature.type)) {
                 features.plus.gene.push({x1: x1, x2: x2, description: feature.description, ID: feature.ID, gff3: feature});
             }
             if (feature.type == 'exon') {
@@ -105,7 +106,7 @@ $: {
                 x2 = (feature.end - data.coordinate_first) / maxmin;
             }
 
-            if (feature.type == controller.metadata.gff3.main_feature_type_for_genes_track) {
+            if (controller.metadata.gff3.main_feature_types_for_genes_track.includes(feature.type)) {
                 features.minus.gene.push({x1: x1, x2: x2, description: feature.description, ID: feature.ID, gff3: feature});
             }
             if (feature.type == 'exon') {

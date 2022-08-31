@@ -181,6 +181,16 @@ class GenotypeData:
         self.samples_dict = dict(zip(self.samples.tolist(), list(range(0, self.samples.shape[0]))))
 
 
+    def get_vcf_header(self):
+        vcf_header_lines = None
+        self._vcf_header_lines_file = self.datadir + '____vcf_export_header_lines____.vcf'
+        if os.path.exists(self._vcf_header_lines_file):
+            with open(self._vcf_header_lines_file, 'r') as f:
+                vcf_header_lines = f.read().splitlines()
+
+        return vcf_header_lines
+
+
     def _setup_sample_id_mapping(self):
 
         if self.config['variants']['sample_id_mapping_filename']:
@@ -218,8 +228,8 @@ class GenotypeData:
 
     def _create_list_of_chromosomes(self):
 
-        chromosome_labels = {str(key): value for key, value in self.config['chromosome_labels'].items()}
-        centromeres_positions = {str(key): value for key, value in self.config['centromeres_positions'].items()}
+        chromosome_labels = {str(key): str(value) for key, value in self.config['chromosome_labels'].items()}
+        centromeres_positions = {str(key): str(value) for key, value in self.config['centromeres_positions'].items()}
 
         path_chromosome_tmp_data = self.datadir+'____list_of_chromosomes____.json'
 
@@ -359,7 +369,7 @@ class GenotypeData:
             return lookup, 'direct_lookup'
         except KeyError:
             # do fuzzy search via nearest neighbor search
-            nearest = pd_series.index.get_loc(pos, method='nearest')
+            nearest = pd_series.index.get_indexer([pos], method='nearest')[0]
             lookup = pd_series.iloc[nearest]
             return lookup, 'nearest_lookup'
 

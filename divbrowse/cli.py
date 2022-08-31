@@ -6,6 +6,7 @@ from pprint import pprint
 
 import click
 import yaml
+import gzip
 import allel
 import zarr
 import pandas as pd
@@ -44,13 +45,6 @@ def main():
 
 
 @click.command()
-def test():
-    click.echo('This is a test')
-    log.info('Logging info test')
-
-
-
-@click.command()
 def calcsumstats():
 
     click.echo('Starting calculation of variant summary statistics...')
@@ -69,8 +63,72 @@ def calcsumstats():
     gd = GenotypeData(config)
     ad = AnnotationData(config, gd)
 
+    vcf_header_lines = gd.get_vcf_header()
+    print(vcf_header_lines)
 
 
+
+
+
+@click.command()
+@click.option('--path-vcf', help='Full path to to VCF file that should be converted to a Zarr archive')
+@click.option('--path-zarr', help='Full path where to save the Zarr archive')
+def vcf2zarr(path_vcf: str, path_zarr: str):
+
+    if path_vcf == None:
+        vcf_files = []
+        path = os.getcwd()
+
+        with os.scandir(path) as entries:
+            for entry in entries:
+                if entry.is_file() and entry.name.lower().endswith(('.vcf', '.vcf.gz')):
+                    vcf_files.append(entry.path)
+        
+        click.secho('The following VCF files have been found in current working directory. Please choose the one you want to convert to the Zarr format:', fg='yellow')
+        i = 0
+        for _vcf_file in vcf_files:
+            click.secho('['+str(i)+'] '+os.path.basename(_vcf_file), fg='yellow')
+            i = i + 1
+
+        selected_vcf_number = click.prompt(click.style('Please enter the number of the VCF file', fg='yellow'), type=int)
+
+        if selected_vcf_number >= len(vcf_files):
+            log.error('The given number for a VCF file is not valid.')
+            exit(1)
+
+        path_vcf = str(vcf_files[selected_vcf_number])
+        click.secho('You have selected the following VCF file:: '+path_vcf, fg='yellow')
+
+    if path_zarr == None:
+        path_zarr = path_vcf + '.zarr'
+
+
+    vcf_header_lines = []
+    if path_vcf.endswith('gz'):
+        vcf_file = gzip.open(path_vcf, mode='rt', encoding='utf-8')
+    else:
+        vcf_file = open(path_vcf, mode='r', buffering=0, encoding='utf-8')
+
+    vcf_line = vcf_file.readline()
+    while vcf_line:
+        if vcf_line.startswith('##'):
+            vcf_header_lines.append(vcf_line)
+            vcf_line = vcf_file.readline()
+        else:
+            break
+
+    with open("____vcf_export_header_lines____.vcf", "w") as vcf_header_lines_file:
+        vcf_header_lines_file.write("".join(vcf_header_lines))
+
+
+    try:
+        allel.vcf_to_zarr(path_vcf, path_zarr, group='/', fields='*', exclude_fields=['variants/numalt', 'variants/altlen', 'variants/is_snp'], log=sys.stdout, compressor=numcodecs.Blosc(cname='zstd', clevel=5, shuffle=False))
+    except ValueError as error_msg:
+        log.error(error_msg)
+
+
+    click.secho('Conversion to Zarr finished.', fg='green')
+    click.secho('The Zarr archive was saved to this path: '+path_zarr, fg='green')
 
 
 
@@ -81,9 +139,6 @@ def calcsumstats():
 @click.option('--save-config', type=click.Path(file_okay=True, writable=True), help='Save the inferred configuration as a YAML file. Please provide a relative or absolute path.')
 def start(host: str, port: str, infer_config: bool, save_config):
     from divbrowse.server import create_app
-
-    print(save_config)
-    exit()
 
     if infer_config:
 
@@ -99,6 +154,7 @@ def start(host: str, port: str, infer_config: bool, save_config):
         i = 0
         for _vcf_file in vcf_files:
             click.secho('['+str(i)+'] '+os.path.basename(_vcf_file), fg='yellow')
+            i = i + 1
 
         selected_vcf_number = click.prompt(click.style('Please enter the number of the VCF file', fg='yellow'), type=int)
 
@@ -151,7 +207,7 @@ def start(host: str, port: str, infer_config: bool, save_config):
         config_runtime['variants']['zarr_dir'] = os.path.basename(path_zarr)
         config_runtime['gff3']['filename'] = os.path.basename(gff3_files[0])
         config_runtime['gff3']['feature_type_with_description'] = 'gene'
-        config_runtime['gff3']['main_feature_type_for_genes_track'] = 'gene'
+        config_runtime['gff3']['main_feature_types_for_genes_track'] = ['gene']
         config_runtime['chromosome_labels'] = chromosome_labels
         config_runtime['centromeres_positions'] = centromeres_positions
         config_runtime['gff3_chromosome_labels'] = gff3_chromosome_labels
@@ -160,7 +216,7 @@ def start(host: str, port: str, infer_config: bool, save_config):
             with open(save_config, 'w') as yaml_file:
                 yaml.dump(config_runtime, yaml_file, default_flow_style=False)
 
-    click.secho('Starting DivBrowse server using gunicorn...', fg='green', bold=True)
+    click.secho('Starting DivBrowse server...', fg='green', bold=True)
 
     if host == '0.0.0.0':
         import socket
@@ -179,21 +235,10 @@ def start(host: str, port: str, infer_config: bool, save_config):
 
 
 
-@click.command()
-@click.option('--host', default='0.0.0.0', help='IP address to bind the DivBrowse server to')
-@click.option('--port', default='8080', help='Port number to bind the DivBrowse server to')
-def starttest(host: str, port: str):
-    from divbrowse.server import create_app
-    click.secho('Starting DivBrowse server using gunicorn...', fg='green', bold=True)
-    
-    app = create_app()
-    serve(app, host=host, port=int(port))
-    
 
 
-main.add_command(test)
+main.add_command(vcf2zarr)
 main.add_command(start)
-main.add_command(starttest)
 main.add_command(calcsumstats)
 
 if __name__ == '__main__':

@@ -14,7 +14,7 @@ let goTerms = result.Ontology_term.split(',');
 
 let oLinkTemplate = controller.metadata.gff3.external_link_ontology_term;
 let ontologyLinks = [];
-if (oLinkTemplate !== '' && oLinkTemplate !== null) {
+if (oLinkTemplate !== '' && oLinkTemplate !== null && oLinkTemplate !== false) {
     for (let term of goTerms) {
         ontologyLinks.push({
             url: oLinkTemplate.replace('{ID}', term),
@@ -44,6 +44,10 @@ if (Array.isArray(controller.metadata.gff3.external_links) && controller.metadat
 
     <table>
         <tr>
+            <td>Type</td>
+            <td>{result.type}</td>
+        </tr>
+        <tr>
             <td>ID</td>
             <td>{result.ID}</td>
         </tr>
@@ -51,17 +55,21 @@ if (Array.isArray(controller.metadata.gff3.external_links) && controller.metadat
             <td>Description</td>
             <td>{result.description}</td>
         </tr>
+
+        {#if controller.metadata.gff3.key_confidence !== undefined && controller.metadata.gff3.key_confidence !== false}
         <tr>
             <td>Primary confidence class</td>
             <td>{result.primary_confidence_class}</td>
         </tr>
+        {/if}
+
         {#if controller.metadata.gff3.count_exon_variants !== undefined && controller.metadata.gff3.count_exon_variants === true}
         <tr>
-            <td>SNPs on whole gene</td>
+            <td>Variants on whole gene</td>
             <td>{result.number_of_variants}</td>
         </tr>
         <tr>
-            <td>SNPs on exons</td>
+            <td>Variants on exons of this gene</td>
             <td>{result.number_of_exon_variants}</td>
         </tr>
         {/if}

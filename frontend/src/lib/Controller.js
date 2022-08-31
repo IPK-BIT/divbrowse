@@ -43,8 +43,10 @@ export default class Controller {
             }
 
             this.loadGenes(genes => {
-                this.eventbus.emit('data:genes:loaded', true);
-                this.metadata.gff3._dataframe = new DataFrame(genes.data, genes.columns);
+                if (genes !== false) {
+                    this.eventbus.emit('data:genes:loaded', true);
+                    this.metadata.gff3._dataframe = new DataFrame(genes.data, genes.columns);
+                }
             });
         });
     }

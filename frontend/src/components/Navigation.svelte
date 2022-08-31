@@ -48,11 +48,16 @@ function handleVariantWidthChange(event) {
     }
 }
 
+let btnBackwardDisabled = true;
+let btnForwardDisabled = true;
+
 function handleBackward(steps) {
+    btnBackwardDisabled = true;
     controller.goBackward(steps);
 }
 
 function handleForward(steps) {
+    btnForwardDisabled = true;
     controller.goForward(steps);
 }
 
@@ -61,8 +66,7 @@ eventbus.on('loading:animation', msg => {
     showLoadingAnimation = msg.status;
 });
 
-let btnBackwardDisabled = true;
-let btnForwardDisabled = true;
+
 
 let data = false;
 let dataGenesLoaded = false;
@@ -74,11 +78,11 @@ eventbus.on('data:display:changed', _data => {
     btnBackwardDisabled = false;
     btnForwardDisabled = false;
 
-    if (data.coordinate_last_prev > data.coordinate_first) {
+    if (data.coordinate_first <= controller.metadata.chromosomesById[data.coordinate_first_chromosome].start) {
         btnBackwardDisabled = true;
     }
 
-    if (data.coordinate_last > data.coordinate_first_next) {
+    if (data.coordinate_last >= controller.metadata.chromosomesById[data.coordinate_first_chromosome].end) {
         btnForwardDisabled = true;
     }
 

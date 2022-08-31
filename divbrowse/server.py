@@ -471,17 +471,19 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         location_start = _result.location_start
         location_end = _result.location_end
 
-        vcf_lines_header = [
-            '##fileformat=VCFv4.0',
-            #'##fileDate=20190225',
-            #'##source=SeqArray_Format_v1.0',
-            #'##reference=Morex v2',
-            #'##INFO=<ID=MQ,Number=1,Type=Integer,Description="Average mapping quality">',
-            '##FILTER=<ID=PASS,Description="All filters passed">',
-            '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">',
-            #'##FORMAT=<ID=DP,Number=.,Type=Integer,Description="Read depth">',
-            #'##FORMAT=<ID=DV,Number=.,Type=Integer,Description="Read depth of the alternative allele">'
-        ]
+        vcf_lines_header = gd.get_vcf_header()
+        if vcf_lines_header == None:
+            # No VCF header files available: fallback to minimal VCF header
+            vcf_lines_header = [
+                '##fileformat=VCFv4.2',
+                #'##fileDate=20190225',
+                #'##source=SeqArray_Format_v1.0',
+                #'##reference=Morex v2',
+                '##FILTER=<ID=PASS,Description="All filters passed">',
+                '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">',
+                #'##FORMAT=<ID=DP,Number=.,Type=Integer,Description="Read depth">',
+                #'##FORMAT=<ID=DV,Number=.,Type=Integer,Description="Read depth of the alternative allele">'
+            ]
 
         mapped_sample_ids, _ = gd.map_vcf_sample_ids_to_input_sample_ids(gd.samples[samples_mask].astype(str).tolist())
         vcf_line_variants_header = ['#CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO', 'FORMAT'] + mapped_sample_ids
@@ -492,9 +494,20 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         qual = gd.callset['variants/QUAL'].get_orthogonal_selection( (filtered_positions_indices) )
         #mq = callset['variants/MQ'].get_orthogonal_selection( (filtered_positions_indices) )
 
+
+        vcf_columns = {
+            'FORMAT': ['GT']
+        }
+
+        # check for DP values and add to FORMAT column
+        if 'DP' in gd.available_calldata:
+            vcf_columns['FORMAT'].append('DP')
+
+
         def generate():
             
             yield "\n".join(vcf_lines_header) + "\n"
+
 
             i = 0
             for pos_idx in filtered_positions_indices.tolist():
@@ -508,17 +521,40 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
                     str(qual[i]),
                     'NA',
                     '', #'MQ='+str(mq[i]),
-                    'GT' #'GT:DP:DV'
+                    ":".join(vcf_columns['FORMAT'])
                 ]
 
                 if 'samples' in input:
-                    gt_slice = gd.callset['calldata/GT'].get_orthogonal_selection( ([pos_idx], samples_mask, slice(None)) )
+                    #gt_slice = gd.callset['calldata/GT'].get_orthogonal_selection( ([pos_idx], samples_mask, slice(None)) )
+                    gt_slice = gd.callset['calldata/GT'].get_orthogonal_selection( ([pos_idx], samples_mask) )
+
+                    if 'DP' in vcf_columns['FORMAT']:
+                        dp_slice = gd.callset['calldata/DP'].get_orthogonal_selection( ([pos_idx], samples_mask) )
+
                 else:
                     gt_slice = gd.callset['calldata/GT'].get_orthogonal_selection( ([pos_idx], slice(None), slice(None)) )
-                ga = allel.GenotypeArray(gt_slice)
-                gt = ga.to_gt()
 
-                vcf_line = vcf_line + gt[0].astype(str).tolist()
+
+                # haploid
+                if gt_slice.ndim == 2:
+                    ga = allel.HaplotypeArray(gt_slice)
+                    gt = ga.to_genotypes(1, copy=True).to_gt()
+
+                # diploid
+                if gt_slice.ndim == 3:
+                    # Transform each genotype call into the number of non-reference alleles and then transpose it via .T to row-major order
+                    ga = allel.GenotypeArray(gt_slice)
+                    gt = ga.to_gt()
+
+                gt = gt[0].astype(str).tolist()
+                
+                if 'DP' in vcf_columns['FORMAT']:
+                    dp = dp_slice[0].astype(str).tolist()
+                    combined = [call+":"+str(dp[i]) for i, call in enumerate(gt)]
+                    gt = combined
+                
+                vcf_line = vcf_line + gt
+
                 yield "\t".join(vcf_line)+"\n"
                 i = i + 1
 

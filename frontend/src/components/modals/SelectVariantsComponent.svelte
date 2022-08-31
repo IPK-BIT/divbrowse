@@ -256,7 +256,9 @@ $: if (errorMsg) {
                 <select class="divbrowse-form-control" bind:value={selectedFeature} disabled={ (data.features.length == 0 || mode !== 'current_gene') ? true : false }>
                     <option value="">Please select a gene or feature ...</option>
                     {#each data.features as feature}
+                    {#if feature.ID !== "."}
                     <option value="{feature.ID}">{feature.ID}</option>
+                    {/if}
                     {/each}
                 </select>
             {/if}

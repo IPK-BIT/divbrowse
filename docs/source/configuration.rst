@@ -23,13 +23,18 @@ The configuration of your DivBrowse instance is managed by a YAML file:
 
    gff3:
      filename: 
+     additional_attributes_keys: biotype,gene_id
+     feature_type_with_description: gene
+     count_exon_variants: true
      key_confidence: 
      key_ontology: Ontology_term
-     main_feature_type_for_genes_track: mRNA
+     main_feature_types_for_genes_track:
+       - gene
+       - pseudogene
+       - ncRNA_gene
      external_link_ontology_term: https://www.ebi.ac.uk/QuickGO/term/{ID}
      external_links:
-       - feature_type: mRNA
-         feature_attribute: ID
+       - feature_attribute: ID
          url: https://some.external.resource.org/{FEATURE_ID}
          linktext: Open this gene in an external resource 
 
@@ -69,11 +74,11 @@ The configuration of your DivBrowse instance is managed by a YAML file:
 
    blast:
      active: false
-     galaxy_server_url: 
+     galaxy_server_url: https://galaxy-web.ipk-gatersleben.de
      galaxy_user: 
      galaxy_pass: 
-     galaxy_tool_id: 
-     blast_database: 
+     galaxy_tool_id: ncbi_blastn_wrapper_barley
+     blast_database: morex_v3
      blast_type: megablast
      blast_result_to_vcf_chromosome_mapping:
        chr1H: 1

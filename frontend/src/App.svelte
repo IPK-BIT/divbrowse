@@ -227,7 +227,7 @@ h1 {
 
     border: 1px solid rgb(0,0,0);
     padding: 10px;
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Arial', sans-serif;
     background: rgb(220,220,220);
 }
 
@@ -419,6 +419,11 @@ h1 {
     .C() {
         &:before { content: "C"; }
     }
+    .indel() {
+        border: 1px solid black;
+        font-size: 11px !important;
+        &:before { content: "IN"; }
+    }
 }
 
 .nucl-bg() {
@@ -465,6 +470,9 @@ h1 {
         }
         &.ref-C {
             .nucl.C();
+        }
+        &.ref-indel {
+            .nucl.indel();
         }
     }
     .backgrounds() {

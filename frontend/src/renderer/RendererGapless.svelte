@@ -287,8 +287,36 @@ let tippyProps = {
         let currentPosIdx = instance.reference.dataset.positionIndex;
 
         let content = [];
+
+        // Variant type: SNP
+        if (data.reference[currentPosIdx].length > 1) {
+            content.push('Variant type: INDEL');
+        } else {
+            content.push('Variant type: SNP');
+        }
+
         content.push('Position: '+currentPos);
         content.push('Reference Allele: '+data.reference[currentPosIdx]);
+        //content.push('Alternate Alleles: '+data.alternates[currentPosIdx][0]);
+
+        let _alternateAlleles = [];
+        for (let alternateAllele of data.alternates[currentPosIdx]) {
+            if (alternateAllele.length > 0) {
+                _alternateAlleles.push(alternateAllele);
+            }
+        }
+
+        if (_alternateAlleles.length > 1) {
+            content.push('Alternate Alleles: '+ _alternateAlleles.join(" / "));
+        } else {
+            content.push('Alternate Allele: '+ _alternateAlleles.join(" / "));
+        }
+
+        let variants = [data.reference[currentPosIdx], ...data.alternates[currentPosIdx]];
+        let variantCalled = variants[ data.calls.get(currentSampleId)[currentPosIdx] ];
+
+        content.push('Variant called: '+ variantCalled);
+        
 
         if (data.calls_metadata !== undefined) {
             if (data.calls_metadata.dp !== undefined) {

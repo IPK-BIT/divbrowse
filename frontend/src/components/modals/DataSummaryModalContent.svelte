@@ -23,16 +23,16 @@ function sampleDisplayName(sampleId) {
         </tr>
         {#if controller.metadata.dataset_descriptions.vcf_doi !== ""}
         <tr>
-            <td style="width: 200px;">DOI of VCF:</td>
+            <td style="width: 200px;">DOI/URL of VCF:</td>
             <td><a href="{controller.metadata.dataset_descriptions.vcf_doi}" target="_blank">{controller.metadata.dataset_descriptions.vcf_doi}</a></td>
         </tr>
         {/if}
         <tr>
-            <td style="width: 200px;">DOI of VCF reference genome:</td>
+            <td style="width: 200px;">DOI/URL of reference genome:</td>
             <td><a href="{controller.metadata.dataset_descriptions.vcf_reference_genome_doi}" target="_blank">{controller.metadata.dataset_descriptions.vcf_reference_genome_doi}</a></td>
         </tr>
         <tr>
-            <td style="width: 200px;">DOI of genome annotation:</td>
+            <td style="width: 200px;">DOI/URL of genome annotation:</td>
             <td><a href="{controller.metadata.dataset_descriptions.gff3_doi}" target="_blank">{controller.metadata.dataset_descriptions.gff3_doi}</a></td>
         </tr>
         <tr>
@@ -53,7 +53,7 @@ function sampleDisplayName(sampleId) {
         </tr>
         {#if controller.metadata.gff3.has_gff3 === true}
         <tr>
-            <td>Number of genes provided by annotation:</td>
+            <td>Number of genes provided by genome annotation:</td>
             <td>{controller.metadata.gff3.count_genes}</td>
         </tr>
         {/if}
