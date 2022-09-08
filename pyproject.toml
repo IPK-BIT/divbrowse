@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "divbrowse"
-version = "0.1.0a5"
-description = "A web application for interactive exploration and analysis of very large SNP matrices"
+version = "1.0.0"
+description = "A web application for interactive visualization and analysis of genotypic variant matrices"
 authors = ["Patrick König <koenig@ipk-gatersleben.de>"]
 license = "MIT"
 
@@ -17,12 +17,13 @@ bioblend = "^0.16.0"
 pyyaml = "^5.4.1"
 zarr = "^2.8.3"
 tables = "^3.6.1"
+simplejson = "^3.17.3"
+umap-learn = "^0.5.2"
 waitress = "2.0.0"
 sphinx = {version = "^4.0.2", optional = true}
 sphinx-autoapi = {version = "^1.6.0", optional = true}
 sphinx_rtd_theme = {version = "^0.5.2", optional = true}
 sphinx-click = {version = "^3.0.1", optional = true}
-simplejson = "^3.17.3"
 
 [tool.poetry.dev-dependencies]
 sphinx = {version = "^4.0.2"}
