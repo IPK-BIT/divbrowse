@@ -1,0 +1,77 @@
+metadata:
+  general_description: Unimputed SNP variants for 22626 BRIDGE project panel genotypes with reference to Morex V3
+  vcf_doi: 
+  vcf_reference_genome_doi: http://doi.org/10.5447/ipk/2021/3
+  gff3_doi: http://doi.org/10.5447/ipk/2021/3
+
+datadir: /opt/divbrowse/uwsgi/bridge_all_samples_morex_v3/data/
+
+variants:
+  zarr_dir: 201006_diversity_gbs_morex_v3_bcftools_filtered_corrected_SNPEFF_annotated.vcf.zarr
+  sample_id_mapping_filename: lut_sampleid_vcfid.csv
+
+gff3:
+  filename: Hv_Morex.pgsb.Jul2020.gff3
+  key_confidence: primary_confidence_class
+  key_ontology: Ontology_term
+  feature_type_with_description: mRNA
+  main_feature_type_for_genes_track: mRNA
+  count_exon_variants: false
+  external_link_ontology_term: https://www.ebi.ac.uk/QuickGO/term/{ID}
+  external_links:
+    - feature_type: mRNA
+      feature_attribute: ID
+      url: https://apex.ipk-gatersleben.de/apex/f?p=284:58:::::P58_GENE_NAME:{FEATURE_ID}
+      linktext: Open this gene in BARLEX
+
+
+chromosome_labels:
+  chr1H: 1H
+  chr2H: 2H
+  chr3H: 3H
+  chr4H: 4H
+  chr5H: 5H
+  chr6H: 6H
+  chr7H: 7H
+  chrUn: Un
+
+
+gff3_chromosome_labels:
+  chr1H: chr1H
+  chr2H: chr2H
+  chr3H: chr3H
+  chr4H: chr4H
+  chr5H: chr5H
+  chr6H: chr6H
+  chr7H: chr7H
+  chrUn: chrUn
+
+
+centromeres_positions:
+  chr1H: 206486643
+  chr2H: 301293086
+  chr3H: 267852507
+  chr4H: 276149121
+  chr5H: 204878572
+  chr6H: 256319444
+  chr7H: 328847192
+  chrUn: 0
+
+
+blast:
+  active: true
+  galaxy_server_url: https://galaxy-web.ipk-gatersleben.de
+  galaxy_user: myusername
+  galaxy_pass: mypassword
+  galaxy_tool_id: ncbi_blastn_wrapper_barley
+  blast_database: morex_v3
+  blast_type: megablast
+  blast_result_to_vcf_chromosome_mapping:
+    chr1H: chr1H
+    chr2H: chr2H
+    chr3H: chr3H
+    chr4H: chr4H
+    chr5H: chr5H
+    chr6H: chr6H
+    chr7H: chr7H
+    chrUn: chrUn

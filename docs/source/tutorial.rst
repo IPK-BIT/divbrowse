@@ -13,7 +13,7 @@ Setup a directory structure for the new instance
     $ mkdir ~/divbrowse_instance_homo_sapiens
     $ cd ~/divbrowse_instance_homo_sapiens
 
-- Create a new directory `data` within your previously created project directory and switch this new directory: ::
+- Create a new directory `data` within your previously created project directory and switch to this new directory: ::
 
     $ mkdir data
     $ cd data

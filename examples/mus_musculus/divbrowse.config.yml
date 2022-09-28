@@ -1,0 +1,113 @@
+metadata:
+  general_description: Sanger Institute Mouse Genomes Project v5 - SNP calls from version 5 of the Mouse Genome Project at the Wellcome Trust Sanger Institute. Specifically, this project describes the variants of 36 mouse strains aligned against the reference mouse genome sequence GRCm38.
+  vcf_doi: https://www.ebi.ac.uk/eva/?eva-study=PRJEB11471
+  vcf_reference_genome_doi: https://www.ncbi.nlm.nih.gov/assembly/GCF_000001635.20/
+  gff3_doi: https://nov2020.archive.ensembl.org/Mus_musculus/Info/Index
+
+datadir: /opt/divbrowse/uwsgi/sanger_institute_mouse_genomes_project_v5/data/
+
+variants:
+  zarr_dir: mgp.v5.merged.snps_all.dbSNP142.noALT_X.done.vcf.zarr
+  sample_id_mapping_filename: 
+
+
+gff3:
+  filename: Mus_musculus.GRCm38.102.chr.gff3
+  additional_attributes_keys: biotype,gene_id
+  key_confidence: false
+  key_ontology: Ontology_term
+  feature_type_with_description: gene
+  main_feature_types_for_genes_track:
+    - gene
+    - pseudogene
+    - ncRNA_gene
+  count_exon_variants: false
+  external_link_ontology_term: 
+  external_links:
+    - feature_attribute: gene_id
+      url: https://nov2020.archive.ensembl.org/Mus_musculus/Gene/Summary?g={FEATURE_ID}
+      linktext: Open this gene on ensembl.org
+
+
+chromosome_labels:
+  1: 1
+  2: 2
+  3: 3
+  4: 4
+  5: 5
+  6: 6
+  7: 7
+  8: 8
+  9: 9
+  10: 10
+  11: 11
+  12: 12
+  13: 13
+  14: 14
+  15: 15
+  16: 16
+  17: 17
+  18: 18
+  19: 19
+  X: X
+  Y: Y
+  MT: MT
+
+
+gff3_chromosome_labels:
+  1: 1
+  2: 2
+  3: 3
+  4: 4
+  5: 5
+  6: 6
+  7: 7
+  8: 8
+  9: 9
+  10: 10
+  11: 11
+  12: 12
+  13: 13
+  14: 14
+  15: 15
+  16: 16
+  17: 17
+  18: 18
+  19: 19
+  X: X
+  Y: Y
+  MT: MT
+
+centromeres_positions:
+  1: 0
+  2: 0
+  3: 0
+  4: 0
+  5: 0
+  6: 0
+  7: 0
+  8: 0
+  9: 0
+  10: 0
+  11: 0
+  12: 0
+  13: 0
+  14: 0
+  15: 0
+  16: 0
+  17: 0
+  18: 0
+  19: 0
+  X: 0
+  Y: 0
+  MT: 0
+
+blast:
+  active: false
+  galaxy_server_url:
+  galaxy_user:
+  galaxy_pass:
+  galaxy_tool_id:
+  blast_database:
+  blast_type: megablast
+  blast_result_to_vcf_chromosome_mapping:

@@ -1,0 +1,117 @@
+metadata:
+  general_description: Biallelic SNVs called from 2,548 human samples across 26 populations from the 1000 Genomes Project, called directly against GRCh38
+  vcf_doi: https://www.ebi.ac.uk/ena/browser/view/PRJEB30460
+  vcf_reference_genome_doi: https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.39
+  gff3_doi: https://www.ensembl.org/Homo_sapiens/Info/Index
+
+datadir: /opt/divbrowse/uwsgi/1000g_human/data/
+
+variants:
+  zarr_dir: ALL_CHROMS_1-22.shapeit2_integrated_v1a.GRCh38.20181129.phased.vcf.zarr
+  sample_id_mapping_filename: 
+
+
+gff3:
+  filename: Homo_sapiens.GRCh38.107.chr.gff3
+  additional_attributes_keys: biotype,gene_id
+  key_confidence: false
+  key_ontology: Ontology_term
+  feature_type_with_description: gene
+  main_feature_types_for_genes_track:
+    - gene
+    - pseudogene
+    - ncRNA_gene
+  count_exon_variants: true
+  external_link_ontology_term: 
+  external_links:
+    - feature_attribute: gene_id
+      url: https://www.ensembl.org/Homo_sapiens/Gene/Summary?g={FEATURE_ID}
+      linktext: Open this gene on ensembl.org
+
+
+chromosome_labels:
+  chr1: chr1
+  chr2: chr2
+  chr3: chr3
+  chr4: chr4
+  chr5: chr5
+  chr6: chr6
+  chr7: chr7
+  chr8: chr8
+  chr9: chr9
+  chr10: chr10
+  chr11: chr11
+  chr12: chr12
+  chr13: chr13
+  chr14: chr14
+  chr15: chr15
+  chr16: chr16
+  chr17: chr17
+  chr18: chr18
+  chr19: chr19
+  chr20: chr20
+  chr21: chr21
+  chr22: chr22
+  chrX: chrX
+
+
+gff3_chromosome_labels:
+  chr1: 1
+  chr2: 2
+  chr3: 3
+  chr4: 4
+  chr5: 5
+  chr6: 6
+  chr7: 7
+  chr8: 8
+  chr9: 9
+  chr10: 10
+  chr11: 11
+  chr12: 12
+  chr13: 13
+  chr14: 14
+  chr15: 15
+  chr16: 16
+  chr17: 17
+  chr18: 18
+  chr19: 19
+  chr20: 20
+  chr21: 21
+  chr22: 22
+  chrX: X
+
+
+centromeres_positions:
+  chr1: 0
+  chr2: 0
+  chr3: 0
+  chr4: 0
+  chr5: 0
+  chr6: 0
+  chr7: 0
+  chr8: 0
+  chr9: 0
+  chr10: 0
+  chr11: 0
+  chr12: 0
+  chr13: 0
+  chr14: 0
+  chr15: 0
+  chr16: 0
+  chr17: 0
+  chr18: 0
+  chr19: 0
+  chr20: 0
+  chr21: 0
+  chr22: 0
+
+
+blast:
+  active: false
+  galaxy_server_url:
+  galaxy_user:
+  galaxy_pass:
+  galaxy_tool_id:
+  blast_database:
+  blast_type: megablast
+  blast_result_to_vcf_chromosome_mapping:
