@@ -64,13 +64,20 @@ Obtaining the gene annotation from ensemble.org
 Setup configuration file
 ========================
 
-- Switch to the project directory: ::
+- Switch back to the project directory: ::
 
     $ cd ~/divbrowse_instance_homo_sapiens
 
 - And download the configuration file ``divbrowse.config.yml`` from the Github repository: ::
 
-    $ wget https://www.github.com
+    $ wget https://raw.githubusercontent.com/IPK-BIT/divbrowse/main/examples/homo_sapiens/divbrowse.config.yml
+
+
+- Make sure to adjust the option ``datadir`` in the configuration file ``divbrowse.config.yml`` to your local conditions:
+
+.. code-block:: yaml
+
+   datadir: /home/myusername/divbrowse_instance_homo_sapiens/data/
 
 
 
