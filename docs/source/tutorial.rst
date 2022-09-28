@@ -2,18 +2,18 @@
 Tutorial
 ========
 
-Here we describe the setup of a DivBrowse instance with a VCF file of Homo sapiens steo by step.
+Here we describe the setup of a DivBrowse instance with a VCF file of Homo sapiens step by step.
 
 
 Setup a directory structure for the new instance
 ================================================
 
-- Create a new project directory for your DivBrowse instance:
+- Create a new project directory for your DivBrowse instance: ::
 
     $ mkdir ~/divbrowse_instance_homo_sapiens
     $ cd ~/divbrowse_instance_homo_sapiens
 
-- Create a new directory `data` within your previously created project directory and switch this new directory:
+- Create a new directory `data` within your previously created project directory and switch this new directory: ::
 
     $ mkdir data
     $ cd data
@@ -41,7 +41,7 @@ Obtaining VCF files from the European Nucleotide Archive
    ALL.chr21.shapeit2_integrated_v1a.GRCh38.20181129.GRCh38.phased.vcf.gz ALL.chr22.shapeit2_integrated_v1a.GRCh38.20181129.GRCh38.phased.vcf.gz \
    ALL.chrX.shapeit2_integrated_v1a.GRCh38.20181129.GRCh38.phased.vcf.gz
 
-- Convert the concatenated VCF file to a Zarr archive with the DivBrowse CLI:
+- Convert the concatenated VCF file to a Zarr archive with the DivBrowse CLI: ::
 
     $ divbrowse vcf2zarr --path-vcf ./ALL.shapeit2_integrated_v1a.GRCh38.20181129.phased.vcf.gz --path-zarr ./ALL.shapeit2_integrated_v1a.GRCh38.20181129.phased.zarr
 
@@ -50,25 +50,25 @@ Obtaining VCF files from the European Nucleotide Archive
 Obtaining the gene annotation from ensemble.org
 ===============================================
 
-- Download the file `Homo_sapiens.GRCh38.107.chr.gff3.gz` from: http://ftp.ensembl.org/pub/release-107/gff3/homo_sapiens/
+- Download the file ``Homo_sapiens.GRCh38.107.chr.gff3.gz`` from: http://ftp.ensembl.org/pub/release-107/gff3/homo_sapiens/ ::
 
     $ wget http://ftp.ensembl.org/pub/release-107/gff3/homo_sapiens/Homo_sapiens.GRCh38.107.chr.gff3.gz
 
-- Uncompress the gzipped file:
+- Uncompress the gzipped file: ::
 
     $ gzip -d Homo_sapiens.GRCh38.107.chr.gff3.gz
 
-- Now you should have `ALL.shapeit2_integrated_v1a.GRCh38.20181129.phased.zarr` and `Homo_sapiens.GRCh38.107.chr.gff3` in the path `~/divbrowse_instance_homo_sapiens/data`
+- Now you should have ``ALL.shapeit2_integrated_v1a.GRCh38.20181129.phased.zarr`` and ``Homo_sapiens.GRCh38.107.chr.gff3`` in the path ``~/divbrowse_instance_homo_sapiens/data``
 
 
 Setup configuration file
 ========================
 
-- Switch to the project directory:
+- Switch to the project directory: ::
 
     $ cd ~/divbrowse_instance_homo_sapiens
 
-- And download the configuration file `divbrowse.config.yml` from the Github repository:
+- And download the configuration file ``divbrowse.config.yml`` from the Github repository: ::
 
     $ wget https://www.github.com
 
@@ -77,6 +77,6 @@ Setup configuration file
 Start intergrated web server to serve the instance
 ==================================================
 
-- Now you can start the configured instance by executing the following command:
+- Now you can start the configured instance by executing the following command: ::
 
     $ divbrowse start
