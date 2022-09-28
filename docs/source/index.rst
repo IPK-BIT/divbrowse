@@ -12,6 +12,7 @@ Welcome to DivBrowse's documentation!
    introduction.rst
    installation.rst
    usage.rst
+   tutorial.rst
    configuration.rst
    API Reference <../autoapi#http://>
 
