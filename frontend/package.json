@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "build": "rollup -c",
+    "postbuild": "npm run copy",
+    "copy": "npx copyfiles -u 2 public/build/* ../divbrowse/static/build/",
     "dev": "rollup -c -w",
     "start": "sirv public"
   },
@@ -10,6 +12,7 @@
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.0.0",
     "@rollup/plugin-replace": "^2.3.3",
+    "copyfiles": "^2.4.1",
     "less": "^3.11.1",
     "postcss": "^8.3.5",
     "rollup": "^2.3.4",
