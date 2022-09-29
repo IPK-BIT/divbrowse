@@ -1,8 +1,10 @@
-========
-Tutorial
-========
+==========================================================
+Tutorial - How to setup a DivBrowse instance for your data
+==========================================================
 
 Here we describe the setup of a DivBrowse instance with a VCF file of Homo sapiens step by step.
+
+Please make sure that you have installed DivBrowse properly. See :doc:`installation` for more information about the installation.
 
 
 Setup a directory structure for the new instance
