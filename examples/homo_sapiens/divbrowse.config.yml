@@ -7,7 +7,7 @@ metadata:
 datadir: /opt/divbrowse/uwsgi/1000g_human/data/
 
 variants:
-  zarr_dir: ALL_CHROMS_1-22.shapeit2_integrated_v1a.GRCh38.20181129.phased.vcf.zarr
+  zarr_dir: ALL.shapeit2_integrated_v1a.GRCh38.20181129.phased.zarr
   sample_id_mapping_filename: 
 
 
