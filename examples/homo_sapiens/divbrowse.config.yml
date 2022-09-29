@@ -104,7 +104,7 @@ centromeres_positions:
   chr20: 0
   chr21: 0
   chr22: 0
-
+  chrX: 0
 
 blast:
   active: false
