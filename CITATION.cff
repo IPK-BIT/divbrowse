@@ -68,6 +68,7 @@ identifiers:
 repository-code: 'https://github.com/IPK-BIT/divbrowse'
 url: 'https://divbrowse.ipk-gatersleben.de/'
 repository-artifact: 'https://pypi.org/project/divbrowse/'
+doi: 10.1101/2022.09.22.509016
 abstract: >-
   DivBrowse is a software for interactive
   visualization and analysis of the diversity of
