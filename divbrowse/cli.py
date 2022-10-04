@@ -167,7 +167,7 @@ def start(host: str, port: str, infer_config: bool, save_config):
 
         path_zarr = selected_vcf + '.zarr'
         if not os.path.isdir(path_zarr):
-            allel.vcf_to_zarr(selected_vcf, path_zarr, group='/', fields='*', log=sys.stdout, compressor=numcodecs.Blosc(cname='zstd', clevel=1, shuffle=False)) # cname='zstd'
+            allel.vcf_to_zarr(selected_vcf, path_zarr, group='/', fields='*', log=sys.stdout, compressor=numcodecs.Blosc(cname='zstd', clevel=5, shuffle=False)) # cname='zstd'
 
 
         gff3_files = []
@@ -220,16 +220,18 @@ def start(host: str, port: str, infer_config: bool, save_config):
 
     if host == '0.0.0.0':
         import socket
-        url = 'http://'+socket.gethostname()+':'+str(port)+'/index.html'
+        hostname = socket.gethostname()
+        local_ip_addr = socket.gethostbyname(hostname)
+        url = 'http://'+local_ip_addr+':'+str(port)+'/index.html'
     else:
         url = 'http://'+str(host)+':'+str(port)+'/index.html'
-
-    click.secho('DivBrowse should be available under the following URL: '+str(url), fg='green', bold=True)
 
     if infer_config:
         app = create_app(config_runtime=config_runtime)
     else:
         app = create_app()
+
+    click.secho('DivBrowse should be available under the following URL: '+str(url), fg='green', bold=True)
 
     serve(app, host=host, port=int(port))
 

@@ -46,6 +46,10 @@ export function setSamples(_samples) {
     }
 }
 
+export function goToChromosomeAndPosition(chrom, startpos) {
+    controller.goToChromosomeAndPosition(chrom, startpos)
+}
+
 export function setGroups(_groups) {
     groups.set(_groups);
 }

@@ -147,7 +147,8 @@ class AnnotationData:
 
     def get_nearest_gene_start_pos(self, chrom, pos):
         seqid = self.chrom_gff3_map[chrom]
-        nearest = self.genes_start_positions[seqid].index.get_loc(pos, method='nearest')
+        #nearest = self.genes_start_positions[seqid].index.get_loc(pos, method='nearest')
+        nearest = self.genes_start_positions[seqid].index.get_indexer([pos], method='nearest')[0]
         start_pos = int(self.genes_start_positions[seqid].iloc[nearest].start)
         _genes = self.genes_grouped_by_seqid.get_group(seqid)
         return _genes.loc[(_genes['start'] == start_pos)]

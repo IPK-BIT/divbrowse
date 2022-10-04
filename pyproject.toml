@@ -1,9 +1,10 @@
 [tool.poetry]
 name = "divbrowse"
-version = "1.0.0"
+version = "1.0.1"
 description = "A web application for interactive visualization and analysis of genotypic variant matrices"
 authors = ["Patrick König <koenig@ipk-gatersleben.de>"]
 license = "MIT"
+include = ["docs/", "divbrowse/static/*", "divbrowse/static/build/*"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
