@@ -1,0 +1,85 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: >-
+  DivBrowse - interactive visualization and
+  exploratory data analysis of variant call matrices
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Patrick
+    family-names: König
+    email: koenig@ipk-gatersleben.de
+    orcid: 'https://orcid.org/0000-0002-8948-6793'
+    affiliation: >-
+      Leibniz Institute of Plant Genetics and Crop
+      Plant Research (IPK) Gatersleben, 06466
+      Seeland, Germany
+  - given-names: Sebastian
+    family-names: Beier
+    orcid: 'https://orcid.org/0000-0002-2177-8781'
+    affiliation: >-
+      Leibniz Institute of Plant Genetics and Crop
+      Plant Research (IPK) Gatersleben, 06466
+      Seeland, Germany
+    email: s.beier@fz-juelich.de
+  - given-names: Martin
+    family-names: Mascher
+    email: mascher@ipk-gatersleben.de
+    affiliation: >-
+      Leibniz Institute of Plant Genetics and Crop
+      Plant Research (IPK) Gatersleben, 06466
+      Seeland, Germany
+    orcid: 'https://orcid.org/0000-0001-6373-6013'
+  - given-names: Nils
+    family-names: Stein
+    orcid: 'https://orcid.org/0000-0003-3011-8731'
+    affiliation: >-
+      Leibniz Institute of Plant Genetics and Crop
+      Plant Research (IPK) Gatersleben, 06466
+      Seeland, Germany
+    email: stein@ipk-gatersleben.de
+  - given-names: Matthias
+    family-names: Lange
+    email: lange@ipk-gatersleben.de
+    orcid: 'https://orcid.org/0000-0002-4316-078X'
+    affiliation: >-
+      Leibniz Institute of Plant Genetics and Crop
+      Plant Research (IPK) Gatersleben, 06466
+      Seeland, Germany
+  - given-names: Uwe
+    family-names: Scholz
+    orcid: 'https://orcid.org/0000-0001-6113-3518'
+    email: scholz@ipk-gatersleben.de
+    affiliation: >-
+      Leibniz Institute of Plant Genetics and Crop
+      Plant Research (IPK) Gatersleben, 06466
+      Seeland, Germany
+identifiers:
+  - type: doi
+    value: 10.1101/2022.09.22.509016
+    description: The bioRxiv deposit of the encompassing paper.
+  - type: url
+    value: 'https://divbrowse.ipk-gatersleben.de'
+    description: Project homepage
+repository-code: 'https://github.com/IPK-BIT/divbrowse'
+url: 'https://divbrowse.ipk-gatersleben.de/'
+repository-artifact: 'https://pypi.org/project/divbrowse/'
+abstract: >-
+  DivBrowse is a software for interactive
+  visualization and analysis of the diversity of
+  genomic variants. It uses VCF and GFF3 files as
+  data input and consists of a web server written in
+  Python and a GUI written in Javascript.
+keywords:
+  - genomics
+  - data visualization
+  - variation data
+  - variant call format
+  - biodiversity
+license: MIT
+version: 1.0.1
+date-released: '2022-09-28'
