@@ -7,10 +7,6 @@ import { getContext } from 'svelte';
 const context = getContext('app');
 let { controller } = context.app();
 
-// TODO: check if this can be removed
-//import Inview from 'svelte-inview';
-//let inview_ref;
-
 import getStores from '/utils/store';
 const { variantWidth } = getStores();
 

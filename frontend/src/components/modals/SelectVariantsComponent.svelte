@@ -249,7 +249,7 @@ $: if (errorMsg) {
                 </label>
             </div>
 
-            <div class="form-inline" style="float: left; margin-left: 100px; margin-top: 20px;">
+            <div class="form-inline" style="float: left; margin-left: 50px; margin-top: 20px;">
             {#if data.features.length == 0}
                 <p style="line-height: 0.8 !important; font-size: 0.85rem; font-weight: 500; padding-top: 0px;">There are currently no genes in the viewport!</p>
             {:else}
@@ -276,7 +276,7 @@ $: if (errorMsg) {
             </div>
 
             
-            <div class="form-inline" style="float: left; margin-left: 100px; margin-top: 0px;">
+            <div class="form-inline" style="float: left; margin-left: 50px; margin-top: 0px;">
                 <div style="float: left;">
                     <input disabled="{customRangeInputDisabled}" type="text" bind:value={customStartpos} placeholder="Start position" class="divbrowse-form-control" style="padding: 0 8px 0 8px; margin-bottom: 6px;" /><br />
                     <input disabled="{customRangeInputDisabled}" type="text" bind:value={customEndpos} placeholder="End position" class="divbrowse-form-control" style="padding: 0 8px 0 8px;" />
@@ -376,11 +376,12 @@ div.mode-option-box {
     border-radius: 8px;
     margin-bottom: 14px;
     padding: 15px 10px;
-    height: 74px;
+    
+    box-sizing: border-box;
 
     > div.select-option {
         float: left;
-        width: 200px;
+        width: 250px;
         border: 0px solid red;
         position: relative;
 
@@ -397,8 +398,8 @@ div.mode-option-box {
             h5 {
                 font-size: 0.9rem;
                 margin: 0;
-                padding: 3px 0 0 0;
-                font-weight: 500;
+                padding: 2px 0 0 0;
+                font-weight: 700;
             }
 
             p {

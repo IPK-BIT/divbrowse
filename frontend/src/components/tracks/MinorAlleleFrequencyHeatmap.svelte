@@ -9,7 +9,7 @@ import { getContext } from 'svelte';
 const context = getContext('app');
 let { appId } = context.app();
 
-import {scaleLinear} from "d3-scale";
+import { scaleLinear } from "d3-scale";
 
 import { delegate } from 'tippy.js';
 

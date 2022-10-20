@@ -16,11 +16,15 @@ let showLoadingAnimation = false;
 
 import DataFrame from 'dataframe-js';
 //import Fuse from 'fuse.js'
-import { Datatable, rows } from 'svelte-simple-datatables';
 
-import { pageNumber } from 'svelte-simple-datatables/src/stores/state.js'
+
+import { Datatable, PaginationButtons, PaginationRowCount } from 'svelte-simple-datatables';
+let rows;
+
+import { context as contextDatatable } from 'svelte-simple-datatables/src/app/context.js'
+
 const reset = () => {
-    pageNumber.set(1)
+    contextDatatable.get('datatable-genes').getPageNumber().update(store => store = 1);
 }
 
 
@@ -133,14 +137,15 @@ function goToPos(chrom, startpos, endpos) {
 const datatableSettings = {
     sortable: true,
     pagination: true,
-    rowPerPage: 10,
+    //rowPerPage: 10,
+    rowsPerPage: 10,
     columnFilter: true,
     scrollY: false,
     css: false,
     blocks: {
         searchInput: false, 
-        paginationButtons: true,
-        paginationRowCount: true,
+        paginationButtons: false,
+        paginationRowCount: false,
     }
 }
 
@@ -202,7 +207,7 @@ const datatableSettings = {
     <div class="box" style="margin-top:15px; background: rgb(242,242,242); border-radius: 8px; padding: 10px;">
         <!--<h3 style="font-weight:bold;margin-bottom:20px;font-size:1.1rem;padding:0;margin-top:0px;">Search result</h3>-->
 
-        <Datatable  settings={datatableSettings} data={result}>
+        <Datatable settings={datatableSettings} data={result} bind:dataRows={rows} id={'datatable-genes'}>
             <thead>
                 <th data-key="id">ID</th>
                 <th data-key="type">Type</th>
@@ -222,6 +227,7 @@ const datatableSettings = {
                 <th></th>
             </thead>
             <tbody>
+                {#if rows}
                 {#each $rows as row}
                 <tr>
                     <td class="id" style="width:230px;"><a href="#" on:click|preventDefault={openGeneDetailsModal(row.ID)}>{row.ID}</a></td>
@@ -241,8 +247,16 @@ const datatableSettings = {
                     <td><a href="#" on:click|preventDefault={ () => goToPos(row.seqid, row.start, row.end) }>show</a></td>
                 </tr>
                 {/each}
+                {/if}
             </tbody>
         </Datatable>
+
+        <aside>
+        {#if $rows}
+            <PaginationButtons id={'datatable-genes'}/>
+            <PaginationRowCount id={'datatable-genes'}/>
+        {/if}
+        </aside>
         
     </div>
     {/if}

@@ -5,6 +5,9 @@ description = "A web application for interactive visualization and analysis of g
 authors = ["Patrick König <koenig@ipk-gatersleben.de>"]
 license = "MIT"
 include = ["docs/", "divbrowse/static/*", "divbrowse/static/build/*"]
+homepage = "https://divbrowse.ipk-gatersleben.de/"
+repository = "https://github.com/IPK-BIT/divbrowse"
+documentation = "https://divbrowse.readthedocs.io/"
 
 [tool.poetry.dependencies]
 python = "^3.9"

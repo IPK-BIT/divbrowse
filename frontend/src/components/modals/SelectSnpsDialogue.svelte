@@ -180,13 +180,13 @@ const doCalculation = () => {
             <input type="button" on:click|preventDefault={() => validateSnpWindow(customStartpos, customEndpos)} value="Validate positions" class="divbrowse-btn divbrowse-btn-light" />
         </div>
         {#if snpcount !== false}
-        <div style="font-size:0.85rem; margin-top: 15px;">There are {snpcount} SNPs in the given window.</div>
+        <div style="font-size:0.85rem; margin-top: 15px;">There are {snpcount} variants in the given window.</div>
             {#if useVariantFilter}
                 <div style="margin-top: 10px; font-size:0.85rem;">
                 {#if showLoadingAnimationSnpWindow}
                     <LoadingAnimation size="small" />
                 {:else}
-                    There are {snpcountFiltered} SNPs in the given window matching your filter criteria.
+                    There are {snpcountFiltered} variants in the given window matching your filter criteria.
                 {/if}
                 </div>
             {/if}
@@ -229,14 +229,14 @@ const doCalculation = () => {
 
             {#if settings.showSnpCount === undefined || settings.showSnpCount === true}
             <tr>
-                <td>Number of SNPs:</td>
+                <td>Number of variants:</td>
                 <td>{snpcount}</td>
             </tr>
             {/if}
 
             {#if useVariantFilter}
             <tr>
-                <td>Number of filtered SNPs:</td>
+                <td>Number of filtered variants:</td>
                 <td>
                     {#if showLoadingAnimationSnpWindow}
                         <LoadingAnimation size="small" />
