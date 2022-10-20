@@ -409,6 +409,9 @@ class GenotypeData:
 
         """
 
+        if startpos > endpos:
+            startpos, endpos = endpos, startpos
+
         location_start, lookup_type_start = self.get_posidx_by_genome_coordinate(chrom, startpos)
         location_end, lookup_type_end = self.get_posidx_by_genome_coordinate(chrom, endpos)
         location_end = location_end + 1
