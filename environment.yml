@@ -15,5 +15,5 @@ dependencies:
   - pyyaml
   - zarr
   - waitress
-  - simplejso
+  - simplejson
   - umap-learn
