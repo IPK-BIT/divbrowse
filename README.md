@@ -1,5 +1,5 @@
-<img src="/docs/source/images/divbrowse_logo.png" width="50%">
-<br /><br />
+<img src="docs/source/images/divbrowse_logo.png" width="600">
+<br />
 
 [![PyPI](https://img.shields.io/pypi/v/divbrowse?color=blue&label=PyPI.org)](https://pypi.org/project/divbrowse/)
 [![Docker Image Version (latest semver)](https://img.shields.io/docker/v/ipkbit/divbrowse?color=blue&label=DockerHub)](https://hub.docker.com/r/ipkbit/divbrowse)
@@ -15,8 +15,7 @@
 
 <br />
 
-**Website:** https://divbrowse.ipk-gatersleben.de
-
+**Website:** https://divbrowse.ipk-gatersleben.de   
 **Documentation:** https://divbrowse.readthedocs.io
 
 <hr />
