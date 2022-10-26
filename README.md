@@ -1,4 +1,11 @@
 [![Documentation Status](https://readthedocs.org/projects/divbrowse/badge/?version=latest)](https://divbrowse.readthedocs.io/?badge=latest)
+[![Python](https://img.shields.io/pypi/pyversions/divbrowse.svg?style=plastic)](https://badge.fury.io/py/divbrowse)
+[![PyPI version](https://badge.fury.io/py/divbrowse.svg)](https://badge.fury.io/py/divbrowse)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/divbrowse.svg?label=PyPI%20downloads)](https://pypi.org/project/divbrowse/)
+[![Preprint on bioRxiv.org](https://img.shields.io/badge/DOI-10.1101%2F2022.09.22.509016-green)](https://doi.org/10.1101/2022.09.22.509016)
+
+- **Website:** https://divbrowse.ipk-gatersleben.de
+- **Documentation:** https://divbrowse.readthedocs.io/
 
 # DivBrowse
 
