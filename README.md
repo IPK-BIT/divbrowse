@@ -1,3 +1,6 @@
+<img src="/docs/source/images/divbrowse_logo.png" width="50%">
+<br /><br />
+
 [![PyPI](https://img.shields.io/pypi/v/divbrowse?color=blue&label=PyPI.org)](https://pypi.org/project/divbrowse/)
 [![Docker Image Version (latest semver)](https://img.shields.io/docker/v/ipkbit/divbrowse?color=blue&label=DockerHub)](https://hub.docker.com/r/ipkbit/divbrowse)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/IPK-BIT/divbrowse?color=blue&label=Github)
@@ -10,22 +13,22 @@
 [![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/pypi/divbrowse)](https://libraries.io/pypi/divbrowse)
 ![License](https://img.shields.io/github/license/IPK-BIT/divbrowse)
 
----
+<br />
 
 **Website:** https://divbrowse.ipk-gatersleben.de
 
 **Documentation:** https://divbrowse.readthedocs.io
 
----
+<hr />
 
-# DivBrowse
-
+**Table of contents:**
   - [About DivBrowse](#about-divbrowse)
   - [Try out DivBrowse](#try-out-divbrowse)
   - [Screenshots](#screenshots)
   - [Usage workflow concept](#usage-workflow-concept)
   - [Architecture](#architecture)
 
+<br />
 
 ## About DivBrowse
 
