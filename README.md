@@ -1,11 +1,22 @@
+[![PyPI](https://img.shields.io/pypi/v/divbrowse?color=blue&label=PyPI.org)](https://pypi.org/project/divbrowse/)
+[![Docker Image Version (latest semver)](https://img.shields.io/docker/v/ipkbit/divbrowse?color=blue&label=DockerHub)](https://hub.docker.com/r/ipkbit/divbrowse)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/IPK-BIT/divbrowse?color=blue&label=Github)
+
+[![Preprint on bioRxiv.org](https://img.shields.io/badge/DOI-10.1101%2F2022.09.22.509016-yellow)](https://doi.org/10.1101/2022.09.22.509016)
+
 [![Documentation Status](https://readthedocs.org/projects/divbrowse/badge/?version=latest)](https://divbrowse.readthedocs.io/?badge=latest)
 [![Python](https://img.shields.io/pypi/pyversions/divbrowse.svg?color=green)](https://badge.fury.io/py/divbrowse)
-[![PyPI version](https://badge.fury.io/py/divbrowse.svg)](https://badge.fury.io/py/divbrowse)
 [![PyPI Downloads](https://img.shields.io/pypi/dm/divbrowse.svg?label=PyPI%20downloads)](https://pypi.org/project/divbrowse/)
-[![Preprint on bioRxiv.org](https://img.shields.io/badge/DOI-10.1101%2F2022.09.22.509016-green)](https://doi.org/10.1101/2022.09.22.509016)
+[![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/pypi/divbrowse)](https://libraries.io/pypi/divbrowse)
+![License](https://img.shields.io/github/license/IPK-BIT/divbrowse)
 
-- **Website:** https://divbrowse.ipk-gatersleben.de
-- **Documentation:** https://divbrowse.readthedocs.io/
+---
+
+**Website:** https://divbrowse.ipk-gatersleben.de
+
+**Documentation:** https://divbrowse.readthedocs.io
+
+---
 
 # DivBrowse
 
@@ -27,8 +38,8 @@ The integrated ad-hoc calculation of variant summary statistics and principal co
 
 ## Try out DivBrowse
 
-If you want to test DivBrowse please visit the demo instance online at:
-https://divbrowse.ipk-gatersleben.de/demo/
+If you want to test DivBrowse please visit the demo instances listed here:
+https://divbrowse.ipk-gatersleben.de/#demo-instances
 
 
 ## Screenshots
