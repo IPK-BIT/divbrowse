@@ -1,6 +1,8 @@
 <script>
 export let data;
 
+import GenomicRegionGrid from '/components/tracks/GenomicRegionGrid.svelte';
+
 import { getContext } from 'svelte';
 let { appId, controller } = getContext('app').app();
 
@@ -15,23 +17,17 @@ let widthAllVariants;
 
 let maxmin;
 
-let features;
+let features = {};
 let featuresKeyedById = {};
 
 let yOffset = {
-    plusStrand: 10,
-    minusStrand: 20,
+    plusStrand: 20,
+    minusStrand: 32,
     variant: 40,
     curveTop: 45,
-    controlPoint: 75,
-    curveBottom: 100
+    controlPoint: 62,
+    curveBottom: 80
 }
-
-let xbot = 70;
-
-let _xTop, _xBottom;
-
-const isEmpty = (value) => (value === undefined || value === '') ? true : false;
 
 const tippyProps = {
     delay: 0,
@@ -135,10 +131,11 @@ const openGeneDetailsModal = (featureId) => {
 <div class="track genomic-region" style="">
 
     <div class="label" style="">Genes and variants<br />in genomic region</div>
-    <div style="width: {widthAllVariants}px; border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">
+
+    <div style="width: {widthAllVariants}px; border: 1px solid black;">
 
         <div id="svg-container" style="width: {widthAllVariants}px;">
-            <svg width="{widthAllVariants}" height="100" bind:this={svg}>
+            <svg width="{widthAllVariants}" height="80" bind:this={svg}>
                 <defs>
                     <symbol id="arrow" viewBox="0 0 50 50" width="50" height="50">
                         <g transform="scale(0.5)">
@@ -205,6 +202,8 @@ const openGeneDetailsModal = (featureId) => {
                 {/each}
 
 
+                <GenomicRegionGrid data={data} />
+
 
             </svg>
         </div>
@@ -232,11 +231,11 @@ const openGeneDetailsModal = (featureId) => {
 
 
 div.track.genomic-region {
-    height: 100px;
+    height: 80px;
 }
 
 #svg-container {
-    height: 100px;
+    height: 80px;
 }
 
 

@@ -172,7 +172,7 @@ function handleChangeBlastResult(selectedPastBlastResultTimestamp) {
         <thead>
             <tr>
                 <th>Chromosome</th>
-                <th>Number of SNPs</th>
+                <th>Number of variants</th>
                 <th>E-value</th>
                 <th>Bit score</th>
                 <th>Percentage of identical matches</th>

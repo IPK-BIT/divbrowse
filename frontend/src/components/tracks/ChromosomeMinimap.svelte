@@ -16,6 +16,7 @@ let metadata = controller.getMetadata();
 
 let widthAllVariants = controller.getCurrentWidthOfVariants();
 
+let currChromStart = metadata.chromosomesById[ controller.chromosome ].start;
 let currChromEnd = metadata.chromosomesById[ controller.chromosome ].end;
 
 let currChromCentromerePos = metadata.chromosomesById[ controller.chromosome ].centromere_position;
@@ -26,6 +27,8 @@ let widthRightFragment = 400 - widthLeftFragment;
 
 $: {
     widthAllVariants = controller.getCurrentWidthOfVariants();
+
+    currChromStart = metadata.chromosomesById[ controller.chromosome ].start;
     currChromEnd = metadata.chromosomesById[ controller.chromosome ].end;
 
     currChromCentromerePos = metadata.chromosomesById[ controller.chromosome ].centromere_position;
@@ -47,6 +50,19 @@ function prettyPos(pos) {
     return parseInt(pos).toLocaleString();
 }
 
+function onClickMinimap(event) {
+    let rect = event.currentTarget.getBoundingClientRect();
+    let clickX = event.clientX - rect.left;
+    if (clickX >= 0 && clickX <= 400) {
+        let in_min = 0;
+        let in_max = 400;
+        let out_min = currChromStart;
+        let out_max = currChromEnd;
+        let desiredPosition = Math.floor((clickX - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
+        controller.goToPosition(desiredPosition);
+    }
+}
+
 </script>
 
 <div class="track chromosome-minimap" style="width:100%;">
@@ -55,7 +71,7 @@ function prettyPos(pos) {
 
     <div style="width: {widthAllVariants}px;">
     
-        <div style="position: relative; height: 18px;">
+        <div style="position: relative; height: 18px;" on:click={onClickMinimap}>
 
             {#if currChromCentromerePos > 0}
             <div class="chromosome-fragment" style="width: {widthLeftFragment}px; left: 0px:"></div>
@@ -70,6 +86,7 @@ function prettyPos(pos) {
 
         </div>
 
+        <!--
         <div id="svg-container" style=" width: {widthAllVariants}px;">
             <svg width="{widthAllVariants}" height="30" bind:this={svg}>
                 <defs>
@@ -78,11 +95,13 @@ function prettyPos(pos) {
                         <stop offset="100%" style="stop-color:rgb(250,250,250);stop-opacity:1" />
                     </linearGradient>
                 </defs>
-                <!--<polygon points="{posIndicatorTrapezLeft},0 0,30 {widthAllVariants-1},30" fill="url(#grad)" />-->
-                <line x1="{posIndicatorTrapezLeft-1}" y1="0" x2="0" y2="{height}" style="stroke:rgb(30,30,30);stroke-width:1.0" />
-                <line x1="{posIndicatorTrapezLeft}" y1="0" x2="{widthAllVariants+80}" y2="{height}" style="stroke:rgb(30,30,30);stroke-width:1.0" />
+                
+                <line class="trapez" x1="{posIndicatorTrapezLeft-1}" y1="0" x2="0" y2="{height}" />
+                <line class="trapez" x1="{posIndicatorTrapezLeft}" y1="0" x2="{widthAllVariants+80}" y2="{height}" />
+                
             </svg>
         </div>
+        -->
 
         <!--<div id="trapez" style="border-left: {posIndicatorTrapezLeft}px solid transparent; border-right: {posIndicatorTrapezRight}px solid transparent;"></div>-->
 
@@ -93,8 +112,8 @@ function prettyPos(pos) {
 <style>
 
 div.track.chromosome-minimap {
-    margin-top: 8px;
-    height: 46px;
+
+    height: 30px;
 }
 
 .chromosome-fragment {
@@ -105,12 +124,13 @@ div.track.chromosome-minimap {
     border-radius: 7px;
     position: absolute;
     top: 0px;
+    cursor: pointer;
 }
 
 #pos-indicator {
     position: absolute;
     top: 0px;
-    height: 18px;
+    height: 16px;
     width: 3px;
     background: black;
 }
@@ -118,6 +138,10 @@ div.track.chromosome-minimap {
 #svg-container {
     height: 30px;
     display: block;
+}
+.trapez {
+    stroke:rgb(100,100,100);
+    stroke-width: 1.0;
 }
 
 #trapez {
