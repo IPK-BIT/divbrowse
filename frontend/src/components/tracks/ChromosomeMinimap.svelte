@@ -82,7 +82,7 @@ function onClickMinimap(event) {
 
             <div id="pos-indicator" style="left: {posIndicatorLeft}px;"></div>
 
-            <div id="pos-coordinates" style="position: absolute; left: 420px;font-size:13px;width: 300px;">  {prettyPos(data.coordinate_first)}  - {prettyPos(data.coordinate_last)} of {prettyPos(currChromEnd)}</div>
+            <div id="pos-coordinates" style="position: absolute; left: 420px; top: 1px; font-size:12px; width: 300px;">  {prettyPos(data.coordinate_first)}  - {prettyPos(data.coordinate_last)} of {prettyPos(currChromEnd)}</div>
 
         </div>
 

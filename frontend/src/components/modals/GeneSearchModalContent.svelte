@@ -137,9 +137,8 @@ function goToPos(chrom, startpos, endpos) {
 const datatableSettings = {
     sortable: true,
     pagination: true,
-    //rowPerPage: 10,
     rowsPerPage: 10,
-    columnFilter: true,
+    columnFilter: false,
     scrollY: false,
     css: false,
     blocks: {
@@ -207,6 +206,7 @@ const datatableSettings = {
     <div class="box" style="margin-top:15px; background: rgb(242,242,242); border-radius: 8px; padding: 10px;">
         <!--<h3 style="font-weight:bold;margin-bottom:20px;font-size:1.1rem;padding:0;margin-top:0px;">Search result</h3>-->
 
+        <div style="height:400px;">
         <Datatable settings={datatableSettings} data={result} bind:dataRows={rows} id={'datatable-genes'}>
             <thead>
                 <th data-key="id">ID</th>
@@ -250,13 +250,14 @@ const datatableSettings = {
                 {/if}
             </tbody>
         </Datatable>
+        </div>
 
-        <aside>
+        <div class="clearfix">
         {#if $rows}
             <PaginationButtons id={'datatable-genes'}/>
             <PaginationRowCount id={'datatable-genes'}/>
         {/if}
-        </aside>
+        </div>
         
     </div>
     {/if}
@@ -279,6 +280,29 @@ input.pos {
     font-size: 0.85rem;
     padding-top: 20px !important;
 }
+
+:global(section.dt-pagination-buttons) {
+    float: right;
+}
+
+:global(section.dt-pagination-buttons button) {
+    padding: 3px 14px 3px 14px;
+    background: white;
+    border: 1px solid rgb(90,90,90);
+    line-height: 0.8rem !important;
+}
+
+:global(section.dt-pagination-buttons button.active) {
+    background: rgb(200,200,200);
+}
+
+:global(.dt-pagination-rowcount) {
+    float: left;
+    font-size: 0.85rem;
+    padding-top: 5px;
+}
+
+
 
 :global(section.datatable table) {
     border-collapse: collapse;
@@ -311,19 +335,11 @@ input.pos {
     width: 450px;
 }
 
-:global(section.dt-pagination-buttons button) {
-    padding: 3px 14px 3px 14px;
-    background: white;
-    border: 1px solid rgb(90,90,90);
-    line-height: 0.8rem !important;
-}
 
-:global(section.dt-pagination-buttons button.active) {
-    background: rgb(200,200,200);
-}
 
-:global(.dt-pagination-rowcount) {
-    padding-top: 15px;
-}
+
+
+
+
 
 </style>

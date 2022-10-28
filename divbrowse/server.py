@@ -737,9 +737,9 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
         result = {
             'ploidy': gd.ploidy,
-            'count_genotypes': len(gd.samples),
-            'count_variants': len(gd.pos),
-            'count_elements': len(gd.samples) * len(gd.pos),
+            'count_genotypes': gd.count_samples,
+            'count_variants': gd.count_variants,
+            'count_elements': gd.count_samples * gd.count_variants,
             'chromosomes': gd.list_of_chromosomes,
             'samples': samples,
             'gff3': ad.metadata_gff3,

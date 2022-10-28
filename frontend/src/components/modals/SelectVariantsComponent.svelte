@@ -299,7 +299,7 @@ $: if (errorMsg) {
         <p style="margin-bottom: 10px; margin-top:25px; font-size: 0.85rem;">Current parameters for analysis or export:</p>
         <div class="genomic-range-info clearfix" style="">
             <div class="clearfix" style="">
-                <table style="border-collapse: collapse; float: left; width: 300px;">
+                <table style="border-collapse: collapse; float: left; width: 450px;">
                     <tr>
                         <td style="width: 140px;">Genomic range:</td>
                         <td>{@html genomicRange}</td>
@@ -322,7 +322,7 @@ $: if (errorMsg) {
 
                 {#if settings.allowSnpFiltering === undefined || settings.allowSnpFiltering === true}
                 <div style="float: left; margin-left: 20px; margin-top: 6px;">
-                    <input id="useVariantFilter" type="checkbox" style="vertical-align: -2px;" bind:checked={useVariantFilter}>
+                    <input id="useVariantFilter" type="checkbox" style="vertical-align: -1px;" bind:checked={useVariantFilter}>
                     <label for="useVariantFilter" style="color: {useVariantFilter==true ? 'black' : 'rgb(140,140,140)'};">Apply SNP filter settings (<a on:click|preventDefault={showVariantFilterModal} href="">change</a>)</label>
                 </div>
                 {/if}

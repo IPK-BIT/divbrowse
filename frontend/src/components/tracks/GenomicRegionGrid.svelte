@@ -42,7 +42,7 @@ $: {
 
 <g>
     {#each gridPositionsY as position}
-    <text text-anchor="middle" x="{ ((position - data.coordinate_first) / maxmin) * (widthAllVariants-5) }" y="10" class="small">{position.toLocaleString('en-US')}</text>
+    <text text-anchor="middle" x="{ ((position - data.coordinate_first) / maxmin) * (widthAllVariants-5) }" y="10" class="small">{position.toLocaleString()}</text>
     <line class="gridline" stroke-dasharray="1, 4" x1="{ ((position - data.coordinate_first) / maxmin) * (widthAllVariants-5) }" y1="12" x2="{ ((position - data.coordinate_first) / maxmin) * (widthAllVariants-5) }" y2="45" stroke-linecap="butt" />
     {/each}
 </g>

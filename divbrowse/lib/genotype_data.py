@@ -162,6 +162,9 @@ class GenotypeData:
         self.pos = self.callset['variants/POS'][:]
         self.samples = self.callset['samples'][:]
 
+        self.count_variants = len(self.pos)
+        self.count_samples = len(self.samples)
+
         # infer the ploidy from the GT field
         self.ploidy = int(self.callset['calldata']['GT'].ndim) - 1
 
@@ -505,6 +508,9 @@ class GenotypeData:
 
         lookup_type_start = False
         lookup_type_end = False
+
+        if not samples:
+            samples = self.samples
 
         samples_mask, samples_selected_mapped = self.get_samples_mask(samples)
 
