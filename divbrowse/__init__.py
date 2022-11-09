@@ -3,5 +3,10 @@ __version__ = _version
 
 import sys
 import logging
+
+
 logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 log = logging.getLogger(__name__)
+
+
+logging.getLogger('numexpr').setLevel(logging.WARNING)
