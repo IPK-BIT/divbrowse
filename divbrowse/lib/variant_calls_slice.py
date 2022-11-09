@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from icecream import ic
 import allel
 import numpy as np
@@ -15,29 +16,22 @@ def with_gd():
     return decorator
 
 
+@dataclass
 class VariantCallsSlice:
 
-    def __init__(
-            self,
-            gd = None,
-            sliced_variant_calls = None,
-            positions = None,
-            location_start = None,
-            location_end = None,
-            samples_mask = None,
-            samples_selected_mapped = None,
-            variant_filter_settings = None
-        ):
+    gd: 'GenotypeData' = None
+    sliced_variant_calls: np.ndarray = None
+    positions: np.ndarray = None
+    location_start: int = None
+    location_end: int = None
+    samples_mask: np.ndarray = None
+    samples_selected_mapped: list = None
+    variant_filter_settings: dict = None
+    calls_metadata: dict = None
 
-        self.gd = gd
-        self.sliced_variant_calls = sliced_variant_calls
-        self.positions = positions
-        self.samples_mask = samples_mask
-        self.samples_selected_mapped = samples_selected_mapped
-        self.variant_filter_settings = variant_filter_settings
-        self.location_start = location_start
-        self.location_end = location_end
-        self.slice_variant_calls = slice(location_start, location_end, None)
+
+    def __post_init__(self):
+        self.slice_variant_calls = slice(self.location_start, self.location_end, None)
 
         self.ploidy = int(self.sliced_variant_calls.ndim) - 1
 
@@ -45,7 +39,6 @@ class VariantCallsSlice:
         self.calc_variants_summary_stats()
         self.apply_variant_filter_settings()
         self.add_stats()
-
 
 
     @staticmethod

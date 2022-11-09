@@ -98,8 +98,8 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
 
 
-    @app.route("/snp_window_summary", methods = ['GET', 'POST', 'OPTIONS'])
-    def __snp_window_summary():
+    @app.route("/genomic_window_summary", methods = ['GET', 'POST', 'OPTIONS'])
+    def __genomic_window_summary():
 
         if request.method == 'POST':
             input = process_request_vars(request.get_json(silent=True))
@@ -181,50 +181,22 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             endpos = input['endpos'],
             count = input['count'],
             samples = input['samples'],
-            variant_filter_settings = input['variant_filter_settings']
+            variant_filter_settings = input['variant_filter_settings'],
+            with_call_metadata = True
         )
         print("time diff of gd.get_slice_of_variant_calls(): %f", timer() - start)
 
-        calls = {}
+
         if slice.sliced_variant_calls.ndim == 2:
             slice.sliced_variant_calls = slice.sliced_variant_calls.T # transpose GenotypeArray so that samples are in the 1st dimension and not the variant-calls
 
         if slice.sliced_variant_calls.ndim == 3:
             slice.sliced_variant_calls = slice.sliced_variant_calls.transpose(1, 0, 2) # transpose GenotypeArray so that samples are in the 1st dimension and not the variant-calls
 
-        i = 0
-        
-        for sample in slice.samples_selected_mapped:
-            calls[sample] = slice.sliced_variant_calls[i].tolist()
-            i += 1
-
         result = {
-            'calls': calls,
-            'calls_metadata': {}
+            'calls': dict(zip(slice.samples_selected_mapped, slice.sliced_variant_calls.tolist())),
+            'calls_metadata': slice.calls_metadata
         }
-
-        # get DP values
-        if 'DP' in gd.available_calldata:
-            DP_values = {}
-            sliced_DP = gd.callset['calldata/DP'].get_orthogonal_selection((slice.slice_variant_calls, slice.samples_mask)).T
-            DP_values = {}
-            i = 0
-            for sample in  slice.samples_selected_mapped:
-                DP_values[sample] = sliced_DP[i].tolist()
-                i += 1
-            result['calls_metadata']['dp'] = DP_values
-
-
-        # get DV values
-        if 'DV' in gd.available_calldata:
-            DV_values = {}
-            sliced_DV = gd.callset['calldata/DV'].get_orthogonal_selection((slice.slice_variant_calls, slice.samples_mask)).T
-            DV_values = {}
-            i = 0
-            for sample in  slice.samples_selected_mapped:
-                DV_values[sample] = sliced_DV[i].tolist()
-                i += 1
-            result['calls_metadata']['dv'] = DV_values
 
         return jsonify(result)
 
@@ -539,7 +511,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             vcf_columns['FORMAT'].append('DP')
 
 
-        def generate():
+        def __generate():
             
             yield "\n".join(vcf_lines_header) + "\n"
 
@@ -593,7 +565,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
                 yield "\t".join(vcf_line)+"\n"
                 i = i + 1
 
-        return Response(generate(), mimetype='text/csv', headers={"Content-Disposition":"attachment; filename=custom_export.vcf"})
+        return Response(__generate(), mimetype='text/csv', headers={"Content-Disposition":"attachment; filename=custom_export.vcf"})
 
 
 
@@ -601,8 +573,6 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
     def __gff3_export():
 
         if request.method == 'POST':
-            print(request.form)
-            print(request.form.to_dict())
             input = process_request_vars(request.form.to_dict())
         else:
             #raise ApiError('Method not allowed', status_code=405)
@@ -615,8 +585,6 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
                 'message': 'The provided chromosome number '+str(input['chrom'])+' is not included in the SNP matrix.'
             })
 
-        #df_gff3_slice = self.genes[ (self.genes['seqid'] == 0) & (self.genes['start'] >= 0) & (self.genes['end'] <= 0) ]
-
         curr_start = input['startpos']
         curr_end = input['endpos']
 
@@ -627,8 +595,6 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         genes_all_in_slice = genes_all_in_slice.loc[ (genes_all_in_slice['seqid'] == ad.chrom_gff3_map[input['chrom']]) ]
 
         genes_all_in_slice = genes_all_in_slice.sort_values('start')
-
-        print(genes_all_in_slice)
         
         '''
         key_confidence = 'primary_confidence_class'
@@ -639,7 +605,6 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         if config['gff3']['key_ontology']:
             key_ontology = str(config['gff3']['key_ontology'])
         '''
-
 
         def __generate():
 

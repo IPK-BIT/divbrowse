@@ -61,7 +61,7 @@ function validateSnpWindow(_startpos, _endpos) {
 
     showLoadingAnimationSnpWindow = true;
 
-    controller.snp_window_summary(params, result => {
+    controller.genomic_window_summary(params, result => {
         showLoadingAnimationSnpWindow = false;
         snpcount = result.number_of_variants_in_window;
         snpcountFiltered = result.number_of_variants_in_window_filtered;

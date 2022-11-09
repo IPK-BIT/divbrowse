@@ -228,7 +228,7 @@ export default class Controller {
     }
 
 
-    async snp_window_summary(params, callback) {
+    async genomic_window_summary(params, callback) {
         let samples;
         if (this.config.samples === undefined || this.config.samples.length == 0) {
             samples = this.metadata.samples;
@@ -247,7 +247,7 @@ export default class Controller {
             payload['variant_filter_settings'] = params['variantFilterSettings'];
         }
 
-        axios.post(this.config.apiBaseUrl+'/snp_window_summary', payload).then(function (response) {
+        axios.post(this.config.apiBaseUrl+'/genomic_window_summary', payload).then(function (response) {
             callback(response.data);
         })
         .catch(function (error) {

@@ -339,11 +339,11 @@ let tippyProps = {
         
 
         if (data.calls_metadata !== undefined) {
-            if (data.calls_metadata.dp !== undefined) {
-                content.push('DP: '+data.calls_metadata.dp.get(currentSampleId)[currentPosIdx]);
+            if (data.calls_metadata.DP !== undefined) {
+                content.push('DP: '+data.calls_metadata.DP.get(currentSampleId)[currentPosIdx]);
             }
-            if (data.calls_metadata.dv !== undefined) {
-                content.push('DV: '+data.calls_metadata.dv.get(currentSampleId)[currentPosIdx]);
+            if (data.calls_metadata.DV !== undefined) {
+                content.push('DV: '+data.calls_metadata.DV.get(currentSampleId)[currentPosIdx]);
             }
         }
 

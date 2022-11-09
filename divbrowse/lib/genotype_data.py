@@ -314,7 +314,16 @@ class GenotypeData:
 
 
 
-    def get_slice_of_variant_calls(self, chrom, startpos=None, endpos=None, count=None, samples=None, variant_filter_settings=None):
+    def get_slice_of_variant_calls(
+            self,
+            chrom,
+            startpos = None,
+            endpos = None,
+            count = None,
+            samples = None,
+            variant_filter_settings = None,
+            with_call_metadata = False
+        ) -> VariantCallsSlice:
 
         lookup_type_start = False
         lookup_type_end = False
@@ -356,7 +365,29 @@ class GenotypeData:
         positions = self.pos[slice_variant_calls]
 
         # get the variant slice from Zarr dataset
-        sliced_variant_calls = self.calldata.get_orthogonal_selection((slice_variant_calls, samples_mask))   # samples_mask
+        sliced_variant_calls = self.calldata.get_orthogonal_selection((slice_variant_calls, samples_mask))
+
+
+        metadata = {}
+        if with_call_metadata:
+            # get DP values
+            if 'DP' in self.available_calldata:
+                metadata['DP'] = {}
+                sliced_DP = self.callset['calldata/DP'].get_orthogonal_selection((slice_variant_calls, samples_mask)).T
+                i = 0
+                for sample in samples_selected_mapped:
+                    metadata['DP'][sample] = sliced_DP[i].tolist()
+                    i += 1
+
+
+            # get DV values
+            if 'DV' in self.available_calldata:
+                metadata['DV'] = {}
+                sliced_DV = self.callset['calldata/DV'].get_orthogonal_selection((slice_variant_calls, samples_mask)).T
+                i = 0
+                for sample in samples_selected_mapped:
+                    metadata['DV'][sample] = sliced_DV[i].tolist()
+                    i += 1
 
 
         variant_calls_slice = VariantCallsSlice(
@@ -367,7 +398,8 @@ class GenotypeData:
             location_end = location_end,
             samples_mask = samples_mask,
             samples_selected_mapped = samples_selected_mapped,
-            variant_filter_settings = variant_filter_settings
+            variant_filter_settings = variant_filter_settings,
+            calls_metadata = metadata
         )
 
         return variant_calls_slice
