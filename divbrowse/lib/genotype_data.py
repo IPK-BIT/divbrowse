@@ -1,3 +1,4 @@
+from icecream import ic
 import os
 from timeit import default_timer as timer
 from types import SimpleNamespace
@@ -14,102 +15,7 @@ import umap
 
 from divbrowse import log
 from divbrowse.lib.utils import ApiError
-
-
-def calculate_mean(slice_of_variant_calls: np.ndarray) -> np.ndarray:
-    """Calculate the mean for each variant of a variant matrix array holding the number of alternate alleles
-
-    Note:
-        Missing variant calls are excluded from the mean calculation
-
-    Args:
-        slice_of_variant_calls (numpy.ndarray): Numpy array representing a variant matrix holding the number of alternate allele calls
-
-    Returns:
-        numpy.ndarray: Numpy array holding the means per variant
-    """
-
-    slice_of_variant_calls_missing_values_to_nan = np.where(slice_of_variant_calls == -1, np.nan, slice_of_variant_calls)
-    return np.nanmean(slice_of_variant_calls_missing_values_to_nan, axis=0) #, keepdims=True
-
-
-def impute_with_mean(slice_of_variant_calls: np.ndarray) -> np.ndarray:
-    """variant matrix array for that missing values should be imputed (replaced) with the mean for the variant
-
-    Args:
-        slice_of_variant_calls (numpy.ndarray): Numpy array representing a variant matrix holding the number of alternate allele calls
-
-    Returns:
-        numpy.ndarray: Imputed version of the input variant matrix array
-    """
-
-    imputed = np.copy(slice_of_variant_calls).astype(np.float32)
-    means = calculate_mean(slice_of_variant_calls)
-    indices_missing = np.where(slice_of_variant_calls == -1)
-    imputed[indices_missing] = np.take(means, indices_missing[1])
-    imputed = np.nan_to_num(imputed)
-    return imputed
-
-
-def calc_pca_for_slice_of_variant_calls(slice_of_variant_calls, samples_selected):
-    """Calculate a PCA for a variant matrix array
-
-    Args:
-        slice_of_variant_calls (numpy.ndarray): Numpy array representing a variant matrix holding the number of alternate allele calls
-
-    Returns:
-        numpy.ndarray: PCA result aligned with the sample IDs in the first column
-    """
-
-    sample_ids = np.array(samples_selected).reshape((-1, 1)).copy()
-    calls_imputed = impute_with_mean(slice_of_variant_calls)
-    scaler = RobustScaler()
-    calls_imputed_scaled = np.nan_to_num(scaler.fit_transform(calls_imputed))
-    start = timer()
-
-    n_components = 10
-    if calls_imputed_scaled.shape[1] < n_components:
-        n_components = calls_imputed_scaled.shape[1]
-
-    try:
-        pca_model = PCA(n_components=n_components, whiten=False, svd_solver='randomized', iterated_power=6).fit(calls_imputed_scaled)
-        pca_result = pca_model.transform(calls_imputed_scaled)
-        log.debug("==== PCA calculation time: %f", timer() - start)
-        pca_result_combined = np.concatenate((sample_ids, pca_result), axis=1)
-        return pca_result_combined, pca_model.explained_variance_ratio_
-
-    except ValueError:
-        return False
-
-
-
-
-def calc_umap_for_slice_of_variant_calls(slice_of_variant_calls, samples_selected, n_neighbors=15):
-    """Calculate UMAP for a variant matrix array
-
-    Args:
-        slice_of_variant_calls (numpy.ndarray): Numpy array representing a variant matrix holding the number of alternate allele calls
-
-    Returns:
-        numpy.ndarray: PCA result aligned with the sample IDs in the first column
-    """
-
-    sample_ids = np.array(samples_selected).reshape((-1, 1)).copy()
-    calls_imputed = impute_with_mean(slice_of_variant_calls)
-
-    #start = timer()
-    #pca_model = PCA(n_components=2, whiten=False, svd_solver='randomized', iterated_power=6).fit(calls_imputed_scaled)
-    #pca_result = pca_model.transform(calls_imputed_scaled)
-    #log.debug("==== PCA calculation time: %f", timer() - start)
-    #pca_result_combined = np.concatenate((sample_ids, pca_result), axis=1)
-    #return pca_result_combined
-
-    start = timer()
-    umap_result = umap.UMAP(n_components = 2, n_neighbors=n_neighbors, metric='euclidean', random_state=42).fit_transform(calls_imputed) # , random_state=42, densmap=True  , min_dist=0.5   , dens_lambda=5
-    log.debug("==== UMAP calculation time: %f", timer() - start)
-    umap_result_combined = np.concatenate((sample_ids, umap_result), axis=1)
-    return umap_result_combined
-
+from divbrowse.lib.variant_calls_slice import VariantCallsSlice
 
 
 
@@ -377,27 +283,6 @@ class GenotypeData:
             return lookup, 'nearest_lookup'
 
 
-    def count_alternate_alleles(self, sliced_variant_calls):
-        """Returns a tupel consisting of a boolean mask for found sample Ids and a list of mapped sample IDs
-
-        Args:
-            sliced_variant_calls (numpy.ndarray): variant matrix array holding the allele calls (0/0  0/1  1/1)
-
-        Returns:
-            numpy.ndarray: variant matrix array holding the number of alternate allele calls
-        """
-
-        # monoploid / haploid
-        if sliced_variant_calls.ndim == 2:
-            numbers_of_alternate_alleles = allel.HaplotypeArray(sliced_variant_calls).T
-
-        # diploid
-        if sliced_variant_calls.ndim == 3:
-            # Transform each genotype call into the number of non-reference alleles and then transpose it via .T to row-major order
-            numbers_of_alternate_alleles = allel.GenotypeArray(sliced_variant_calls).to_n_alt(fill=-1).T
-
-        return numbers_of_alternate_alleles
-
 
     def count_variants_in_window(self, chrom, startpos, endpos) -> int:
         """Counts number of variants in a genomic region
@@ -427,81 +312,6 @@ class GenotypeData:
         
         return count
 
-
-    def calculate_minor_allele_freq(self, numbers_of_alternate_alleles):
-        """Calculates minor allele frequency
-
-        Args:
-            numbers_of_alternate_alleles (numpy.ndarray): Numpy array representing a variant matrix holding the number of alternate allele calls
-
-        Returns:
-            numpy.ndarray: Numpy array (1d) holding the calculated minor allele frequencies per each variant
-        """
-
-        if self.ploidy == 1:
-            means = calculate_mean(numbers_of_alternate_alleles)
-            maf = np.where(means < 0.5, means, 1 - means)
-            return np.nan_to_num(maf, nan=-1).tolist()
-
-        if self.ploidy == 2:
-            means_halfed = calculate_mean(numbers_of_alternate_alleles) / 2
-            maf = np.where(means_halfed < 0.5, means_halfed, 1 - means_halfed)
-            return np.nan_to_num(maf, nan=-1).tolist()
-
-
-    def calc_variants_summary_stats(self, numbers_of_alternate_alleles):    
-        result = {}
-
-        result['maf'] = self.calculate_minor_allele_freq(numbers_of_alternate_alleles)
-
-        df_numbers_of_alternate_alleles = pd.DataFrame(numbers_of_alternate_alleles)
-        counts = df_numbers_of_alternate_alleles.apply(pd.Series.value_counts, axis=0, normalize=True).fillna(0)
-
-        try:
-            result['missing_freq'] = counts.loc[-1].values.tolist()
-        except KeyError:
-            result['missing_freq'] = np.zeros(counts.columns.size).tolist()
-
-        df_numbers_of_alternate_alleles_with_nan = df_numbers_of_alternate_alleles.replace(-1, np.nan)
-        counts_without_missing = df_numbers_of_alternate_alleles_with_nan.apply(pd.Series.value_counts, axis=0, normalize=True, dropna=True).fillna(0)
-        counts_without_missing.index = counts_without_missing.index.astype(int, copy=False)
-
-        try:
-            result['heterozygosity_freq'] = counts_without_missing.loc[1].values.tolist()
-        except KeyError:
-            result['heterozygosity_freq'] = np.zeros(counts_without_missing.columns.size).tolist()
-
-        return result
-
-
-    def apply_variant_filter_settings(self, fs, numbers_of_alternate_alleles, _slice_variant_calls):
-        variants_summary_stats = self.calc_variants_summary_stats(numbers_of_alternate_alleles)
-
-        if 'QUAL' in self.available_variants_metadata:
-            sliced_qual = self.variants_qual.get_basic_selection(_slice_variant_calls)
-            variants_summary_stats['vcf_qual'] = sliced_qual.tolist()
-        
-        variants_summary_stats['positions_indices'] = list(range(_slice_variant_calls.start, _slice_variant_calls.stop))
-        df = pd.DataFrame(variants_summary_stats)
-
-        log.debug(df)
-
-        if 'filterByMaf' in fs and fs['filterByMaf'] == True:
-            df = df[ df['maf'].between(fs['maf'][0], fs['maf'][1]) ]
-
-        if 'filterByMissingFreq' in fs and fs['filterByMissingFreq'] == True:
-            df = df[ df['missing_freq'].between(fs['missingFreq'][0], fs['missingFreq'][1]) ]
-
-        if 'filterByHeteroFreq' in fs and fs['filterByHeteroFreq'] == True:
-            df = df[ df['heterozygosity_freq'].between(fs['heteroFreq'][0], fs['heteroFreq'][1]) ]
-
-        if 'filterByVcfQual' in fs and fs['filterByVcfQual'] == True and 'QUAL' in self.available_variants_metadata:
-            df = df[ df['vcf_qual'].between(fs['vcfQual'][0], fs['vcfQual'][1]) ]
-
-        if numbers_of_alternate_alleles[:, df.index.values].shape[1] >= 2:
-            numbers_of_alternate_alleles = numbers_of_alternate_alleles[:, df.index.values]
-
-        return numbers_of_alternate_alleles, df['positions_indices'].values
 
 
     def get_slice_of_variant_calls(self, chrom, startpos=None, endpos=None, count=None, samples=None, variant_filter_settings=None):
@@ -548,33 +358,16 @@ class GenotypeData:
         # get the variant slice from Zarr dataset
         sliced_variant_calls = self.calldata.get_orthogonal_selection((slice_variant_calls, samples_mask))   # samples_mask
 
-        # Transform each genotype call into the number of non-reference alleles and then transpose it via .T to row-major order
-        numbers_of_alternate_alleles = self.count_alternate_alleles(sliced_variant_calls)
 
-        filtered_positions_indices = np.asarray(range(slice_variant_calls.start, slice_variant_calls.stop)) #None
-        if variant_filter_settings is not None:
-            numbers_of_alternate_alleles, filtered_positions_indices = self.apply_variant_filter_settings(variant_filter_settings, numbers_of_alternate_alleles, slice_variant_calls)
+        variant_calls_slice = VariantCallsSlice(
+            gd = self,
+            sliced_variant_calls = sliced_variant_calls,
+            positions = positions,
+            location_start = location_start,
+            location_end = location_end,
+            samples_mask = samples_mask,
+            samples_selected_mapped = samples_selected_mapped,
+            variant_filter_settings = variant_filter_settings
+        )
 
-        stats = {
-            'number_of_variants_in_window': int(positions.shape[0]),
-            'number_of_variants_in_window_filtered': int(numbers_of_alternate_alleles.shape[1]),
-            'startpos': int(positions[0]),
-            'endpos': int(positions[-1]),
-            'lookup_type_start': str(lookup_type_start),
-            'lookup_type_end': str(lookup_type_end)
-        }
-
-        result = {
-            'numbers_of_alternate_alleles': numbers_of_alternate_alleles,
-            'slice_variant_calls': slice_variant_calls,
-            'sliced_variant_calls': sliced_variant_calls,
-            'samples_mask': samples_mask,
-            'samples_selected_mapped': samples_selected_mapped,
-            'positions': positions,
-            'filtered_positions_indices': filtered_positions_indices,
-            'location_start': location_start,
-            'location_end': location_end,
-            'stats': stats
-        }
-
-        return SimpleNamespace(**result)
+        return variant_calls_slice

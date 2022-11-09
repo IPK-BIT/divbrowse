@@ -21,12 +21,13 @@ import GenomicRegion from '/components/tracks/GenomicRegion.svelte';
 import Positions from '/components/tracks/Positions.svelte';
 import SnpEff from '/components/tracks/SnpEff.svelte';
 import MinorAlleleFrequencyHeatmap from '/components/tracks/MinorAlleleFrequencyHeatmap.svelte';
+import HeterozygousCallsFrequencyHeatmap from '/components/tracks/HeterozygousCallsFrequencyHeatmap.svelte';
+
 import Reference from '/components/tracks/Reference.svelte';
 import SampleVariantsMinimap from '/components/tracks/SampleVariantsMinimap.svelte';
 import SampleVariants from '/components/tracks/SampleVariants.svelte';
 
 import LoadingAnimation from '/components/utils/LoadingAnimation.svelte';
-
 
 let data = false;
 let samples;
@@ -168,10 +169,10 @@ function setupVariantFilterDataframe(data) {
     let df_columns = ['variants_coordinates', 'maf', 'missing_freq', 'heterozygosity_freq', 'vcf_qual'];
     let df_data = {
         variants_coordinates: data.variants_coordinates,
-        maf: data.per_snp_stats.maf,
-        missing_freq: data.per_snp_stats.missing_freq,
-        heterozygosity_freq: data.per_snp_stats.heterozygosity_freq,
-        vcf_qual: data.per_snp_stats.vcf_qual,
+        maf: data.per_variant_stats.maf,
+        missing_freq: data.per_variant_stats.missing_freq,
+        heterozygosity_freq: data.per_variant_stats.heterozygosity_freq,
+        vcf_qual: data.per_variant_stats.vcf_qual,
     };
     let df = new DataFrame(df_data, df_columns);
     return df;
@@ -197,20 +198,31 @@ function getFilteredVariants(df) {
 
 
 
+let preloaded = new Set();
 
-
+function preloadVariantCalls(samples) {
+    let key = data.coordinate_first+'-'+data.coordinate_last;
+    if (!preloaded.has(key)) {
+        let numberToLoad = 1000;
+        if (numberToLoad > samples.length) {
+            numberToLoad = samples.length;
+        }
+        let sampleIds = samples.slice(0, numberToLoad).map(elem => elem[0]);
+        controller.DataLoader.lazyLoadVariantCalls(sampleIds);
+        preloaded.add(key);
+    }
+}
 
 function lazyLoadVariantCalls(samples) {
     if (start !== undefined && end !== undefined) {
         if ($settings.statusShowMinimap === false && samples !== undefined && samples.length > 0) {
-            //console.warn(start, end);
             let sampleIds = samples.slice(start, end).map(elem => elem[0]);
-            //console.log(sampleIds);
             controller.DataLoader.lazyLoadVariantCalls(sampleIds);
         }
     }
 }
 
+let numberOfAlternateAlleles;
 
 function dataChanged() {
 
@@ -227,6 +239,8 @@ function dataChanged() {
         });
 
         lazyLoadVariantCalls(samples);
+
+        preloadVariantCalls(samples);
 
         data.ref_and_alt = data.alternates.map((variant, idx) => {
             let tmp = variant.slice();
@@ -313,9 +327,15 @@ let tippyProps = {
         }
 
         let variants = [data.reference[currentPosIdx], ...data.alternates[currentPosIdx]];
-        let variantCalled = variants[ data.calls.get(currentSampleId)[currentPosIdx] ];
+        let calls = data.calls.get(currentSampleId)[currentPosIdx];
+        let calls_unique = [...new Set(calls)];
 
-        content.push('Variant called: '+ variantCalled);
+        if (calls_unique.length == 1 && calls_unique[0] === -1) {
+            content.push('Variant called: none');
+        } else {
+            let calls_unique_mapped = calls_unique.map((call, index) => { return variants[call] });
+            content.push('Variant called: '+ calls_unique_mapped.join(' or '));
+        }
         
 
         if (data.calls_metadata !== undefined) {
@@ -366,7 +386,6 @@ eventbus.on('minimap:click', payload => {
         <GenomicRegion data={data} />
         {/if}
 
-        <!--<Positions data={data} />-->
 
         {#if data.snpeff_variants !== undefined}
         <Modal>
@@ -375,6 +394,8 @@ eventbus.on('minimap:click', payload => {
         {/if}
 
         <MinorAlleleFrequencyHeatmap data={data} />
+        <HeterozygousCallsFrequencyHeatmap data={data} />
+        
 
         <Reference data={data} />
 

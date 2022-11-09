@@ -6,6 +6,7 @@ let { controller } = getContext('app').app();
 
 
 let widthAllVariants;
+let maxNumberOfLabels;
 let maxmin;
 let gridPositionsY = [];
 
@@ -31,8 +32,10 @@ $: {
 
     gridPositionsY = [...Array((regionGridMax - regionGridMin) / gridInterval + 1)].map((_, i) => regionGridMin + gridInterval * i);
 
-    if (gridPositionsY.length > 15) {
-        gridPositionsY = takeElementsEvenlySpaced(gridPositionsY, 15);
+    maxNumberOfLabels = Math.floor(widthAllVariants / 100);
+
+    if (gridPositionsY.length > maxNumberOfLabels) {
+        gridPositionsY = takeElementsEvenlySpaced(gridPositionsY, maxNumberOfLabels);
     }
 }
 

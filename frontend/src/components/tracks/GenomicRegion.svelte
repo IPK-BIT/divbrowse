@@ -163,7 +163,7 @@ const openGeneDetailsModal = (featureId) => {
 
 
                 {#each features.plus.exon as feature}
-                <line class="exon" x1="{ feature.x1 * widthAllVariants }" y1="{yOffset.plusStrand}" x2="{ feature.x2 * widthAllVariants }" y2="{yOffset.plusStrand}" stroke-width="9" stroke="rgb(0,190,0)" />
+                <line class="exon" x1="{ feature.x1 * widthAllVariants }" y1="{yOffset.plusStrand}" x2="{ feature.x2 * widthAllVariants }" y2="{yOffset.plusStrand}" stroke-width="7" stroke="rgb(0,190,0)" />
                 {/each}
 
 
@@ -183,7 +183,7 @@ const openGeneDetailsModal = (featureId) => {
 
 
                 {#each features.minus.exon as feature}
-                <line class="exon" x1="{ feature.x1 * widthAllVariants }" y1="{yOffset.minusStrand}" x2="{ feature.x2 * widthAllVariants }" y2="{yOffset.minusStrand}" stroke-width="9" stroke="rgb(0,190,0)" />
+                <line class="exon" x1="{ feature.x1 * widthAllVariants }" y1="{yOffset.minusStrand}" x2="{ feature.x2 * widthAllVariants }" y2="{yOffset.minusStrand}" stroke-width="7" stroke="rgb(0,190,0)" />
                 {/each}
 
 

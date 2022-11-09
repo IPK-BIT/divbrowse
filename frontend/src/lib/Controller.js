@@ -3,6 +3,8 @@ import DataFrame from 'dataframe-js';
 
 import DataLoader from '/lib/DataLoader';
 
+import { numberOfAltAllelesFactory } from '/utils/helpers';
+
 export default class Controller {
 
     constructor(eventbus) {
@@ -31,6 +33,8 @@ export default class Controller {
 
         this.loadMetadata(metadata => {
             this.metadata = metadata;
+
+            this.numberOfAlternateAlleles = numberOfAltAllelesFactory.getFunction(metadata.ploidy);
 
             this.chromosome = metadata.chromosomes[0]['id'];
             this.startpos = metadata.chromosomes[0]['start'];

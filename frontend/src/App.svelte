@@ -38,12 +38,12 @@ let maxSamplesDisplayable = 5000;
 let errorTooManySamples = false;
 
 export function setSamples(_samples) {
-    if (_samples.length < maxSamplesDisplayable) {
-        errorTooManySamples = false;
+    //if (_samples.length < maxSamplesDisplayable) {
+    //    errorTooManySamples = false;
         controller.setSamples(_samples);
-    } else {
-        errorTooManySamples = true;
-    }
+    //} else {
+    //    errorTooManySamples = true;
+    //}
 }
 
 export function goToChromosomeAndPosition(chrom, startpos) {

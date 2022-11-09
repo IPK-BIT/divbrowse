@@ -15,8 +15,10 @@ import yaml
 
 from divbrowse import log
 from divbrowse.lib.annotation_data import AnnotationData
-from divbrowse.lib.genotype_data import (GenotypeData, calc_pca_for_slice_of_variant_calls,
-    calc_umap_for_slice_of_variant_calls, impute_with_mean)
+from divbrowse.lib.genotype_data import GenotypeData
+from divbrowse.lib.analysis import Analysis
+
+from divbrowse.brapi.v2.allelematrix import BrapiAllelematrix
 
 from divbrowse.lib.utils import ApiError
 from divbrowse.lib.utils import StrictEncoder
@@ -104,7 +106,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         else:
             return 'ERROR'
 
-        _result = gd.get_slice_of_variant_calls(
+        variant_calls_slice = gd.get_slice_of_variant_calls(
             chrom = input['chrom'],
             startpos = input['startpos'],
             endpos = input['endpos'],
@@ -112,7 +114,9 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             variant_filter_settings = input['variant_filter_settings']
         )
 
-        return jsonify(_result.stats)
+        result = variant_calls_slice.get_stats_dict()
+
+        return jsonify(result)
 
 
 
@@ -128,7 +132,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
         umap_n_neighbors = int(payload['umap_n_neighbors'])
 
-        _result = gd.get_slice_of_variant_calls(
+        variant_calls_slice = gd.get_slice_of_variant_calls(
             chrom = input['chrom'],
             startpos = input['startpos'],
             endpos = input['endpos'],
@@ -136,13 +140,11 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             variant_filter_settings = input['variant_filter_settings']
         )
 
-        pca_result, pca_explained_variance = calc_pca_for_slice_of_variant_calls(_result.numbers_of_alternate_alleles, _result.samples_selected_mapped)
+        analysis = Analysis(variant_calls_slice)
 
-        umap_result = calc_umap_for_slice_of_variant_calls(
-            slice_of_variant_calls = _result.numbers_of_alternate_alleles, 
-            samples_selected = _result.samples_selected_mapped,
-            n_neighbors = umap_n_neighbors
-        )
+        pca_result, pca_explained_variance = analysis.pca()
+
+        umap_result = analysis.umap(n_neighbors = umap_n_neighbors)
 
         result = {
             'pca_result': pca_result.tolist(),
@@ -170,7 +172,9 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
                 'status': 'error', 
                 'message': 'The provided chromosome number '+str(input['chrom'])+' is not included in the variant matrix.'
             })
+
         
+        start = timer()
         slice = gd.get_slice_of_variant_calls(
             chrom = input['chrom'],
             startpos = input['startpos'],
@@ -179,6 +183,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             samples = input['samples'],
             variant_filter_settings = input['variant_filter_settings']
         )
+        print("time diff of gd.get_slice_of_variant_calls(): %f", timer() - start)
 
         calls = {}
         if slice.sliced_variant_calls.ndim == 2:
@@ -224,6 +229,109 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         return jsonify(result)
 
 
+    @app.route("/brapi/v2/serverinfo", methods = ['GET', 'OPTIONS'])
+    def __serverinfo():
+
+        output = {
+            "@context": [
+                "https://brapi.org/jsonld/context/metadata.jsonld"
+            ],
+            "metadata": {
+                "datafiles": [],
+                "pagination": None,
+                "status": [
+                    {
+                        "message": "Request accepted, response successful",
+                        "messageType": "INFO"
+                    }
+                ]
+            },
+            "result": {
+                "calls": [
+                    {
+                        "contentTypes": ["application/json"],
+                        "dataTypes": ["application/json"],
+                        "methods": ["GET",],
+                        "service": "serverinfo",
+                        "versions": ["2.1"]
+                    },
+                    {
+                        "contentTypes": ["application/json"],
+                        "dataTypes": ["application/json"],
+                        "methods": ["GET",],
+                        "service": "commoncropnames",
+                        "versions": ["2.1"]
+                    },
+                    {
+                        "contentTypes": ["application/json"],
+                        "dataTypes": ["application/json"],
+                        "methods": ["GET",],
+                        "service": "allelematrix",
+                        "versions": ["2.1"]
+                    }
+                ],
+                "contactEmail": "koenig@ipk-gatersleben.de",
+                "documentationURL": "",
+                "location": "Germany",
+                "organizationName": "IPK Gatersleben",
+                "organizationURL": "ipk-gatersleben.de",
+                "serverDescription": "DivBrowse",
+                "serverName": "DivBrowse BrAPI v2.1 endpoints"
+            }
+        }
+
+        return jsonify(output)
+
+
+
+    @app.route("/brapi/v2/commoncropnames", methods = ['GET', 'OPTIONS'])
+    def __commoncropnames():
+
+        output = {
+            "@context": [
+                "https://brapi.org/jsonld/context/metadata.jsonld"
+            ],
+            "metadata": {
+                "datafiles": [],
+                "pagination": {
+                    "currentPage": 0,
+                    "pageSize": 1000,
+                    "totalCount": 10,
+                    "totalPages": 1
+                },
+                "status": [
+                    {
+                        "message": "Request accepted, response successful",
+                        "messageType": "INFO"
+                    }
+                ]
+            },
+            "result": {
+                "data": [
+                    "Barley",
+                ]
+            }
+        }
+        return jsonify(output)
+
+
+
+    @app.route("/brapi/v2/allelematrix", methods = ['GET', 'POST', 'OPTIONS'])
+    def __allelematrix():
+
+        if request.method == 'GET':
+            pass
+
+        else:
+            #raise ApiError('Method not allowed', status_code=405)
+            return ''
+
+        brapi_allelematrix = BrapiAllelematrix(gd, request)
+
+        return jsonify(brapi_allelematrix.get_response_object())
+
+
+
     @app.route("/variants", methods = ['GET', 'POST', 'OPTIONS'])
     def __variants():
 
@@ -246,7 +354,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
         start = timer()
 
-        _result = gd.get_slice_of_variant_calls(
+        slice = gd.get_slice_of_variant_calls(
             chrom = input['chrom'],
             startpos = input['startpos'],
             endpos = input['endpos'],
@@ -255,126 +363,63 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             variant_filter_settings = input['variant_filter_settings']
         )
 
-        numbers_of_alternate_alleles = _result.numbers_of_alternate_alleles
-        _slice_variant_calls = _result.slice_variant_calls
-        _sliced_variant_calls = _result.sliced_variant_calls
-        samples_mask = _result.samples_mask
-        samples_selected_mapped = _result.samples_selected_mapped
-        positions = _result.positions
-        location_start = _result.location_start
-        location_end = _result.location_end
+        analysis = Analysis(slice)
+        distances = analysis.calc_distance_to_reference(samples = gd.samples)
 
-        # calculate some allel stats like MAF etc.
-        variants_summary_stats = gd.calc_variants_summary_stats(numbers_of_alternate_alleles)
-
-        # impute with mean
-        imputed = impute_with_mean(numbers_of_alternate_alleles)
-        ref_vec = np.zeros(numbers_of_alternate_alleles.shape[1]).reshape(1, numbers_of_alternate_alleles.shape[1])
-        log.debug("==== gd.get_variant_matrix() + gd.calc_variants_summary_stats() + impute_with_mean() => calculation time: %f", timer() - start)
-
-        start = timer()
-        distances = pairwise_distances(imputed, ref_vec, n_jobs=1, metric='hamming')
-        distances = distances * numbers_of_alternate_alleles.shape[1]
-        distances = distances.astype(np.int16);
-        sample_ids = np.array(samples_selected_mapped).reshape(gd.samples[samples_mask].shape[0], 1)
-        distances_combined = np.concatenate((sample_ids, distances), axis=1)
-        log.debug("==== pairwise_distances() calculation time: %f", timer() - start)
 
         # Get the reference nucleotides (as letters ATCG)
-        sliced_reference = gd.reference_allele[_slice_variant_calls]
+        sliced_reference = gd.reference_allele[slice.slice_variant_calls]
 
         # Get the alternate nucleotides (as letters ATCG)
-        sliced_alternates = gd.alternate_alleles[_slice_variant_calls]
+        sliced_alternates = gd.alternate_alleles[slice.slice_variant_calls]
 
-        '''
-        variants_samples = {}
-        calls = {}
-        if _sliced_variant_calls.ndim == 2:
-            _sliced_variant_calls = _sliced_variant_calls.T # transpose GenotypeArray so that samples are in the 1st dimension and not the variant-calls
-
-        if _sliced_variant_calls.ndim == 3:
-            _sliced_variant_calls = _sliced_variant_calls.transpose(1, 0, 2) # transpose GenotypeArray so that samples are in the 1st dimension and not the variant-calls
-
-        i = 0
-        
-        for sample in samples_selected_mapped:
-            variants_samples[sample] = numbers_of_alternate_alleles[i].tolist()
-            calls[sample] = _sliced_variant_calls[i].tolist()
-            i += 1
-        '''
 
         start = timer()
 
         result = {
-            'coordinate_first': int(gd.pos[location_start]),
-            'coordinate_last': int(gd.pos[location_end-1]),
-            'coordinate_first_next': int(gd.pos[location_end]),
-            'coordinate_last_prev': int(gd.pos[location_start-1]),
-            'coordinate_first_chromosome': gd.chrom[location_start],
-            'coordinate_last_chromosome': gd.chrom[location_end],
-            'variants_coordinates': positions.tolist(),
-            #'variants': variants_samples,
-            #'calls': calls,
+            'coordinate_first': int(gd.pos[slice.location_start]),
+            'coordinate_last': int(gd.pos[slice.location_end - 1]),
+            'coordinate_first_next': int(gd.pos[slice.location_end]),
+            'coordinate_last_prev': int(gd.pos[slice.location_start - 1]),
+            'coordinate_first_chromosome': gd.chrom[slice.location_start],
+            'coordinate_last_chromosome': gd.chrom[slice.location_end],
+            'variants_coordinates': slice.positions.tolist(),
             'reference': sliced_reference.tolist(),
             'alternates': sliced_alternates.tolist(),
-            'hamming_distances_to_reference': distances_combined.tolist()
+            'hamming_distances_to_reference': distances.tolist()
         }
 
-        '''
-        # get DP values
-        if 'DP' in gd.available_calldata:
-            DP_values = {}
-            sliced_DP = gd.callset['calldata/DP'].get_orthogonal_selection((_slice_variant_calls, samples_mask)).T
-            DP_values = {}
-            i = 0
-            for sample in samples_selected_mapped:
-                DP_values[sample] = sliced_DP[i].tolist()
-                i += 1
-            result['dp'] = DP_values
-
-
-        # get DV values
-        if 'DV' in gd.available_calldata:
-            DV_values = {}
-            sliced_DV = gd.callset['calldata/DV'].get_orthogonal_selection((_slice_variant_calls, samples_mask)).T
-            DV_values = {}
-            i = 0
-            for sample in samples_selected_mapped:
-                DV_values[sample] = sliced_DV[i].tolist()
-                i += 1
-            result['dv'] = DV_values
-        '''
 
         #### QUAL #########################
         if 'QUAL' in gd.available_variants_metadata:
-            sliced_qual = gd.variants_qual.get_basic_selection(_slice_variant_calls)
-            variants_summary_stats['vcf_qual'] = sliced_qual.tolist()
+            sliced_qual = gd.variants_qual.get_basic_selection(slice.slice_variant_calls)
+            slice.variants_summary_stats['vcf_qual'] = sliced_qual.tolist()
 
 
 
-        result['per_snp_stats'] = variants_summary_stats
+        result['per_variant_stats'] = slice.variants_summary_stats
 
         #### SNPEFF #######################
         if gd.available['snpeff']:
-            sliced_ann = gd.callset['variants/ANN'].get_basic_selection( _slice_variant_calls )
+            sliced_ann = gd.callset['variants/ANN'].get_basic_selection(slice.slice_variant_calls)
             
             snpeff_variants = {}
             i = 0
-            for snpeff_variant_pos in positions.tolist():
+            for snpeff_variant_pos in slice.positions.tolist():
                 if isinstance(sliced_ann[i], str):
                     snpeff_variants[snpeff_variant_pos] = sliced_ann[i]
                 else:
                     snpeff_variants[snpeff_variant_pos] = sliced_ann[i].tolist()
                 i += 1
 
-            result['snpeff_variants_coordinates'] = positions.tolist()
+            result['snpeff_variants_coordinates'] = slice.positions.tolist()
             result['snpeff_variants'] = snpeff_variants
 
 
         #### GFF3 ###########################################
         if ad.available['gff3']:
-            curr_start = int(gd.pos[location_start])
-            curr_end = int(gd.pos[location_end-1])
+            curr_start = int(gd.pos[slice.location_start])
+            curr_end = int(gd.pos[slice.location_end - 1])
 
             start = timer()
             genes_within_slice = ad.genes.loc[ ( ad.genes['start'] <= curr_start) & (ad.genes['end'] >= curr_end ) ]
@@ -387,7 +432,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             result['features'] = genes_all_in_slice.to_dict(orient='records')
 
             #### Nearest gene ##############################
-            nearest_gene = ad.get_nearest_gene_start_pos(input['chrom'], int(gd.pos[location_start]))
+            nearest_gene = ad.get_nearest_gene_start_pos(input['chrom'], int(gd.pos[slice.location_start]))
             result['nearest_feature'] = nearest_gene.to_dict(orient='records')
         
 
@@ -414,7 +459,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
                 'message': 'The provided chromosome number '+str(input['chrom'])+' is not included in the variant matrix.'
             })
 
-        _result = gd.get_slice_of_variant_calls(
+        slice = gd.get_slice_of_variant_calls(
             chrom = input['chrom'],
             startpos = input['startpos'],
             endpos = input['endpos'],
@@ -423,7 +468,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             variant_filter_settings = input['variant_filter_settings']
         )
 
-        if _result.stats['number_of_variants_in_window_filtered'] > 5000:
+        if slice.number_of_variants_in_window_filtered > 5000:
             return jsonify({
                 'success': False, 
                 'status': 'error_snp_window_too_big', 
@@ -433,7 +478,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         return jsonify({
             'success': True, 
             'status': 'export_possible',
-            'message': _result.stats['number_of_variants_in_window_filtered']
+            'message': slice.number_of_variants_in_window_filtered
         })
 
 
@@ -453,23 +498,13 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
                 'message': 'The provided chromosome number '+str(input['chrom'])+' is not included in the variant matrix.'
             })
 
-        _result = gd.get_slice_of_variant_calls(
+        slice = gd.get_slice_of_variant_calls(
             chrom = input['chrom'],
             startpos = input['startpos'],
             endpos = input['endpos'],
             samples = input['samples'],
             variant_filter_settings = input['variant_filter_settings']
         )
-
-        numbers_of_alternate_alleles = _result.numbers_of_alternate_alleles
-        _slice_variant_calls = _result.slice_variant_calls
-        _sliced_variant_calls = _result.sliced_variant_calls
-        samples_mask = _result.samples_mask
-        samples_selected_mapped = _result.samples_selected_mapped
-        positions = _result.positions
-        filtered_positions_indices = _result.filtered_positions_indices
-        location_start = _result.location_start
-        location_end = _result.location_end
 
         vcf_lines_header = gd.get_vcf_header()
         if vcf_lines_header == None:
@@ -485,14 +520,14 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
                 #'##FORMAT=<ID=DV,Number=.,Type=Integer,Description="Read depth of the alternative allele">'
             ]
 
-        mapped_sample_ids, _ = gd.map_vcf_sample_ids_to_input_sample_ids(gd.samples[samples_mask].astype(str).tolist())
+        mapped_sample_ids, _ = gd.map_vcf_sample_ids_to_input_sample_ids(gd.samples[slice.samples_mask].astype(str).tolist())
         vcf_line_variants_header = ['#CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO', 'FORMAT'] + mapped_sample_ids
         vcf_lines_header.append("\t".join(vcf_line_variants_header)) 
 
-        ref = gd.reference_allele.get_orthogonal_selection( (filtered_positions_indices) )
-        alts = gd.alternate_alleles.get_orthogonal_selection( (filtered_positions_indices) )
-        qual = gd.callset['variants/QUAL'].get_orthogonal_selection( (filtered_positions_indices) )
-        #mq = callset['variants/MQ'].get_orthogonal_selection( (filtered_positions_indices) )
+        ref = gd.reference_allele.get_orthogonal_selection( (slice.filtered_positions_indices) )
+        alts = gd.alternate_alleles.get_orthogonal_selection( (slice.filtered_positions_indices) )
+        qual = gd.callset['variants/QUAL'].get_orthogonal_selection( (slice.filtered_positions_indices) )
+        #mq = callset['variants/MQ'].get_orthogonal_selection( (slice.filtered_positions_indices) )
 
 
         vcf_columns = {
@@ -510,7 +545,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
 
             i = 0
-            for pos_idx in filtered_positions_indices.tolist():
+            for pos_idx in slice.filtered_positions_indices.tolist():
 
                 vcf_line = [
                     str(input['chrom']),
@@ -526,10 +561,10 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
                 if 'samples' in input:
                     #gt_slice = gd.callset['calldata/GT'].get_orthogonal_selection( ([pos_idx], samples_mask, slice(None)) )
-                    gt_slice = gd.callset['calldata/GT'].get_orthogonal_selection( ([pos_idx], samples_mask) )
+                    gt_slice = gd.callset['calldata/GT'].get_orthogonal_selection( ([pos_idx], slice.samples_mask) )
 
                     if 'DP' in vcf_columns['FORMAT']:
-                        dp_slice = gd.callset['calldata/DP'].get_orthogonal_selection( ([pos_idx], samples_mask) )
+                        dp_slice = gd.callset['calldata/DP'].get_orthogonal_selection( ([pos_idx], slice.samples_mask) )
 
                 else:
                     gt_slice = gd.callset['calldata/GT'].get_orthogonal_selection( ([pos_idx], slice(None), slice(None)) )
@@ -606,7 +641,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         '''
 
 
-        def generate():
+        def __generate():
 
             for index, row in genes_all_in_slice.iterrows():
 
@@ -643,7 +678,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
                 yield "\t".join(gff3_line)+"\n"
 
-        return Response(generate(), mimetype='text/csv', headers={"Content-Disposition":"attachment; filename=custom_export.gff3"})
+        return Response(__generate(), mimetype='text/csv', headers={"Content-Disposition":"attachment; filename=custom_export.gff3"})
 
 
 

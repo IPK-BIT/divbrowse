@@ -44,15 +44,17 @@ export default class DataLoader {
         return samplesToLazyLoad;
     }
 
+    lazyLoadChunkOfVariantCalls(number) {
+        
+    }
+
     lazyLoadVariantCalls(sampleIds, callbackEarlyExit) {
 
         this.samplesVisibleInViewport = sampleIds;
 
         sampleIds = this.checkIfSamplesAlreadyLazyLoaded(sampleIds);
-        //console.log(sampleIds);
         
         if (sampleIds.length == 0) {
-            console.log('lazyLoad early exit');
             if (typeof callbackEarlyExit === "function") {
                 callbackEarlyExit();
             }

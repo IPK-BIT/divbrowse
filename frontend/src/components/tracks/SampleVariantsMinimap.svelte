@@ -161,7 +161,6 @@ onMount(() => {
 
     canvas.addEventListener('click', function(evt) { // mousemove
         let mousePos = getMousePos(canvas, evt);
-        //let message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
         eventbus.emit('minimap:click', {y: mousePos.y});
     }, false);
 });
@@ -169,7 +168,6 @@ onMount(() => {
 
 
 const canvasOnScrollDebounced = debounce((event) => {
-    //console.log(event.target.scrollTop);
     let _start = parseInt(event.target.scrollTop);
     canvasScrollTop = _start;
     let _end = _start + 500;
