@@ -21,7 +21,7 @@ function sampleDisplayName(sampleId) {
             <td style="width: 200px;">General description:</td>
             <td>{controller.metadata.dataset_descriptions.general_description}</td>
         </tr>
-        {#if controller.metadata.dataset_descriptions.vcf_doi !== ""}
+        {#if controller.metadata.dataset_descriptions.vcf_doi != null && controller.metadata.dataset_descriptions.vcf_doi !== ""}
         <tr>
             <td style="width: 200px;">DOI/URL of VCF:</td>
             <td><a href="{controller.metadata.dataset_descriptions.vcf_doi}" target="_blank">{controller.metadata.dataset_descriptions.vcf_doi}</a></td>

@@ -66,7 +66,21 @@ eventbus.on('loading:animation', msg => {
     showLoadingAnimation = msg.status;
 });
 
-
+function handleClickZoom(which) {
+    $settings[which] = !$settings[which];
+    if (which === 'zoomX') {
+        if ($settings[which]) {
+            $variantWidth = 2;
+            controller.setSnpWidth(2);
+        } else {
+            $variantWidth = 20;
+            controller.setSnpWidth(20);
+        }
+    }
+    if (which === 'zoomY') {
+        $settings.statusShowMinimap = !$settings.statusShowMinimap;
+    }
+}
 
 let data = false;
 let dataGenesLoaded = false;
@@ -98,11 +112,14 @@ eventbus.on('data:genes:loaded', _data => {
 
 <nav class="navigation clearfix" style="position: relative;">
 
+    <!--
     {#if showLoadingAnimation}
     <div style="position: absolute; top: 0px; right: 0px;">
         <LoadingAnimation size="small" />
     </div>
     {/if}
+    -->
+    
 
     <div class="navigation-row clearfix">
 
@@ -134,14 +151,24 @@ eventbus.on('data:genes:loaded', _data => {
 
 
 
-        <div style="margin-left:30px;display:none;">
-            <label class="form-label" for="position-input">SNP width: </label>
-            <input value={$variantWidth} on:change|preventDefault="{handleVariantWidthChange}" type="number" min="1" max="20" id="width-input" class="divbrowse-form-control">
+        <div style="margin-left: 30px; margin-top: 0px;">
+            <!--<label class="form-label" for="position-input">Variant width: </label>
+            <input value={$variantWidth} on:change|preventDefault="{handleVariantWidthChange}" type="number" min="1" max="20" id="width-input" class="divbrowse-form-control">-->
+
+            <button class="divbrowse-btn divbrowse-btn-light" style="position: relative; padding-left: 26px;" on:click={() => handleClickZoom('zoomX')}>
+                <input style="position: absolute; top: 4px; left: 4px; " id="minimap-mode-xaxis" type="checkbox" bind:checked={$settings.zoomX}>
+                Zoom X-axis
+            </button>
         </div>
 
-        <div style="margin-left:30px;margin-top:5px;">
-            <label class="form-label" for="minimap-mode" style="vertical-align: middle;">Show compressed view: </label>
-            <input style="vertical-align: middle;" id="minimap-mode" type=checkbox bind:checked={$settings.statusShowMinimap}>
+        <div style="margin-left: 7px; margin-top: 0px;">
+            <!--<label class="form-label" for="minimap-mode" style="vertical-align: middle;">Show compressed view: </label>
+            <input style="vertical-align: middle;" id="minimap-mode" type="checkbox" bind:checked={$settings.statusShowMinimap}>-->
+
+            <button class="divbrowse-btn divbrowse-btn-light" style="position: relative; padding-left: 26px;" on:click={() => handleClickZoom('zoomY')}>
+                <input style="position: absolute; top: 4px; left: 4px; " id="minimap-mode-xaxis" type="checkbox" bind:checked={$settings.statusShowMinimap}>
+                Zoom Y-axis
+            </button>
         </div>
 
         <div class="clearfix"></div>

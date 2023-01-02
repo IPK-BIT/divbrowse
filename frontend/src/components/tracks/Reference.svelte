@@ -56,9 +56,9 @@ $: {
 <div class="track reference"><div class="label">Reference allele</div>
     {#each reference as nucleotide, i}
     {#if nucleotide.length == 1}
-    <span class="variant-hover snp reference ref-{nucleotide}" data-tippy-content="Variant type: SNP<br />Position: {data.variants_coordinates[i]}" data-position="{data.variants_coordinates[i]}" style="width: {$variantWidth}px; {isFiltered(data.variants_coordinates[i])}"></span>
+    <span class="variant-hover snp reference ref-{nucleotide}" class:noletter={$variantWidth < 10} data-tippy-content="Variant type: SNP<br />Position: {data.variants_coordinates[i]}" data-position="{data.variants_coordinates[i]}" style="width: {$variantWidth}px; {isFiltered(data.variants_coordinates[i])}"></span>
     {:else}
-    <span class="variant-hover snp reference ref-indel" data-tippy-content="Variant type: INDEL<br />Position: {data.variants_coordinates[i]}" data-position="{data.variants_coordinates[i]}" style="width: {$variantWidth}px; {isFiltered(data.variants_coordinates[i])}"></span>
+    <span class="variant-hover snp reference ref-indel" class:noletter={$variantWidth < 10} data-tippy-content="Variant type: INDEL<br />Position: {data.variants_coordinates[i]}" data-position="{data.variants_coordinates[i]}" style="width: {$variantWidth}px; {isFiltered(data.variants_coordinates[i])}"></span>
     {/if}
     {/each}
 </div>

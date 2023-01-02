@@ -8,6 +8,8 @@ function createStores() {
     const stores = {
         settings: writable({
             statusShowMinimap: false,
+            zoomX: false,
+            zoomY: false,
             statusColorblindMode: false,
             variantDisplayMode: 'reference_mismatch'
         }),

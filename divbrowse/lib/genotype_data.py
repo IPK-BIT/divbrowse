@@ -176,8 +176,10 @@ class GenotypeData:
 
         samples_mask = np.zeros(self.samples.shape[0], dtype=bool)
         for sample_id in sample_ids:
-            pos = self.samples_dict[sample_id]
-            samples_mask[pos] = True
+            if sample_id in self.samples_dict:
+                pos = self.samples_dict[sample_id]
+                samples_mask[pos] = True
+
         return samples_mask
 
 
@@ -196,19 +198,14 @@ class GenotypeData:
 
         if self.available['sample_id_mapping']:
             start = timer()
-            for input_sample_id in sample_ids:
-                if input_sample_id in self.map_input_sample_ids_to_vcf_sample_ids_dict:
-                    mapped_sample_ids.append( self.map_input_sample_ids_to_vcf_sample_ids_dict[input_sample_id] )
-                else:
-                    unmapable_sample_ids.append(input_sample_id)
+            mapped_sample_ids = [self.map_input_sample_ids_to_vcf_sample_ids_dict[id] for id in sample_ids if id in self.map_input_sample_ids_to_vcf_sample_ids_dict]
+            unmapable_sample_ids = [id for id in sample_ids if id not in self.map_input_sample_ids_to_vcf_sample_ids_dict]
+            log.debug(mapped_sample_ids)
+            log.debug(unmapable_sample_ids)
             log.debug("==== map_input_sample_ids_to_vcf_sample_ids() calculation time: %f", timer() - start)
         else:
-            #mapped_sample_ids = sample_ids
-            for input_sample_id in sample_ids:
-                if input_sample_id in self.samples_dict:
-                    mapped_sample_ids.append(input_sample_id)
-                else:
-                    unmapable_sample_ids.append(input_sample_id)
+            mapped_sample_ids = [id for id in sample_ids if id in self.samples_dict]
+            unmapable_sample_ids = [id for id in sample_ids if id not in self.samples_dict]
 
         return mapped_sample_ids, unmapable_sample_ids
 
@@ -260,7 +257,7 @@ class GenotypeData:
         return samples_mask, samples_mapped
 
 
-    def get_posidx_by_genome_coordinate(self, chrom, pos) -> Tuple[int, str]:
+    def get_posidx_by_genome_coordinate(self, chrom, pos, method='nearest') -> Tuple[int, str]:
         """Returns array coordinates for given physical position on a given chromosome
 
         Args:
@@ -278,7 +275,7 @@ class GenotypeData:
             return lookup, 'direct_lookup'
         except KeyError:
             # do fuzzy search via nearest neighbor search
-            nearest = pd_series.index.get_indexer([pos], method='nearest')[0]
+            nearest = pd_series.index.get_indexer([pos], method=method)[0]
             lookup = pd_series.iloc[nearest]
             return lookup, 'nearest_lookup'
 
@@ -322,21 +319,32 @@ class GenotypeData:
             count = None,
             samples = None,
             variant_filter_settings = None,
-            with_call_metadata = False
+            with_call_metadata = False,
+            flanking_region_include = False,
+            flanking_region_length = 1500,
+            flanking_region_direction = 'both'
         ) -> VariantCallsSlice:
 
         lookup_type_start = False
         lookup_type_end = False
 
-        if not samples:
+        if samples is None:
             samples = self.samples
 
         samples_mask, samples_selected_mapped = self.get_samples_mask(samples)
 
         if count is None:
-            location_start, lookup_type_start = self.get_posidx_by_genome_coordinate(chrom, startpos)
-            location_end, lookup_type_end = self.get_posidx_by_genome_coordinate(chrom, endpos)
-            location_end = location_end + 1
+
+            if flanking_region_include:
+                startpos = startpos - flanking_region_length
+                endpos = endpos + flanking_region_length
+                location_start, lookup_type_start = self.get_posidx_by_genome_coordinate(chrom, startpos, method='backfill')
+                location_end, lookup_type_end = self.get_posidx_by_genome_coordinate(chrom, endpos, method='pad')
+
+            else:
+                location_start, lookup_type_start = self.get_posidx_by_genome_coordinate(chrom, startpos)
+                location_end, lookup_type_end = self.get_posidx_by_genome_coordinate(chrom, endpos)
+                location_end = location_end + 1
         else:
             if startpos is not None:
                 # Get start coordinate (allows automatic position fuzzy search if coordinate does not exist in the variant matrix!)

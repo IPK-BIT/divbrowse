@@ -377,9 +377,15 @@ eventbus.on('minimap:click', payload => {
 </script>
 
 
-<div>
-    {#if data !== false}
+<div style="position: relative; box-sizing: border-box;">
 
+    {#if showLoadingAnimation}
+    <div id="loading-overlay">
+        <LoadingAnimation size="large" />
+    </div>
+    {/if}
+
+    {#if data !== false}
         <ChromosomeMinimap data={data} />
 
         {#if data.features !== undefined}
@@ -414,13 +420,13 @@ eventbus.on('minimap:click', payload => {
 
     {:else}
 
-        {#if showLoadingAnimation}
+        <!--{#if showLoadingAnimation}
         <div style="margin: 20px;">
             <LoadingAnimation />
         </div>
-        {:else}
+        {:else}-->
         <p style="width: 90%; padding:30px;">Before variants can be displayed, a collection must first be selected.</p>
-        {/if}
+        <!--{/if}-->
         
     {/if}
 
@@ -429,6 +435,25 @@ eventbus.on('minimap:click', payload => {
 
 
 <style lang="less">
+
+#loading-overlay {
+    box-sizing: border-box;
+    position: absolute;
+    z-index: 10000;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.55);
+    /*backdrop-filter: saturate(60%);*/
+    /*backdrop-filter: blur(2px);*/
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 #sample-tracks-container {
     /*height:50vh;
     min-height:50vh;*/

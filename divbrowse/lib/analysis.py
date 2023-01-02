@@ -56,7 +56,7 @@ class Analysis:
         self.imputed_calls = None
 
 
-    def _impute(self):
+    def get_imputed_calls(self):
         if self.imputed_calls is None:
             self.imputed_calls = impute_with_mean(self.variant_calls_slice.numbers_of_alternate_alleles)
         
@@ -65,7 +65,7 @@ class Analysis:
 
     def calc_distance_to_reference(self, samples):
 
-        calls_imputed = self._impute()
+        calls_imputed = self.get_imputed_calls()
 
         ref_vec = np.zeros(self.variant_calls_slice.numbers_of_alternate_alleles.shape[1]).reshape(1, self.variant_calls_slice.numbers_of_alternate_alleles.shape[1])
 
@@ -92,7 +92,7 @@ class Analysis:
 
         sample_ids = np.array(self.variant_calls_slice.samples_selected_mapped).reshape((-1, 1)).copy()
         #calls_imputed = impute_with_mean(self.variant_calls_slice.numbers_of_alternate_alleles)
-        calls_imputed = self._impute()
+        calls_imputed = self.get_imputed_calls()
         scaler = RobustScaler()
         calls_imputed_scaled = np.nan_to_num(scaler.fit_transform(calls_imputed))
         start = timer()
@@ -124,7 +124,7 @@ class Analysis:
 
         sample_ids = np.array(self.variant_calls_slice.samples_selected_mapped).reshape((-1, 1)).copy()
         #calls_imputed = impute_with_mean(self.variant_calls_slice.numbers_of_alternate_alleles)
-        calls_imputed = self._impute()
+        calls_imputed = self.get_imputed_calls()
 
         start = timer()
         umap_result = umap.UMAP(n_components = 2, n_neighbors=n_neighbors, metric='euclidean', random_state=42).fit_transform(calls_imputed) # , random_state=42, densmap=True  , min_dist=0.5   , dens_lambda=5

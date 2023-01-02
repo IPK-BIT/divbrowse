@@ -171,6 +171,7 @@ const openGeneDetailsModal = (featureId) => {
                 <a target="_blank" on:click|preventDefault={openGeneDetailsModal(feature.ID)} href="#">
                     <line id="{feature.ID}" data-feature-id="{feature.ID}" class="gene" x1="{ feature.x1 * widthAllVariants }" y1="{yOffset.plusStrand}" x2="{ feature.x2 * widthAllVariants }" y2="{yOffset.plusStrand}" stroke-width="9" stroke="rgba(200,200,200,0.0)" />
                 </a>
+                <!--<text text-anchor="left" x="{ feature.x1 * widthAllVariants }" y="{yOffset.plusStrand}" style="z-index: 100; font-family: sans-serif; font-size: 10px;">{feature.ID}</text>-->
                 {/each}
 
 

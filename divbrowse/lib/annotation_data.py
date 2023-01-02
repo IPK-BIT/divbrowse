@@ -93,7 +93,7 @@ class AnnotationData:
             _chromosome_gff3 = row['seqid']
             _chromosome_vcf = self.metadata_gff3['gff3_to_vcf_chromosome_mapping'][ _chromosome_gff3 ]
             number_of_variants = self.gd.count_variants_in_window(str(_chromosome_vcf), row['start'], row['end'])
-            exons = self.genes.loc[(self.genes['seqid'] == row['seqid']) &(self.genes['start'] >= row['start']) & (self.genes['end'] <= row['end']) & (self.genes['type'] == 'exon')]
+            exons = self.genes.loc[(self.genes['seqid'] == row['seqid']) & (self.genes['start'] >= row['start']) & (self.genes['end'] <= row['end']) & (self.genes['type'] == 'exon')]
             number_of_exon_variants = exons.apply(count_exon_variants, axis=1)
             return pd.Series( [number_of_variants, number_of_exon_variants.sum() ], index=['number_of_variants', 'number_of_exon_variants'])
 
@@ -128,6 +128,7 @@ class AnnotationData:
             gene_list = genes_with_descriptions
 
 
+        self.genes_with_stats = gene_list
         genes_list = gene_list.to_dict('split')
 
         genes_grouped_by_seqid = genes_only.groupby(self.genes.seqid)

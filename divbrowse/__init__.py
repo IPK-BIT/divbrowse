@@ -10,3 +10,5 @@ log = logging.getLogger(__name__)
 
 
 logging.getLogger('numexpr').setLevel(logging.WARNING)
+logging.getLogger('numba').setLevel(logging.WARNING)
+logging.getLogger('h5py').setLevel(logging.WARNING)

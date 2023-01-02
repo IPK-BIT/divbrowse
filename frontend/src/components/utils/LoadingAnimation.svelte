@@ -3,7 +3,7 @@ export let size = 'normal';
 </script>
 
 
-<div class="loader" class:small="{size === 'small'}" class:tiny="{size === 'tiny'}" ><!--<div class="loader2"></div>--></div>
+<div class="loader" class:small="{size === 'small'}" class:tiny="{size === 'tiny'}" class:large="{size === 'large'}" ><!--<div class="loader2"></div>--></div>
 
 
 <style>
@@ -28,6 +28,13 @@ export let size = 'normal';
     height: 10px;
     border: 2px solid rgb(220,220,220);
     border-top: 2px solid #000;
+}
+
+.large {
+    width: 60px;
+    height: 60px;
+    border: 8px solid rgb(220,220,220);
+    border-top: 8px solid #000;
 }
 
 @keyframes spin {

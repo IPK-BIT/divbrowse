@@ -5,12 +5,14 @@ export let samples;
 import { onMount, getContext } from 'svelte';
 
 const context = getContext('app');
-let { eventbus, controller } = context.app();
+let { appId, eventbus, controller } = context.app();
 
 import getStores from '/utils/store';
-const { sortSettings, variantFilterSettings, filteredVariantsCoordinates } = getStores();
+const { sortSettings, variantWidth, variantFilterSettings, filteredVariantsCoordinates } = getStores();
 
 import { debounce, numberOfAltAllelesFactory } from '/utils/helpers';
+import { delegate } from 'tippy.js';
+import tippy, { followCursor } from 'tippy.js';
 
 let canvas;
 let widthAllVariants;
@@ -44,7 +46,9 @@ function isFiltered(pos, gt) {
 
 
 
-function drawSampleVariants(samples) {
+function drawSampleVariants(samples, calledFrom = '') {
+
+    //console.warn('Minimap::drawSampleVariants() called from: ', calledFrom);
 
     if (canvas === undefined) {
         console.log('drawSampleVariants() EARLY EXIT no canvas available');
@@ -58,7 +62,7 @@ function drawSampleVariants(samples) {
     ////clearTimeout(timeoutHandle);
     //cancelAnimationFrame(frame);
 
-    //let frameCounter = 0;
+    let frameCounter = 0;
 
     samples = samples.slice(canvasScrollTop, canvasScrollTop + 500);
 
@@ -67,26 +71,28 @@ function drawSampleVariants(samples) {
 
     //console.log(canvasScrollTop);
 
-    //(function loop() {
+    (function loop() {
 
         //let row = 0;
         let row = canvasScrollTop;
         //console.warn(row);
+        //console.warn(data.variants_coordinates.length);
 
         for (let sample of samples) {
             let sampleId = sample[0];
-            let col = 0;
+            //console.log(sampleId);
             let xPos = 0;
 
             for (let col = 0; col < data.variants_coordinates.length; col++) {
-                xPos = col * 20;
+                
+                xPos = col * $variantWidth;
 
                 //console.log(data.calls.get(sampleId));
                 if (data.calls.get(sampleId) === null) {
                     continue;
                 }
 
-                let numAltAlleles = numberOfAlternateAlleles(data.calls.get(sampleId)[col])
+                let numAltAlleles = numberOfAlternateAlleles(data.calls.get(sampleId)[col]);
 
                 if (numAltAlleles == -1) {
                     ctx.fillStyle = "rgb(255,255,255)";
@@ -110,27 +116,26 @@ function drawSampleVariants(samples) {
                     ctx.fillStyle = "rgb(255,255,255)";
                 }
 
-                ctx.fillRect(xPos, row, 20, 1);
+                ctx.fillRect(xPos, row, $variantWidth, 1);
             }
             row += 1;
         }
 
-        //frame = requestAnimationFrame(loop);
+        frame = requestAnimationFrame(loop);
 
-        //frameCounter += 1;
-        //if (frameCounter > 60) {
-        //    cancelAnimationFrame(frame);
-        //}
+        frameCounter += 1;
+        if (frameCounter > 5) {
+            cancelAnimationFrame(frame);
+        }
 
-    //}());
-
+    }());
 }
 
 
 
 sortSettings.subscribe(value => {
     if (ctx !== false) {
-        ctx.clearRect(0, 0, widthAllVariants, canvasHeight);
+        //ctx.clearRect(0, 0, widthAllVariants, canvasHeight);
     }
 });
 
@@ -140,8 +145,19 @@ $: {
 
     canvasHeight = samples.length;
     widthAllVariants = controller.getCurrentWidthOfVariants();
-    drawSampleVariants(samples);
+    drawSampleVariants(samples, 'reactive block');
 }
+
+/*variantWidth.subscribe(value => {
+    console.log('variantWidth: ', value);
+    //drawSampleVariants(samples);
+    let _start = canvasScrollTop;
+    let _end = _start + 500;
+    let sampleIds = samples.slice(_start, _end).map(elem => elem[0]);
+    controller.DataLoader.lazyLoadVariantCalls(sampleIds, () => {
+        drawSampleVariants(samples, 'variantWidth.subscribe');
+    });
+});*/
 
 function getMousePos(canvas, evt) {
     let rect = canvas.getBoundingClientRect();
@@ -157,7 +173,7 @@ onMount(() => {
     let sampleIds = samples.slice(0, 500).map(elem => elem[0]);
     controller.DataLoader.lazyLoadVariantCalls(sampleIds);
 
-    drawSampleVariants(samples);
+    drawSampleVariants(samples, 'onMount');
 
     canvas.addEventListener('click', function(evt) { // mousemove
         let mousePos = getMousePos(canvas, evt);
@@ -173,16 +189,63 @@ const canvasOnScrollDebounced = debounce((event) => {
     let _end = _start + 500;
     let sampleIds = samples.slice(_start, _end).map(elem => elem[0]);
     controller.DataLoader.lazyLoadVariantCalls(sampleIds, () => {
-        drawSampleVariants(samples);
+        drawSampleVariants(samples, 'canvasOnScrollDebounced');
     });
 }, 500);
+
+
+
+
+
+/*************************************
+ * Tippy related code following
+ *************************************/
+
+ let tippyProps = {
+    delay: 0,
+    //appendTo: 'parent',
+    target: '.'+appId+' #canvas-minimap',
+    animation: false,
+    content: "<span class='tooltip'></span>",
+    //placement: "bottom",
+    allowHTML: true,
+    followCursor: true,
+
+    onShow(instance) {
+        let content = [];
+        content.push('test');
+        instance.setContent(content.join("<br />"));
+    }
+};
+
+let tippyInstances;
+let tippyInstancesInitialized = false;
+
+/*onMount(async () => {
+    if (tippyInstancesInitialized === false) {
+        tippyInstances = delegate('body', tippyProps);
+        tippyInstancesInitialized = true;
+    }
+});*/
+
+onMount(async () => {
+
+    /*tippy('#test', {
+        content: 'My tooltip!',
+        plugins: [followCursor],
+        followCursor: true,
+    });*/
+
+});
+
+
 
 </script>
 
 <div class="track minimap" style="position: absolute; top: 0px; left: 0px; z-index: 900; height: 400px; width: 100%;">
     <div class="label">Compressed view</div>
-    <div on:scroll={ (event) => canvasOnScrollDebounced(event) } style="max-height: 399px; overflow-y: scroll; flex-grow: 1; margin-top: 1px;">
-        <canvas bind:this={canvas} width={widthAllVariants} height={canvasHeight} ></canvas>
+    <div id="test" on:scroll={ (event) => canvasOnScrollDebounced(event) } style="max-height: 399px; overflow-y: scroll; flex-grow: 1; margin-top: 1px;">
+        <canvas id="canvas-minimap" bind:this={canvas} width={widthAllVariants} height={canvasHeight}></canvas>
     </div>
 </div>
 

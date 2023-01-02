@@ -113,6 +113,10 @@ eventbus.on('metadata:loaded', metadata => {
 onMount(async () => {
     console.log('DivBrowse App mounted!');
 
+    //const url = new URL(location.href);
+    //console.log(url);
+    //console.log( url.searchParams.get('pos') );
+
     controller.setup({
         tracksRendererContainer: tracksRendererContainer,
         config: config
@@ -276,7 +280,7 @@ h1 {
     height: 30px;
     padding: 1px 8px;
     border-radius: 4px;
-    
+    cursor: pointer;
 }
 
 :global(.divbrowse-btn-light) {
@@ -324,13 +328,11 @@ h1 {
 
 :global {
     div.track {
-        /*background: rgb(235,235,235);*/
         height: @trackHeight;
         box-sizing: border-box;
-        /*border-bottom: 1px solid rgb(220,220,220);*/
         padding-top: 0px;
 
-        display: inline-flex;
+        display: flex;
         align-items: center;
         justify-content: flex-start;
 
@@ -515,6 +517,10 @@ h1 {
     span.reference {
         .ref-mixin.letters();
         .ref-mixin.backgrounds();
+
+        &.noletter {
+            &:before { content: "" !important; }
+        }
     }
 }
 
@@ -615,6 +621,10 @@ h1 {
         &.snp-2 {
             background-color: rgb(153, 191, 222); /*  #aa34ff;   160, 136, 227         136, 171, 227 */
             .alt-mixin.letters();
+        }
+
+        &.noletter {
+            &:before { content: "" !important; }
         }
     }
 }
