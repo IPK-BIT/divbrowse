@@ -1,7 +1,9 @@
 # frontend
 /frontend/node_modules/
 /frontend/package-lock.json
-/frontend/public/build/
+/frontend/dist/
+/frontend/dist-ssr/
+/frontend/*.local
 .DS_Store
 
 #backend
@@ -18,6 +20,7 @@ logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 lerna-debug.log*
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
@@ -117,6 +120,13 @@ dist
 # TernJS port file
 .tern-port
 
-# VS Code settings
-.vscode/
-.vscode/settings.json
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

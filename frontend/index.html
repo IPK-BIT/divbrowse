@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DivBrowse</title>
+
+    <style>
+    button {
+        margin: 20px;
+        font-weight: bold;
+    }
+    body {
+        /*font-family: sans-serif;*/
+    }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.8.0/plotly.min.js"></script>
+
+  </head>
+
+  <body>
+    <div id="divbrowse-container"></div>
+    <script type="module" src="/src/main.js"></script>
+
+    <script>
+
+        let samples_obj = [
+            {id: 'BRIDGE_WGS_FT219', link: '<a href="#">B_FT 219</a>'},
+            {id: 'BRIDGE_WGS_FT262', link: '<a href="#">C_FT 262</a>'},
+            {id: 'BRIDGE_WGS_FT340', link: '<a href="#">A_FT 340</a>'}
+        ];
+
+        /*let samples_obj = [
+            {id: 'BRIDGE_WGS_FT219', displayName: 'Test'},
+            {id: 'BRIDGE_WGS_FT262', displayName: 'Atest'},
+            {id: 'BRIDGE_WGS_FT340', displayName: 'Dtest'}
+        ];*/
+
+        /*let samples_obj = [
+            {id: 'BRIDGE_WGS_FT219'},
+            {id: 'BRIDGE_WGS_FT262'},
+            {id: 'BRIDGE_WGS_FT340'}
+        ];*/
+
+        document.addEventListener("DOMContentLoaded", function(event) {
+            const config = {
+                //apiBaseUrl: 'localhost:8080',
+                //apiBaseUrl: 'https://divbrowse.ipk-gatersleben.de/bridge_all_samples_morex_v3',
+                apiBaseUrl: 'https://divbrowse.ipk-gatersleben.de/shape_core1000_and_cultivars',
+                //apiBaseUrl: 'https://divbrowse.ipk-gatersleben.de/1000g_human/',
+                //apiBaseUrl: 'https://divbrowse.ipk-gatersleben.de/shape_plastome',
+                //apiBaseUrl: 'https://divbrowse.ipk-gatersleben.de/shape',
+                //apiBaseUrl: 'http://194.94.136.168:8080',
+                ////////////////////////apiBaseUrl: 'http://194.94.136.168:8080/',
+                //apiBaseUrl: 'https://divbrowse.ipk-gatersleben.de/genebank_20_gbs/',
+                //apiBaseUrl: 'https://divbrowse.ipk-gatersleben.de/1000g_human/',
+                //apiBaseUrl: 'https://divbrowse.ipk-gatersleben.de/genebank_20_gbs',
+                //apiBaseUrl: 'http://194.94.136.184/sanger_institute_mouse_genomes_project_v5/',
+                //showAllSamplesOnInit: false,
+                allowPca: true,
+                allowVcfExport: true,
+                samplesSelectedCallback: (selectedSamples) => {
+                    console.log(selectedSamples);
+                }
+            }
+
+            const divbrowse_instance = divbrowse.startApp('divbrowse-container', config);
+
+            //setTimeout( () => divbrowse_instance.setSamples(samples_obj), 3000 );
+
+            //setTimeout( () => divbrowse_instance.goToChromosomeAndPosition('chr2D', 200000000), 5000 );
+            
+
+        });
+    </script>
+
+  </body>
+</html>
