@@ -6,7 +6,7 @@ metadata:
 
 
 # absolute path to the directory containing the data files
-datadir: /opt/shape/uwsgi/shape/data/
+datadir: /opt/divbrowse/data/
 
 variants:
   # name of the directory containing the Zarr array converted from a VCF file
@@ -73,18 +73,24 @@ centromeres_positions:
 
 blast:
   active: false
-  galaxy_server_url: 
-  galaxy_user: 
-  galaxy_pass: 
-  galaxy_tool_id: 
-  blast_database: 
-  blast_type: megablast
+  galaxy_server_url: https://galaxy-web.ipk-gatersleben.de
+  galaxy_apikey:
+  galaxy_user:
+  galaxy_pass:
+  blastn:
+    galaxy_tool_id: ncbi_blastn_wrapper_barley
+    blast_database: morex_v3
+    blast_type: megablast
+  tblastn:
+    galaxy_tool_id: ncbi_tblastn_wrapper_barley
+    blast_database: morex_v3
+    blast_type: tblastn-fast
   blast_result_to_vcf_chromosome_mapping:
-    chr1H: 1
-    chr2H: 2
-    chr3H: 3
-    chr4H: 4
-    chr5H: 5
-    chr6H: 6
-    chr7H: 7
-    chrUn: 0
+    chr1H: chr1H
+    chr2H: chr2H
+    chr3H: chr3H
+    chr4H: chr4H
+    chr5H: chr5H
+    chr6H: chr6H
+    chr7H: chr7H
+    chrUn: chrUn

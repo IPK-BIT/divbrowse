@@ -658,22 +658,27 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         if config['blast']['active'] is not True:
             return 'BLAST is not allowed'
 
-        gi = GalaxyInstance(url = config['blast']['galaxy_server_url'], email = config['blast']['galaxy_user'], password = config['blast']['galaxy_pass'])
+        if config['blast']['galaxy_apikey']:
+            gi = GalaxyInstance(
+                url = str(config['blast']['galaxy_server_url']),
+                key = str(config['blast']['galaxy_apikey'])
+            )
+        else:
+            gi = GalaxyInstance(
+                url = str(config['blast']['galaxy_server_url']),
+                email = str(config['blast']['galaxy_user']),
+                password = str(config['blast']['galaxy_pass'])
+            )
 
         json_request_vars = request.get_json(force=True, silent=True)
 
-        blast_types = {
-            'ncbi_blastn_wrapper_barley': 'megablast',
-            'ncbi_tblastn_wrapper_barley': 'tblastn-fast'
-        }
+        blast_type = str(json_request_vars['blast_type'])
 
         blast_parameters = {
             'query': str(json_request_vars['query']),
-            'database': str(config['blast']['blast_database']),
-            #'type': config['blast']['blast_type'],
-            'type': blast_types[str(json_request_vars['blast_type'])],
-            #'galaxy_tool_id': config['blast']['galaxy_tool_id']
-            'galaxy_tool_id': str(json_request_vars['blast_type'])
+            'database': str(config['blast'][blast_type]['blast_database']),
+            'type': str(config['blast'][blast_type]['blast_type']),
+            'galaxy_tool_id': str(config['blast'][blast_type]['galaxy_tool_id'])
         }
 
         histories = gi.histories.get_histories()

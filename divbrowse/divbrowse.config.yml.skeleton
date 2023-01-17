@@ -30,10 +30,16 @@ centromeres_positions:
 
 blast:
   active: false
-  galaxy_server_url: 
-  galaxy_user: 
-  galaxy_pass: 
-  galaxy_tool_id: 
-  blast_database: 
-  blast_type: megablast
+  galaxy_server_url:
+  galaxy_apikey:
+  galaxy_user:
+  galaxy_pass:
+  blastn:
+    galaxy_tool_id:
+    blast_database:
+    blast_type:
+  tblastn:
+    galaxy_tool_id:
+    blast_database:
+    blast_type:
   blast_result_to_vcf_chromosome_mapping:
