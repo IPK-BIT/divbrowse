@@ -9,7 +9,7 @@ Within the subdirectory you can start a DivBrowse instance via the following com
     $ divbrowse start --infer-config
 
 An attempt is made to infer the configuration from the data provided. 
-A Zarr archive of the provided VCF file is automatically created and save in the same directory as the VCF file with `.zarr` appended to the original filename of the provided VCF file.
+A Zarr archive of the provided VCF file is automatically created and saved in the same directory as the VCF file with `.zarr` appended to the original filename of the provided VCF file.
 
 If you want to improve and customize the configuration, you can take the example config YAML file `divbrowse.config.yml.example` 
 `(click to open)`_ file from the GitHub repository, rename it to `divbrowse.config.yml` and edit it to fit your requirements.

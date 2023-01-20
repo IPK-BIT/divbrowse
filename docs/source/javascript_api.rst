@@ -2,13 +2,13 @@
 Javascript API
 ==============
 
-The Javascript-API of DivBrowse can be used to control the samples to be shown via Javascript. It also provides the possibility to get all the sample IDs that
-have been selected in the scatterplot of a PCA/UMAP data analysis.
+DivBrowse's Javascript API can be used to control the samples to be displayed.
+It also provides the possibility to get all sample IDs that have been selected in the scatterplot of a PCA/UMAP data analysis.
 
 Control the displayed samples
 =============================
 
-First you need to instanciate the DivBrowse instance:
+First you need to instantiate the DivBrowse instance:
 
 
 .. code-block:: javascript
@@ -21,7 +21,7 @@ First you need to instanciate the DivBrowse instance:
     });
 
 
-Then your are able to set a list with sample IDs to be displayed in DivBrowse like so:
+Then your are able to set a list with sample IDs to be displayed in DivBrowse via the setSamples() method:
 
 .. code-block:: javascript
 
@@ -34,11 +34,11 @@ Then your are able to set a list with sample IDs to be displayed in DivBrowse li
     divbrowse_instance.setSamples(samples);
 
 
-Control the displayed samples and change displayed names of the samples
-=======================================================================
+Control the displayed samples and change displayed labels of the samples
+========================================================================
 
-Sometimes the internal sample IDs in the VCF files are either not human readable or differ from what you want to display to the user.
-In this case you can change the displayName of each sample individually like so:
+Sometimes the internal sample IDs in the VCF files are either not human readable or are different from what you want to display to the user.
+In this case, you can change the display name of each sample as follows:
 
 .. code-block:: javascript
 
@@ -51,10 +51,10 @@ In this case you can change the displayName of each sample individually like so:
     divbrowse_instance.setSamples(samples);
 
 
-Control the displayed samples and provided a link for them
+Control the displayed samples and provided a link as label
 ==========================================================
 
-It is also possible to apply an <a> HTML-tag on the displayed sample names like so:
+It is also possible to apply <a> HTML-tags as labels for the displayed samples:
 
 .. code-block:: javascript
 
@@ -67,12 +67,12 @@ It is also possible to apply an <a> HTML-tag on the displayed sample names like 
     divbrowse_instance.setSamples(samples);
 
 
-Getting back sample IDs that have been selected in a scatterplot
-================================================================
+Getting back IDs of samples that have been selected in a scatterplot
+====================================================================
 
-Users of DivBrowse are able to perform dimensionality reduction on the variant calls. In the resulting scatterplots the user is able to make a selection of
-samples. The Javascript-API of DivBrowse provides a callback function that automatically is called whenever the user makes a selection of samples.
-You can use this callback function like so:
+Users of DivBrowse can perform dimensionality reduction of variant calls. In the resulting scatterplots, the user can select a range of
+samples. DivBrowse's Javascript API provides a callback function that is automatically called when the user makes a selection of samples.
+You can use this callback function as follows:
 
 
 .. code-block:: javascript
@@ -88,7 +88,7 @@ You can use this callback function like so:
     document.addEventListener("DOMContentLoaded", function(event) {
         const config = {
             apiBaseUrl: 'http://divbrowse.myinstitute.org',
-		    samplesSelectedCallback: samplesSelectedCallback
+            samplesSelectedCallback: samplesSelectedCallback
         }
         const divbrowse_instance = divbrowse.startApp('divbrowse-container', config);
     });
