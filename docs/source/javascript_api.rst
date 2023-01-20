@@ -15,7 +15,7 @@ First you need to instanciate the DivBrowse instance:
 
     document.addEventListener("DOMContentLoaded", function(event) {
         const config = {
-            apiBaseUrl: 'http://divbrowse.myinstitute.or'
+            apiBaseUrl: 'http://divbrowse.myinstitute.org'
         }
         const divbrowse_instance = divbrowse.startApp('divbrowse-container', config);
     });
@@ -65,3 +65,30 @@ It is also possible to apply an <a> HTML-tag on the displayed sample names like 
     ];
 
     divbrowse_instance.setSamples(samples);
+
+
+Getting back sample IDs that have been selected in a scatterplot
+================================================================
+
+Users of DivBrowse are able to perform dimensionality reduction on the variant calls. In the resulting scatterplots the user is able to make a selection of
+samples. The Javascript-API of DivBrowse provides a callback function that automatically is called whenever the user makes a selection of samples.
+You can use this callback function like so:
+
+
+.. code-block:: javascript
+
+    const samplesSelectedCallback = (selectedSamples) => {
+        /*
+            The function argument `selectedSamples` is an array 
+            of sample IDs that have been selected in the scatterplot
+        */
+        console.log('The following samples have been selected in DivBrowse: ', selectedSamples);
+    }
+
+    document.addEventListener("DOMContentLoaded", function(event) {
+        const config = {
+            apiBaseUrl: 'http://divbrowse.myinstitute.org',
+		    samplesSelectedCallback: samplesSelectedCallback
+        }
+        const divbrowse_instance = divbrowse.startApp('divbrowse-container', config);
+    });

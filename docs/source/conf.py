@@ -19,11 +19,11 @@ sys.path.insert(0, os.path.abspath('../../'))
 # -- Project information -----------------------------------------------------
 
 project = 'DivBrowse'
-copyright = '2021, Patrick König'
+copyright = '2023, Patrick König'
 author = 'Patrick König'
 
 # The full version, including alpha/beta/rc tags
-release = '1.0'
+release = '1.0.1'
 
 
 # -- General configuration ---------------------------------------------------
