@@ -9,6 +9,8 @@ Control the displayed samples
 =============================
 
 First you need to instanciate the DivBrowse instance:
+
+
 .. code-block:: javascript
 
     document.addEventListener("DOMContentLoaded", function(event) {
