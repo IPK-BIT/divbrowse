@@ -3,7 +3,9 @@ from icecream import ic
 import allel
 import numpy as np
 import pandas as pd
+#import modin.pandas as modinpd
 
+from timeit import default_timer as timer
 from divbrowse import log
 
 
@@ -20,14 +22,19 @@ def with_gd():
 class VariantCallsSlice:
 
     gd: 'GenotypeData' = None
+    type_of_slice: str = 'range'
+    positional_lookup_success: bool = True
     sliced_variant_calls: np.ndarray = None
     positions: np.ndarray = None
+    positions_indices: np.ndarray = None
+    positions_not_found: np.ndarray = None
     location_start: int = None
     location_end: int = None
     samples_mask: np.ndarray = None
     samples_selected_mapped: list = None
     variant_filter_settings: dict = None
     calls_metadata: dict = None
+    calc_summary_stats: bool = False
 
 
     def __post_init__(self):
@@ -35,10 +42,23 @@ class VariantCallsSlice:
 
         self.ploidy = int(self.sliced_variant_calls.ndim) - 1
 
+        start = timer()
         self.count_alternate_alleles()
-        self.calc_variants_summary_stats()
+        log.debug("//////////////// __post_init__ count_alternate_alleles => %f", timer() - start)
+
+        if self.calc_summary_stats and self.positions_not_found is None: # if self.positions_not_found is not None:
+            start = timer()
+            #self.calc_variants_summary_stats_numpy()
+            self.calc_variants_summary_stats_scikitallel()
+            log.debug("//////////////// __post_init__ calc_variants_summary_stats_scikitallel => %f", timer() - start)
+
+        start = timer()
         self.apply_variant_filter_settings()
+        log.debug("//////////////// __post_init__ apply_variant_filter_settings => %f", timer() - start)
+
+        start = timer()
         self.add_stats()
+        log.debug("//////////////// __post_init__ add_stats => %f", timer() - start)
 
 
     @staticmethod
@@ -106,10 +126,17 @@ class VariantCallsSlice:
     def calc_variants_summary_stats(self):    
         result = {}
 
+        start = timer()
         result['maf'] = self.calculate_minor_allele_freq()
+        log.debug("//////////////////////// calc_variants_summary_stats::calculate_minor_allele_freq => %f", timer() - start)
 
+        start = timer()
         df_numbers_of_alternate_alleles = pd.DataFrame(self.numbers_of_alternate_alleles)
+        ####np.save('_______testdata_numbers_of_alternate_alleles_______.npy', self.numbers_of_alternate_alleles)
+        #ic(df_numbers_of_alternate_alleles.shape)
         counts = df_numbers_of_alternate_alleles.apply(pd.Series.value_counts, axis=0, normalize=True).fillna(0)
+        #ic(counts.head())
+        log.debug("//////////////////////// df_numbers_of_alternate_alleles.apply(pd.Series.value_counts) => %f", timer() - start)
 
         try:
             result['missing_freq'] = counts.loc[-1].values.tolist()
@@ -117,6 +144,7 @@ class VariantCallsSlice:
             result['missing_freq'] = np.zeros(counts.columns.size).tolist()
 
         df_numbers_of_alternate_alleles_with_nan = df_numbers_of_alternate_alleles.replace(-1, np.nan)
+        #ic(df_numbers_of_alternate_alleles_with_nan.shape)
         counts_without_missing = df_numbers_of_alternate_alleles_with_nan.apply(pd.Series.value_counts, axis=0, normalize=True, dropna=True).fillna(0)
         counts_without_missing.index = counts_without_missing.index.astype(int, copy=False)
 
@@ -141,11 +169,67 @@ class VariantCallsSlice:
         return result
 
 
+    def calc_variants_summary_stats_numpy(self):
+        ###_calls = allel.GenotypeArray(self.sliced_variant_calls);
+        ###np.save('_______testdata_sliced_variant_calls_______.npy', self.sliced_variant_calls)
+        
+        result = {}
+        result['maf'] = self.calculate_minor_allele_freq()
+
+        A = {-1: 0, 0: 0, 1: 0, 2: 0}
+        num_samples = self.numbers_of_alternate_alleles.shape[0]
+
+        def unique(arr):
+            values, counts = np.unique(arr, return_counts=True)
+            B = dict(zip(values, counts))
+            result = { k: A.get(k,0) + B.get(k,0) for k in list(B.keys()) + list(A.keys()) }
+            return result
+
+        _counts = np.apply_along_axis(func1d=unique, axis=0, arr=self.numbers_of_alternate_alleles)
+        counts = pd.DataFrame.from_records(_counts).T
+        
+        result['missing_freq'] = (counts.loc[-1].values / num_samples).tolist()
+        counts_without_missing = num_samples - counts.loc[-1].values
+        result['heterozygosity_freq'] = (counts.loc[1].values / counts_without_missing).tolist()
+
+        self.variants_summary_stats = result
+
+        return result
+
+
+    def calc_variants_summary_stats_scikitallel(self):
+        result = {}
+        result['maf'] = self.calculate_minor_allele_freq()
+
+        num_samples = self.sliced_variant_calls.shape[1]
+        g = allel.GenotypeArray(self.sliced_variant_calls)
+        
+        miss = g.count_missing(axis=1)
+        #print(miss)
+        #print(miss.shape)
+        result['missing_freq'] = (miss / num_samples).tolist()
+
+        called = g.count_called(axis=1)
+        #print(called)
+        #print(called.shape)
+
+        het = g.count_het(axis=1)
+        #print(het)
+        #print(het.shape)
+
+        het_freq = het / called
+        #print(het_freq)
+        result['heterozygosity_freq'] = het_freq.tolist()
+
+        self.variants_summary_stats = result
+
+        return result
+
 
     @with_gd()
     def apply_variant_filter_settings(self):
 
-        self.filtered_positions_indices = np.asarray(range(self.slice_variant_calls.start, self.slice_variant_calls.stop))
+        self.filtered_positions_indices = self.positions_indices
 
         if self.variant_filter_settings is None:
             return False
@@ -153,10 +237,11 @@ class VariantCallsSlice:
         fs = self.variant_filter_settings
 
         if 'QUAL' in gd.available_variants_metadata:
-            sliced_qual = gd.variants_qual.get_basic_selection(self.slice_variant_calls)
+            sliced_qual = gd.variants_qual.get_coordinate_selection(self.positions_indices)
             self.variants_summary_stats['vcf_qual'] = sliced_qual.tolist()
         
-        self.variants_summary_stats['positions_indices'] = list(range(self.slice_variant_calls.start, self.slice_variant_calls.stop))
+        #self.variants_summary_stats['positions_indices'] = list(range(0, self.positions_indices.shape[0]))
+        self.variants_summary_stats['positions_indices'] = self.positions_indices.tolist()
         df = pd.DataFrame(self.variants_summary_stats)
 
         log.debug(df)
@@ -173,10 +258,10 @@ class VariantCallsSlice:
         if 'filterByVcfQual' in fs and fs['filterByVcfQual'] == True and 'QUAL' in gd.available_variants_metadata:
             df = df[ df['vcf_qual'].between(fs['vcfQual'][0], fs['vcfQual'][1]) ]
 
-        if self.numbers_of_alternate_alleles[:, df.index.values].shape[1] >= 2:
+        if self.numbers_of_alternate_alleles[:, df.index.values].shape[1] > 0:
             self.numbers_of_alternate_alleles = self.numbers_of_alternate_alleles[:, df.index.values]
 
-        
+        log.debug(df)
         self.filtered_positions_indices = df['positions_indices'].values
 
         return self.numbers_of_alternate_alleles, df['positions_indices'].values
@@ -191,12 +276,20 @@ class VariantCallsSlice:
 
 
     def get_stats_dict(self):
-        return {
+        result = {
             'number_of_variants_in_window': self.number_of_variants_in_window,
             'number_of_variants_in_window_filtered': self.number_of_variants_in_window_filtered,
             'startpos': self.startpos,
             'endpos': self.endpos,
+            'type_of_slice': self.type_of_slice
         }
+
+        if self.type_of_slice == 'positions':
+            result['positions'] = self.positions.tolist()
+            if self.positions_not_found is not None:
+                result['positions_not_found'] = self.positions_not_found.tolist()
+
+        return result
 
 
     def get_data(self):

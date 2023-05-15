@@ -65,6 +65,7 @@ function onClickMinimap(event) {
 
 </script>
 
+
 <div class="track chromosome-minimap" style="width:100%;">
 
     <div class="label">Position on chromosome</div>
@@ -83,32 +84,14 @@ function onClickMinimap(event) {
 
             <div id="pos-indicator" style="left: {posIndicatorLeft}px;"></div>
 
-            <div id="pos-coordinates" style="position: absolute; left: 420px; top: 1px; font-size:12px; width: 350px;"> showing {prettyPos(data.coordinate_first)} - {prettyPos(data.coordinate_last)} &nbsp;of&nbsp;  {prettyPos(currChromEnd)} variants</div>
+            <div id="pos-coordinates">showing {data.variants_coordinates.length} of {prettyPos(currChromEnd)} variants in the range {prettyPos(data.coordinate_first)} - {prettyPos(data.coordinate_last)}</div>
 
         </div>
-
-        <!--
-        <div id="svg-container" style=" width: {widthAllVariants}px;">
-            <svg width="{widthAllVariants}" height="30" bind:this={svg}>
-                <defs>
-                    <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" style="stop-color:rgb(234,234,234);stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:rgb(250,250,250);stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-                
-                <line class="trapez" x1="{posIndicatorTrapezLeft-1}" y1="0" x2="0" y2="{height}" />
-                <line class="trapez" x1="{posIndicatorTrapezLeft}" y1="0" x2="{widthAllVariants+80}" y2="{height}" />
-                
-            </svg>
-        </div>
-        -->
-
-        <!--<div id="trapez" style="border-left: {posIndicatorTrapezLeft}px solid transparent; border-right: {posIndicatorTrapezRight}px solid transparent;"></div>-->
 
     </div>
 
 </div>
+
 
 <style>
 
@@ -136,22 +119,12 @@ div.track.chromosome-minimap {
     background: black;
 }
 
-#svg-container {
-    height: 30px;
-    display: block;
-}
-.trapez {
-    stroke:rgb(100,100,100);
-    stroke-width: 1.0;
-}
-
-#trapez {
-    display: block;
-    border-bottom: 20px solid rgb(220,220,220);
-    height: 0;
-    /*width: 1500px;*/
-    max-width: 1700px;
-    box-sizing: border-box;
+#pos-coordinates {
+    position: absolute;
+    left: 420px;
+    top: 0px;
+    font-size:12px;
+    color: rgb(80,80,80);
 }
 
 </style>

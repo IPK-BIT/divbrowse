@@ -83,11 +83,11 @@ eventbus.on('data:display:changed', _data => {
     btnBackwardDisabled = false;
     btnForwardDisabled = false;
 
-    if (data.coordinate_first <= controller.metadata.chromosomesById[data.coordinate_first_chromosome].start) {
+    if (data.coordinate_first <= controller.metadata.chromosomesById[controller.chromosome].start) {
         btnBackwardDisabled = true;
     }
 
-    if (data.coordinate_last >= controller.metadata.chromosomesById[data.coordinate_first_chromosome].end) {
+    if (data.coordinate_last >= controller.metadata.chromosomesById[controller.chromosome].end) {
         btnForwardDisabled = true;
     }
 
@@ -116,7 +116,7 @@ $: btnDisabledByData = data !== false ? false : true;
 
     <div class="navigation-row" style="display: flow-root;">
 
-        <div style="">
+        <div>
             <label class="form-label" for="chromosome-selector">Chromosome: </label>
             <select class="divbrowse-form-control" bind:value={selectedChromosome} on:change|preventDefault="{handleChangeChromosome(selectedChromosome)}">
                 {#each chromosomes as chromosome}
@@ -174,7 +174,7 @@ $: btnDisabledByData = data !== false ? false : true;
 
         {#if statusBlastButton === true}
         <div style="float:left; margin-left:10px;">
-            <button on:click|preventDefault={() => openModal('Blast')} disabled={btnDisabledByData} type="button" class="divbrowse-btn divbrowse-btn-light" style="font-size:0.8rem;">BLAST</button>
+            <button on:click|preventDefault={() => openModal('Blast')} disabled={btnDisabledByData} type="button" class="divbrowse-btn divbrowse-btn-light" style="font-size:80%;">BLAST</button>
         </div>
         {/if}
 

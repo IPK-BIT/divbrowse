@@ -241,6 +241,7 @@ export default class Controller {
             chrom: this.chromosome,
             startpos: params['startpos'],
             endpos: params['endpos'],
+            positions: params['positions'],
             samples: samples
         };
 
@@ -265,11 +266,17 @@ export default class Controller {
             samples = this.config.samples;
         }
 
+        let methods = ['pca'];
+        if (this.metadata.features.umap) {
+            methods.push('umap');
+        }
+
         let payload = {
             chrom: this.chromosome,
             startpos: params['startpos'],
             endpos: params['endpos'],
             samples: samples,
+            methods: methods,
             umap_n_neighbors: params['umap_n_neighbors'],
         };
 
@@ -280,6 +287,40 @@ export default class Controller {
         this.eventbus.emit('loading:animation:pca', {status: true});
 
         axios.post(this.config.apiBaseUrl+'/pca', payload).then(response => {
+            this.eventbus.emit('loading:animation:pca', {status: false});
+            callback(response.data);
+        })
+        .catch(error => {
+            console.log(error);
+            this.eventbus.emit('loading:animation:pca', {status: false});
+            //self.raiseError('Error: Could not load any data from the server / backend.')
+        });
+    }
+
+
+    async clustermap(params, callback) {
+        let samples;
+        if (this.config.samples === undefined || this.config.samples.length == 0) {
+            samples = this.metadata.samples;
+        } else {
+            samples = this.config.samples;
+        }
+
+        let payload = {
+            chrom: this.chromosome,
+            startpos: params['startpos'],
+            endpos: params['endpos'],
+            samples: samples,
+            fontscale: params['fontscale']
+        };
+
+        if (params['variantFilterSettings'] !== undefined && typeof params['variantFilterSettings'] === 'object') {
+            payload['variant_filter_settings'] = params['variantFilterSettings'];
+        }
+
+        this.eventbus.emit('loading:animation:pca', {status: true});
+
+        axios.post(this.config.apiBaseUrl+'/clustermap', payload).then(response => {
             this.eventbus.emit('loading:animation:pca', {status: false});
             callback(response.data);
         })
@@ -356,7 +397,7 @@ export default class Controller {
 
 
     draw() {
-        console.log('Controller::draw() called');
+        //console.log('Controller::draw() called');
         this.loadData(data => {
             
             if (data.status == 'error') {
@@ -370,11 +411,11 @@ export default class Controller {
 
             if (this.data.coordinate_first > this.data.coordinate_last || this.data.coordinate_first > this.data.coordinate_first_next) {
 
-                if (this.data.coordinate_first > this.data.coordinate_last && this.data.coordinate_first_chromosome < this.chromosome) {
+                if (this.data.coordinate_first > this.data.coordinate_last /*&& this.data.coordinate_first_chromosome < this.chromosome*/) {
                     this.resetStartpos();
                 }
 
-                if (this.data.coordinate_first > this.data.coordinate_first_next && this.data.coordinate_last_chromosome > this.chromosome) {
+                if (this.data.coordinate_first > this.data.coordinate_first_next /*&& this.data.coordinate_last_chromosome > this.chromosome*/) {
                     this.setToEnd();
                 }
 

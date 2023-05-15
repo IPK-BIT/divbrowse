@@ -1,7 +1,9 @@
 [tool.poetry]
 name = "divbrowse"
-version = "1.0.1"
+version = "1.0.2"
+keywords = ["bioinformatics", "genomics", "visualization", "variant call format", "vcf", "biodiversity"]
 description = "A web application for interactive visualization and analysis of genotypic variant matrices"
+readme = "README.md"
 authors = ["Patrick König <koenig@ipk-gatersleben.de>"]
 license = "MIT"
 include = ["docs/", "divbrowse/static/*", "divbrowse/static/build/*"]
@@ -22,6 +24,7 @@ pyyaml = "^5.4.1"
 zarr = "^2.8.3"
 tables = "^3.6.1"
 simplejson = "^3.17.3"
+orjson = "^3.8.5"
 umap-learn = "^0.5.2"
 waitress = "2.1.2"
 sphinx = {version = "^4.0.2", optional = true}

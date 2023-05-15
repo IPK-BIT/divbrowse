@@ -22,6 +22,10 @@ gff3:
   external_link_ontology_term: https://www.ebi.ac.uk/QuickGO/term/{ID}
   external_links:
 
+features:
+  pca: true
+  umap: true
+
 chromosome_labels:
 
 gff3_chromosome_labels:

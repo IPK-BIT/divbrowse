@@ -14,11 +14,9 @@ let showLoadingAnimation = false;
 
 let doCalcBtnDisabled = false;
 
-let blastType = 'blastn';
-
 let params = {
     query: '',
-    blast_type: 'ncbi_blastn_wrapper_barley'
+    blast_type: 'blastn'
 }
 
 
@@ -117,10 +115,10 @@ function handleChangeBlastResult(selectedPastBlastResultTimestamp) {
 <div style="width: 70vw;">
     <div class="divbrowse-modal-dialogue-headline">BLAST</div>
 
-    <div style="font-size: 0.85rem;margin-bottom:10px;">
+    <div style="font-size: 90%; margin-bottom:10px;">
         <span>BLAST type: </span>
-        <input type="radio" name="mode" bind:group={params.blast_type} value={"ncbi_blastn_wrapper_barley"} id="blastn"> <label for="blastn">blastn</label>
-        <input type="radio" name="mode" bind:group={params.blast_type} value={"ncbi_tblastn_wrapper_barley"} id="tblastn"> <label for="tblastn">tblastn</label>
+        <input type="radio" name="mode" bind:group={params.blast_type} value={'blastn'} id="blastn"> <label for="blastn">blastn</label>
+        <input type="radio" name="mode" bind:group={params.blast_type} value={'tblastn'} id="tblastn"> <label for="tblastn">tblastn</label>
     </div>
 
 
@@ -149,7 +147,7 @@ function handleChangeBlastResult(selectedPastBlastResultTimestamp) {
 
     {#if blastResult === false}
     <div class="form-inline" style="margin-top: 20px;">
-        <label class="form-label" for="" style="font-size: 0.85rem; display:block; margin-bottom:6px;">Please enter your query sequence:</label>
+        <label class="form-label" for="" style="font-size: 90%; display:block; margin-bottom:6px;">Please enter your query sequence:</label>
         <textarea id="divbrowse-blast-query" bind:value={params.query}></textarea>
 
         <div style="margin-top: 5px;" class="clearfix">
@@ -169,7 +167,7 @@ function handleChangeBlastResult(selectedPastBlastResultTimestamp) {
     <div class="box" id="results" style="">
 
         <div id="results-inner">
-            <h3 style="font-weight:bold;margin-bottom:20px;font-size:1.2rem;padding:0;margin-top:0px;">Result of the BLAST search:</h3>
+            <h3 style="font-weight:bold;margin-bottom:20px;font-size: 110%;padding:0;margin-top:0px;">Result of the BLAST search:</h3>
             <table id="blast-result" cellpadding="0" cellspacing="0">
             <thead>
                 <tr>
@@ -226,14 +224,8 @@ function handleChangeBlastResult(selectedPastBlastResultTimestamp) {
 <style>
 
 #results {
-    
-    /*padding: 20px;*/
-    
-    font-size: 80%;
     max-height: 50vh;
     overflow-y: scroll;
-    /*scrollbar-gutter: stable;
-    scrollbar-width: thin;*/
 }
 
 #results-inner {
@@ -249,20 +241,20 @@ textarea#divbrowse-blast-query {
     padding: 8px;
     width: 100%;
     min-height: 200px;
-    font-size: 0.8rem;
+    font-size: 90%;
     color: rgb(100,100,100);
     box-sizing: border-box;
 }
 
 
 table#blast-result {
-    font-size: 0.85rem;
+    font-size: 85%;
 
 }
 
 table#blast-result th {
     text-align: center;
-    padding: 0;
+    padding: 0 10px 16px 10px;
     margin: 0;
     vertical-align: top;
 }

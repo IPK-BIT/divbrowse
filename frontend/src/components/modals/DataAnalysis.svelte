@@ -9,6 +9,7 @@ const rootElem = getContext('rootElem');
 
 import LoadingAnimation from '@/components/utils/LoadingAnimation.svelte';
 //import Plotly from 'plotly.js-dist';
+//import Plotly from 'plotly.js-gl2d-dist'
 
 
 let showPcaResultPlot = 'block';
@@ -19,6 +20,10 @@ let showLoadingAnimation = false;
 let result = {};
 
 let rightPlotMethod = 'umap';
+
+if (!controller.metadata.features.umap) {
+    rightPlotMethod = 'pca';
+}
 
 
 let _pcs = Array.from(Array(10).keys()).map(x => x+1);
@@ -67,10 +72,13 @@ function createTraces() {
     }
 
     let onlySelectedSamplesPca = result.pca_result.filter(item => selectedSamples.includes(item[0]) );
-    let onlySelectedSamplesUmap = result.umap_result.filter(item => selectedSamples.includes(item[0]) );
-    
     let otherSamplesPca = result.pca_result.filter(item => selectedSamples.includes(item[0]) === false );
-    let otherSamplesUmap = result.umap_result.filter(item => selectedSamples.includes(item[0]) === false );
+
+    let onlySelectedSamplesUmap, otherSamplesUmap;
+    if (result.umap_result != null) {
+        onlySelectedSamplesUmap = result.umap_result.filter(item => selectedSamples.includes(item[0]) );
+        otherSamplesUmap = result.umap_result.filter(item => selectedSamples.includes(item[0]) === false );
+    }
 
     /*
     let umapLabels;
@@ -101,7 +109,7 @@ function createTraces() {
 
 
 
-    if (rightPlotMethod === 'umap') {
+    if (rightPlotMethod === 'umap' && result.umap_result != null) {
         if (onlySelectedSamplesUmap.length > 0) {
             x = onlySelectedSamplesUmap.map(item => item[1]);
             y = onlySelectedSamplesUmap.map(item => item[2]);
@@ -176,7 +184,7 @@ function drawPlot(params) {
     let plotlyContainer = rootElem.querySelector('#'+params.containerId);
 
     //Plotly.react(params.containerId, params.traces, layout, buttons);
-    console.log(params.traces);
+    //console.log(params.traces);
     Plotly.react(plotlyContainer, params.traces, layout, buttons);
     //let plotDiv = document.getElementById(params.containerId);
 
@@ -339,15 +347,19 @@ function onChangeRightPlotMethod() {
         </div>
         <div style="float:left; height: 600px; padding: 10px 20px; border: 1px solid rgb(100,100,100);  background:rgb(240,240,240); margin-left:20px;">
 
+            {#if controller.metadata.features.umap}
             <select class="divbrowse-form-control" style="float:left;" id="rightPlotMethod" bind:value={rightPlotMethod} on:change="{(event) => { onChangeRightPlotMethod(); event.currentTarget.blur(); } }">
                 <option value="umap">UMAP</option>
                 <option value="pca">PCA</option>
             </select>
+            {:else}
+            <div style="float: left; margin-top: 5px; font-weight: 400;">PCA</div>
+            {/if}
 
             {#if rightPlotMethod === 'umap'}
             <div style="float: left;">
                 <label for="umap_n_neighbors" style="margin-left: 30px; font-size:90%;">UMAP Neighbors: </label>
-                <input bind:value={umap_n_neighbors} type="number" id="umap_n_neighbors" class="divbrowse-form-control" style="width: 40px;height: 30px; padding: 0 8px;">
+                <input bind:value={umap_n_neighbors} type="number" id="umap_n_neighbors" class="divbrowse-form-control" style="width: 60px;height: 30px; padding: 0 8px;">
             </div>
             {/if}
 
@@ -377,7 +389,7 @@ function onChangeRightPlotMethod() {
 
 
         {#if selectedSamples.length > 0}
-        <div style="float:left; width: 300px; font-size: 0.85rem; margin-left: 25px; height: 500px; border: 1px solid rgb(100,100,100); padding: 10px; overflow-y: scroll;">
+        <div style="float:left; width: 300px; font-size: 90%; margin-left: 25px; height: 500px; border: 1px solid rgb(100,100,100); padding: 10px; overflow-y: scroll;">
             <button style="margin-bottom: 8px;display: block;" on:click|preventDefault={() => { unsetPointSelection(); selectedSamples = []; } }>Unset selection</button>
             <strong>You have selected {selectedSamples.length} genotypes:</strong><br />
             {#each selectedSamples as sample}

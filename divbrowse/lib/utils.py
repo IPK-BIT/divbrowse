@@ -1,5 +1,8 @@
 from simplejson import JSONEncoder
 
+#from flask.json.provider import JSONProvider
+import orjson
+
 RED = '\033[31m'
 RESET = '\033[0m'
 
@@ -28,3 +31,13 @@ class StrictEncoder(JSONEncoder):
         kwargs["allow_nan"] = False
         kwargs["ignore_nan"] = True
         super().__init__(*args, **kwargs)
+
+class ORJSONEncoder:
+
+    def __init__(self, **kwargs):
+        # eventually take into consideration when serializing
+        self.options = kwargs
+
+    def encode(self, obj):
+        # decode back to str, as orjson returns bytes
+        return orjson.dumps(obj, option=orjson.OPT_NON_STR_KEYS).decode('utf-8')

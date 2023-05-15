@@ -16,10 +16,10 @@ import RangeSlider from "svelte-range-slider-pips";
             <label for="filterByMaf">Filter by minor allele frequency</label>
         </div>
         {#if $variantFilterSettings.filterByMaf}
-        <div style="font-size: 0.85rem; margin-top: 25px; --range-slider: #d7dada; --range-handle-inactive: rgb(140,140,140); --range-range: rgb(150,150,255);">
+        <div style="margin-top: 25px; --range-slider: #d7dada; --range-handle-inactive: rgb(140,140,140); --range-range: rgb(150,150,255);">
             <RangeSlider id="variant-filter-slider" range pushy step={0.01} min={0} max={0.5} bind:values={$variantFilterSettings.maf} />
         </div>
-        <div style="font-size: 0.85rem; margin-top: 25px;">
+        <div style="margin-top: 25px;">
             Minor allele frequency (MAF) must be between {Math.round($variantFilterSettings.maf[0] * 100)}% and {Math.round($variantFilterSettings.maf[1] * 100)}%
         </div>
         {/if}
@@ -31,10 +31,10 @@ import RangeSlider from "svelte-range-slider-pips";
             <label for="filterByMissingFreq">Filter by missing rate</label>
         </div>
         {#if $variantFilterSettings.filterByMissingFreq}
-        <div style="font-size: 0.85rem; margin-top: 25px; --range-slider: #d7dada; --range-handle-inactive: rgb(140,140,140); --range-range: rgb(150,150,255);">
+        <div style="margin-top: 25px; --range-slider: #d7dada; --range-handle-inactive: rgb(140,140,140); --range-range: rgb(150,150,255);">
             <RangeSlider id="variant-filter-slider" range pushy step={0.01} min={0} max={1} bind:values={$variantFilterSettings.missingFreq} />
         </div>
-        <div style="font-size: 0.85rem; margin-top: 25px;">
+        <div style="margin-top: 25px;">
             Missing rate must be between {Math.round($variantFilterSettings.missingFreq[0] * 100)}% and {Math.round($variantFilterSettings.missingFreq[1] * 100)}%
         </div>
         {/if}
@@ -47,10 +47,10 @@ import RangeSlider from "svelte-range-slider-pips";
             <label for="filterByHeteroFreq">Filter by heterozygosity frequency</label>
         </div>
         {#if $variantFilterSettings.filterByHeteroFreq}
-        <div style="font-size: 0.85rem; margin-top: 25px;">
+        <div style="margin-top: 25px;">
             <RangeSlider id="variant-filter-slider" range pushy step={0.01} min={0} max={1} bind:values={$variantFilterSettings.heteroFreq} />
         </div>
-        <div style="font-size: 0.85rem; margin-top: 25px;">
+        <div style="margin-top: 25px;">
             Heterozygosity frequency must be between {Math.round($variantFilterSettings.heteroFreq[0] * 100)}% and {Math.round($variantFilterSettings.heteroFreq[1] * 100)}%
         </div>
         {/if}
@@ -63,10 +63,10 @@ import RangeSlider from "svelte-range-slider-pips";
             <label for="filterByVcfQual">Filter by QUAL value of VCF file</label>
         </div>
         {#if $variantFilterSettings.filterByVcfQual}
-        <div style="font-size: 0.85rem; margin-top: 25px;">
+        <div style="margin-top: 25px;">
             <RangeSlider id="variant-filter-slider" range pushy step={25} min={0} max={1000} bind:values={$variantFilterSettings.vcfQual} />
         </div>
-        <div style="font-size: 0.85rem; margin-top: 25px;">
+        <div style="margin-top: 25px;">
             QUAL value must be between {$variantFilterSettings.vcfQual[0]} and {$variantFilterSettings.vcfQual[1]}
         </div>
         {/if}

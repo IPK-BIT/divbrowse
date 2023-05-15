@@ -21,15 +21,22 @@ from divbrowse.lib.analysis import Analysis
 from divbrowse.brapi.v2.allelematrix import BrapiAllelematrix
 
 from divbrowse.lib.utils import ApiError
-from divbrowse.lib.utils import StrictEncoder
+from divbrowse.lib.utils import ORJSONEncoder
+
+import base64
+from io import BytesIO
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set_style('white')
+sns.set_style('ticks')
+
 
 
 def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=None):
     """Factory method to create and return a wsgi-compliant Flask app instance"""
 
     app = Flask(__name__, static_url_path='', static_folder='static')
-
-    app.json_encoder = StrictEncoder
+    app.json_encoder = ORJSONEncoder
 
     if config_runtime is not None:
         log.info('Using runtime config')
@@ -71,6 +78,13 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
                 processed['samples'] = samples
 
+            processed['positions'] = None
+            if 'positions' in vars:
+                if type(vars['positions']) is str:
+                    vars['positions'] = json.loads(vars['positions'])
+
+                processed['positions'] = vars['positions']
+
             processed['count'] = None
             if 'count' in vars:
                 processed['count'] = int(vars['count'])
@@ -110,8 +124,10 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             chrom = input['chrom'],
             startpos = input['startpos'],
             endpos = input['endpos'],
+            positions = input['positions'],
             samples = input['samples'],
-            variant_filter_settings = input['variant_filter_settings']
+            variant_filter_settings = input['variant_filter_settings'],
+            calc_summary_stats = True
         )
 
         result = variant_calls_slice.get_stats_dict()
@@ -131,30 +147,70 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             return 'ERROR'
 
         umap_n_neighbors = int(payload['umap_n_neighbors'])
+        methods = payload['methods']
 
         variant_calls_slice = gd.get_slice_of_variant_calls(
             chrom = input['chrom'],
             startpos = input['startpos'],
             endpos = input['endpos'],
             samples = input['samples'],
-            variant_filter_settings = input['variant_filter_settings']
+            variant_filter_settings = input['variant_filter_settings'],
+            calc_summary_stats = True
         )
 
         analysis = Analysis(variant_calls_slice)
 
         pca_result, pca_explained_variance = analysis.pca()
 
-        umap_result = analysis.umap(n_neighbors = umap_n_neighbors)
+        umap_result = None
+        if 'umap' in methods:
+            umap_result = analysis.umap(n_neighbors = umap_n_neighbors).tolist()
 
         result = {
             'pca_result': pca_result.tolist(),
             'pca_explained_variance': pca_explained_variance.tolist(),
-            'umap_result': umap_result.tolist(),
+            'umap_result': umap_result,
         }
 
         return jsonify(result)
 
 
+    @app.route("/clustermap", methods = ['GET', 'POST', 'OPTIONS'])
+    def __clustermap():
+        payload = request.get_json(silent=True)
+
+        if request.method == 'POST':
+            input = process_request_vars(payload)
+        else:
+            return 'ERROR'
+
+        fontscale = float(payload['fontscale'])
+
+        variant_calls_slice = gd.get_slice_of_variant_calls(
+            chrom = input['chrom'],
+            startpos = input['startpos'],
+            endpos = input['endpos'],
+            samples = input['samples'],
+            variant_filter_settings = input['variant_filter_settings'],
+            calc_summary_stats = True
+        )
+
+        analysis = Analysis(variant_calls_slice)
+        distances = analysis.calc_distance_matrix(samples = gd.samples)
+
+        sns.set(font_scale=fontscale)
+        cmap = sns.color_palette('viridis', as_cmap=True)
+
+        clustergrid = sns.clustermap(distances, figsize=(20, 20), cmap = cmap, xticklabels=False, yticklabels=False)
+        buffer = BytesIO()
+        clustergrid.savefig(buffer, format='png')
+        data = base64.b64encode(buffer.getbuffer()).decode('ascii')
+
+        result = {
+            'clustermap': data
+        }
+
+        return jsonify(result)
 
 
     @app.route("/variant_calls", methods = ['GET', 'POST', 'OPTIONS'])
@@ -184,7 +240,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             variant_filter_settings = input['variant_filter_settings'],
             with_call_metadata = True
         )
-        print("time diff of gd.get_slice_of_variant_calls(): %f", timer() - start)
+        log.debug('time diff of gd.get_slice_of_variant_calls(): %f', timer() - start)
 
 
         if slice.sliced_variant_calls.ndim == 2:
@@ -321,8 +377,6 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
                 'status': 'error', 
                 'message': 'The provided chromosome number '+str(input['chrom'])+' is not included in the variant matrix.'
             })
-        
-        log.debug("==== 0 => calculation time: %f", timer() - start_all)
 
         start = timer()
 
@@ -332,12 +386,16 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             endpos = input['endpos'],
             count = input['count'],
             samples = input['samples'],
-            variant_filter_settings = input['variant_filter_settings']
+            variant_filter_settings = input['variant_filter_settings'],
+            calc_summary_stats = True
         )
 
+        log.debug("==== gd.get_slice_of_variant_calls() => calculation time: %f", timer() - start)
+
+        start = timer()
         analysis = Analysis(slice)
         distances = analysis.calc_distance_to_reference(samples = gd.samples)
-
+        log.debug("==== Analysis() + analysis.calc_distance_to_reference() => calculation time: %f", timer() - start)
 
         # Get the reference nucleotides (as letters ATCG)
         sliced_reference = gd.reference_allele[slice.slice_variant_calls]
@@ -353,8 +411,8 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             'coordinate_last': int(gd.pos[slice.location_end - 1]),
             'coordinate_first_next': int(gd.pos[slice.location_end]),
             'coordinate_last_prev': int(gd.pos[slice.location_start - 1]),
-            'coordinate_first_chromosome': gd.chrom[slice.location_start],
-            'coordinate_last_chromosome': gd.chrom[slice.location_end],
+            #'coordinate_first_chromosome': gd.chrom[slice.location_start],
+            #'coordinate_last_chromosome': gd.chrom[slice.location_end],
             'variants_coordinates': slice.positions.tolist(),
             'reference': sliced_reference.tolist(),
             'alternates': sliced_alternates.tolist(),
@@ -399,13 +457,13 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             genes_ending_in_slice = ad.genes.loc[ ( ad.genes['end'] >= curr_start) & (ad.genes['end'] <= curr_end ) ]
             genes_all_in_slice = pd.concat([genes_within_slice, genes_starting_in_slice, genes_ending_in_slice]).drop_duplicates().reset_index(drop=True)
             genes_all_in_slice = genes_all_in_slice.loc[ (genes_all_in_slice['seqid'] == ad.chrom_gff3_map[input['chrom']]) ]
-            calctime = timer() - start
-            log.debug("==== time for genes lookup: %f", calctime)
             result['features'] = genes_all_in_slice.to_dict(orient='records')
 
             #### Nearest gene ##############################
             nearest_gene = ad.get_nearest_gene_start_pos(input['chrom'], int(gd.pos[slice.location_start]))
             result['nearest_feature'] = nearest_gene.to_dict(orient='records')
+
+            log.debug("==== time for gff3 + ad.get_nearest_gene_start_pos() section: %f", timer() - start)
         
 
         log.debug("==== output dict creation => calculation time: %f", timer() - start)
@@ -435,9 +493,11 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             chrom = input['chrom'],
             startpos = input['startpos'],
             endpos = input['endpos'],
+            positions = input['positions'],
             count = input['count'],
             samples = input['samples'],
-            variant_filter_settings = input['variant_filter_settings']
+            variant_filter_settings = input['variant_filter_settings'],
+            calc_summary_stats = True
         )
 
         if slice.number_of_variants_in_window_filtered > 5000:
@@ -474,15 +534,17 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             chrom = input['chrom'],
             startpos = input['startpos'],
             endpos = input['endpos'],
+            positions = input['positions'],
             samples = input['samples'],
-            variant_filter_settings = input['variant_filter_settings']
+            variant_filter_settings = input['variant_filter_settings'],
+            calc_summary_stats = True
         )
 
         vcf_lines_header = gd.get_vcf_header()
         if vcf_lines_header == None:
             # No VCF header files available: fallback to minimal VCF header
             vcf_lines_header = [
-                '##fileformat=VCFv4.2',
+                '##fileformat=VCFv4.3',
                 #'##fileDate=20190225',
                 #'##source=SeqArray_Format_v1.0',
                 #'##reference=Morex v2',
@@ -492,15 +554,8 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
                 #'##FORMAT=<ID=DV,Number=.,Type=Integer,Description="Read depth of the alternative allele">'
             ]
 
-        mapped_sample_ids, _ = gd.map_vcf_sample_ids_to_input_sample_ids(gd.samples[slice.samples_mask].astype(str).tolist())
-        vcf_line_variants_header = ['#CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO', 'FORMAT'] + mapped_sample_ids
-        vcf_lines_header.append("\t".join(vcf_line_variants_header)) 
-
-        ref = gd.reference_allele.get_orthogonal_selection( (slice.filtered_positions_indices) )
-        alts = gd.alternate_alleles.get_orthogonal_selection( (slice.filtered_positions_indices) )
-        qual = gd.callset['variants/QUAL'].get_orthogonal_selection( (slice.filtered_positions_indices) )
-        #mq = callset['variants/MQ'].get_orthogonal_selection( (slice.filtered_positions_indices) )
-
+            if 'DP' in gd.available_calldata:
+                vcf_lines_header.append('##FORMAT=<ID=DP,Number=.,Type=Integer,Description="Read depth">')
 
         vcf_columns = {
             'FORMAT': ['GT']
@@ -510,11 +565,22 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         if 'DP' in gd.available_calldata:
             vcf_columns['FORMAT'].append('DP')
 
+        mapped_sample_ids, _ = gd.map_vcf_sample_ids_to_input_sample_ids(gd.samples[slice.samples_mask].astype(str).tolist())
+        vcf_line_variants_header = ['#CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO', 'FORMAT'] + mapped_sample_ids
+        vcf_lines_header.append("\t".join(vcf_line_variants_header))
+
+        ref = gd.reference_allele.get_orthogonal_selection( (slice.filtered_positions_indices) )
+        alts = gd.alternate_alleles.get_orthogonal_selection( (slice.filtered_positions_indices) )
+        qual = gd.callset['variants/QUAL'].get_orthogonal_selection( (slice.filtered_positions_indices) )
+        #mq = callset['variants/MQ'].get_orthogonal_selection( (slice.filtered_positions_indices) )
+
+
+
+
 
         def __generate():
             
             yield "\n".join(vcf_lines_header) + "\n"
-
 
             i = 0
             for pos_idx in slice.filtered_positions_indices.tolist():
@@ -549,7 +615,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
                 # diploid
                 if gt_slice.ndim == 3:
-                    # Transform each genotype call into the number of non-reference alleles and then transpose it via .T to row-major order
+                    # Transform each genotype call into the number of non-reference alleles
                     ga = allel.GenotypeArray(gt_slice)
                     gt = ga.to_gt()
 
@@ -566,6 +632,99 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
                 i = i + 1
 
         return Response(__generate(), mimetype='text/csv', headers={"Content-Disposition":"attachment; filename=custom_export.vcf"})
+
+
+
+
+    @app.route("/csv_export", methods = ['GET', 'POST', 'OPTIONS'])
+    def __csv_export():
+
+        if request.method == 'POST':
+            input = process_request_vars(request.form.to_dict())
+        else:
+            #raise ApiError('Method not allowed', status_code=405)
+            return ''
+
+        if input['chrom'] not in gd.list_chrom:
+            return jsonify({
+                'success': False, 
+                'status': 'error_missing_chromosome', 
+                'message': 'The provided chromosome number '+str(input['chrom'])+' is not included in the variant matrix.'
+            })
+
+        slice = gd.get_slice_of_variant_calls(
+            chrom = input['chrom'],
+            startpos = input['startpos'],
+            endpos = input['endpos'],
+            positions = input['positions'],
+            samples = input['samples'],
+            variant_filter_settings = input['variant_filter_settings'],
+            calc_summary_stats = True
+        )
+
+        _samples = gd.samples[slice.samples_mask].astype(str).tolist()
+        mapped_sample_ids, _ = gd.map_vcf_sample_ids_to_input_sample_ids(_samples)
+
+        ref = gd.reference_allele.get_orthogonal_selection( (slice.filtered_positions_indices) )
+        alts = gd.alternate_alleles.get_orthogonal_selection( (slice.filtered_positions_indices) )
+
+        _chrom = gd.chromosome_labels[str(input['chrom'])]
+        csv_line_chroms = ['CHROM'] + [_chrom] * slice.filtered_positions_indices.shape[0]
+
+        _positions = [str(gd.pos[pos_idx]) for pos_idx in slice.filtered_positions_indices.tolist()]
+        csv_line_positions = ['POS'] + _positions
+        csv_line_refs = ['REF'] + ref.astype(str).tolist()
+
+        csv_lines = []
+        csv_lines.append("\t".join(csv_line_chroms))
+        csv_lines.append("\t".join(csv_line_positions))
+        csv_lines.append("\t".join(csv_line_refs))
+
+        nucleotides_ambiguity = {
+            ('A', 'G'): 'R',
+            ('G', 'A'): 'R',
+            ('C', 'T'): 'Y',
+            ('T', 'C'): 'Y',
+            ('G', 'C'): 'S',
+            ('C', 'G'): 'S',
+            ('C', 'T'): 'Y',
+            ('T', 'C'): 'Y',
+            ('A', 'T'): 'W',
+            ('T', 'A'): 'W',
+            ('G', 'T'): 'K',
+            ('T', 'G'): 'K',
+            ('A', 'C'): 'M',
+            ('C', 'A'): 'M',
+        }
+
+        def get_nucleotide(num_of_alternate_alleles, i):
+            nuc = ''
+            if num_of_alternate_alleles == '0':
+                nuc = str(ref[i])
+            elif num_of_alternate_alleles == '1':
+                nuc = nucleotides_ambiguity[ (str(ref[i]), str(alts[i][0])) ]
+            elif num_of_alternate_alleles == '2':
+                nuc = str(alts[i][0])
+            else:
+                nuc = '.'
+            
+            return nuc
+
+
+        def __generate():
+            
+            yield "\n".join(csv_lines) + "\n"
+
+            i = 0
+            for sample_id in mapped_sample_ids:
+                calls_for_sample = slice.numbers_of_alternate_alleles[i].astype(str).tolist()
+                nucleotides_for_sample = [get_nucleotide(num_alt, i) for i, num_alt in enumerate(calls_for_sample)]
+                csv_line = [str(sample_id)] + nucleotides_for_sample
+                yield "\t".join(csv_line)+"\n"
+                i = i + 1
+
+        return Response(__generate(), mimetype='text/csv', headers={"Content-Disposition":"attachment; filename=custom_export.csv"})
+
 
 
 
@@ -658,6 +817,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         if config['blast']['active'] is not True:
             return 'BLAST is not allowed'
 
+
         if config['blast']['galaxy_apikey']:
             gi = GalaxyInstance(
                 url = str(config['blast']['galaxy_server_url']),
@@ -701,6 +861,9 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
         blast_result_dataset = gi.datasets.download_dataset(result_dataset_id)
         blast_result_json = []
 
+        gi.histories.delete_dataset(history_id=history_id, dataset_id=paste_content_dataset_id, purge=True)
+        gi.histories.delete_dataset(history_id=history_id, dataset_id=result_dataset_id, purge=True)
+
         blast_result_lines = blast_result_dataset.decode('utf-8').split("\n")
         for line in blast_result_lines:
             if line != "":
@@ -734,8 +897,9 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
     def __configuration():
 
         features = {
-            'blast': config['blast']['active'],
-            'pca': True,
+            'blast': config.get('blast', {}).get('active', False),
+            'pca': config.get('features', {}).get('pca', True),
+            'umap':  config.get('features', {}).get('umap', True)
         }
 
         samples, _ = gd.map_vcf_sample_ids_to_input_sample_ids(gd.samples.tolist())

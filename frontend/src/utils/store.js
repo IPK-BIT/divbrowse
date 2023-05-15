@@ -1,7 +1,46 @@
 import { setContext, getContext } from "svelte";
 import { writable } from "svelte/store";
 
+let appId;
+
 const key = "__stores";
+
+
+function createGenesBookmarksStore() {
+
+    const localStorageKey = appId+'-genes-bookmarks';
+
+    const store = writable(new Set());
+
+    const bookmarkedGenes = localStorage.getItem(localStorageKey);
+    if (bookmarkedGenes !== null) {
+        const bookmarkedGenesSet = new Set(JSON.parse(bookmarkedGenes));
+        store.set(bookmarkedGenesSet);
+    }
+
+    const bookmarkGene = (id) => {
+        store.update($ => {
+            $.add(id);
+            localStorage.setItem(localStorageKey, JSON.stringify(Array.from($)));
+            return $;
+        });
+    }
+
+    const unbookmarkGene = (id) => {
+        store.update($ => {
+            $.delete(id);
+            localStorage.setItem(localStorageKey, JSON.stringify(Array.from($)));
+            return $;
+        });
+    }
+
+    return {
+        ...store,
+        bookmarkGene,
+        unbookmarkGene
+    }
+}
+
 
 function createStores() {
 
@@ -27,6 +66,14 @@ function createStores() {
             vcfQual: [500,1000]
         }),
         filteredVariantsCoordinates: writable([]),
+        geneSearch: writable({
+            query: '',
+            searchInInterval: false,
+            selectedChromosome: undefined,
+            startpos: null,
+            endpos: null
+        }),
+        genesBookmarks: createGenesBookmarksStore(),
     }
 
     setContext(key, stores);
@@ -35,6 +82,9 @@ function createStores() {
 }
 
 export default function getStores() {
+    
+    appId = getContext('app').app().appId;
+
     const stores = getContext(key);
 
     if (!stores) {

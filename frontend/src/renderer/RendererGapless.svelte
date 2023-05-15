@@ -242,7 +242,7 @@ function dataChanged() {
 
         lazyLoadVariantCalls(samples);
 
-        preloadVariantCalls(samples);
+        //preloadVariantCalls(samples);
 
         data.ref_and_alt = data.alternates.map((variant, idx) => {
             let tmp = variant.slice();

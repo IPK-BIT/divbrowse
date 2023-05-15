@@ -27,6 +27,7 @@
         "fuse.js": "^6.4.6",
         "lodash": "^4.17.15",
         "plotly.js-dist": "^2.4.1",
+        "plotly.js-gl2d-dist": "^2.17.1",
         "svelte-range-slider-pips": "^2.0.3",
         "svelte-simple-datatables": "^0.2.3",
         "svelte-simple-modal": "^1.4.1",

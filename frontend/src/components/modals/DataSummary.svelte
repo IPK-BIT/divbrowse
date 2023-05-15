@@ -73,7 +73,6 @@ function sampleDisplayName(sampleId) {
 table { 
     border-spacing: 0px;
     border-collapse: collapse;
-    font-size: 0.85rem;
 }
 
 table tr td {

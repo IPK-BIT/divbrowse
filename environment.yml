@@ -11,10 +11,11 @@ dependencies:
   - flask
   - scikit-learn
   - scikit-allel
-  - bioblend==0.15.0
+  - bioblend==0.16.0
   - pyyaml
   - zarr
   - pytables
   - waitress
   - simplejson
+  - orjson
   - umap-learn

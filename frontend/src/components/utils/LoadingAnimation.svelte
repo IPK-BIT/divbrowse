@@ -14,6 +14,7 @@ export let size = 'normal';
     width: 40px;
     height: 40px;
     animation: spin 1s linear infinite;
+    display: inline-block;
 }
 
 .small {

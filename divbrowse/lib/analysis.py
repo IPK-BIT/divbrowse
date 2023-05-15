@@ -69,7 +69,6 @@ class Analysis:
 
         ref_vec = np.zeros(self.variant_calls_slice.numbers_of_alternate_alleles.shape[1]).reshape(1, self.variant_calls_slice.numbers_of_alternate_alleles.shape[1])
 
-
         start = timer()
         distances = pairwise_distances(calls_imputed, ref_vec, n_jobs=1, metric='hamming')
         distances = distances * self.variant_calls_slice.numbers_of_alternate_alleles.shape[1]
@@ -78,6 +77,20 @@ class Analysis:
         distances_combined = np.concatenate((sample_ids, distances), axis=1)
         log.debug("==== pairwise_distances() calculation time: %f", timer() - start)
         return distances_combined
+
+    
+    def calc_distance_matrix(self, samples):
+        calls_imputed = self.get_imputed_calls()
+
+        start = timer()
+        distances = pairwise_distances(calls_imputed, n_jobs=4, metric='hamming')
+        distances = distances * self.variant_calls_slice.numbers_of_alternate_alleles.shape[1]
+        distances = distances.astype(np.int16);
+        #sample_ids = np.array(self.variant_calls_slice.samples_selected_mapped).reshape(samples[self.variant_calls_slice.samples_mask].shape[0], 1)
+        #distances_combined = np.concatenate((sample_ids, distances), axis=1)
+        #log.debug("==== pairwise_distances() calculation time: %f", timer() - start)
+        #return distances_combined
+        return distances
 
 
     def pca(self):

@@ -37,6 +37,9 @@ gff3:
       url: https://some.external.resource.org/{FEATURE_ID}
       linktext: Open this gene in an external resource
 
+features:
+  pca: true
+  umap: true
 
 chromosome_labels:
   1: 1H

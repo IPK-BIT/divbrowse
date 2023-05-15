@@ -10,12 +10,14 @@ import SelectVariantsComponent from '@/components/modals/SelectVariantsComponent
 
 let vcfExportHiddenForm;
 let apiUrlVcfExport = controller.config.apiBaseUrl+'/vcf_export';
+let apiUrlCsvExport = controller.config.apiBaseUrl+'/csv_export';
 
 let gffExportHiddenForm;
 let apiUrlGffExport = controller.config.apiBaseUrl+'/gff3_export';
 
 
 let startpos, endpos, useVariantFilter;
+let positions = []
 
 let instanceSelectVariantComponent;
 
@@ -37,13 +39,42 @@ function openDataAnalysisModal(startpos, endpos, useVariantFilter, callbackSucce
     });
 }
 
-
-
-function callbackExportVcf(startpos, endpos, _useVariantFilter, callbackSuccess) {
-
-    useVariantFilter = _useVariantFilter;
+function openClustermapModal(startpos, endpos, useVariantFilter, callbackSuccess = null) {
 
     let params = {startpos, endpos};
+
+    if (useVariantFilter) {
+        params['variantFilterSettings'] = $variantFilterSettings;
+    }
+
+    eventbus.emit('modal:open', {
+        component: 'Clustermap',
+        props: {params}
+    });
+}
+
+function callbackExportVcf(_startpos, _endpos, _useVariantFilter, _positions, callbackSuccess) {
+    apiUrlVcfExport = controller.config.apiBaseUrl+'/vcf_export';
+    exportVariants(_startpos, _endpos, _useVariantFilter, _positions, callbackSuccess);
+}
+
+function callbackExportCsv(_startpos, _endpos, _useVariantFilter, _positions, callbackSuccess) {
+    apiUrlVcfExport = controller.config.apiBaseUrl+'/csv_export';
+    exportVariants(_startpos, _endpos, _useVariantFilter, _positions, callbackSuccess);
+}
+
+function exportVariants(_startpos, _endpos, _useVariantFilter, _positions, callbackSuccess) {
+
+    useVariantFilter = _useVariantFilter;
+    startpos = _startpos;
+    endpos = _endpos;
+
+    let params = {startpos, endpos};
+
+    if (_positions.length > 0) {
+        params['positions'] = _positions;
+        positions = _positions;
+    }
 
     if (_useVariantFilter) {
         params['variantFilterSettings'] = $variantFilterSettings;
@@ -84,7 +115,9 @@ let settingsSelectSnpsDialogue = {
     <SelectVariantsComponent 
         bind:this={instanceSelectVariantComponent} 
         onCallToAction={openDataAnalysisModal} 
+        openClustermapModal={openClustermapModal}
         callbackExportVcf={callbackExportVcf} 
+        callbackExportCsv={callbackExportCsv} 
         callbackExportGff={callbackExportGff} 
         settings={settingsSelectSnpsDialogue} 
     />
@@ -93,6 +126,7 @@ let settingsSelectSnpsDialogue = {
         <input type="hidden" name="chrom" value="{controller.chromosome}" />
         <input type="hidden" name="startpos" value="{startpos}" />
         <input type="hidden" name="endpos" value="{endpos}" />
+        <input type="hidden" name="positions" value="{JSON.stringify(positions)}" />
         <input type="hidden" name="samples" value="{JSON.stringify(controller.config.samples)}" />
         {#if useVariantFilter}
         <input type="hidden" name="variant_filter_settings" value="{JSON.stringify($variantFilterSettings)}" />

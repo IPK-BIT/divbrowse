@@ -73,7 +73,7 @@ snpeff_data.forEach(ann => {
 <style>
 
 table#snpeff-annotations {
-    font-size: 0.85rem;
+    font-size: 90%;
 }
 
 table#snpeff-annotations tr th,td {

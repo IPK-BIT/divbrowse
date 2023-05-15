@@ -50,6 +50,7 @@ class GenotypeData:
         self._setup_sample_id_mapping()
         self._create_chrom_indices()
         self._create_list_of_chromosomes()
+        self._free_mem()
     
 
     def _load_data(self):
@@ -67,6 +68,11 @@ class GenotypeData:
         self.chrom = self.callset['variants/CHROM'][:]
         self.pos = self.callset['variants/POS'][:]
         self.samples = self.callset['samples'][:]
+
+        #print('----------------------------------------------------------')
+        #print(self.chrom.nbytes)
+        #print(self.pos.nbytes)
+        #print(self.samples.nbytes)
 
         self.count_variants = len(self.pos)
         self.count_samples = len(self.samples)
@@ -124,12 +130,15 @@ class GenotypeData:
             try:
                 chrom_indices[_chr] = pd.read_hdf(cached_index_path, key='s')
                 log.debug("++++ Loaded Pandas index for chromosome %s", str(_chr))
+                #print(chrom_indices[_chr].memory_usage(index=True))
+                #print(chrom_indices[_chr].info())
 
             except FileNotFoundError:
                 log.debug("++++ Creating Pandas index for chromosome %s", str(_chr))
                 chrom_range = self.idx_pos.locate_key(_chr)
                 chrom_indices[_chr] = pd.Series(data=np.arange(chrom_range.start, chrom_range.stop), index=self.pos[chrom_range])
                 chrom_indices[_chr].to_hdf(cached_index_path, key='s', mode='w', complevel=5, complib='blosc:zstd')
+                #print(chrom_indices[_chr].memory_usage(index=True))
         
         self.chrom_indices = chrom_indices
 
@@ -137,7 +146,7 @@ class GenotypeData:
 
     def _create_list_of_chromosomes(self):
 
-        chromosome_labels = {str(key): str(value) for key, value in self.config['chromosome_labels'].items()}
+        self.chromosome_labels = {str(key): str(value) for key, value in self.config['chromosome_labels'].items()}
         centromeres_positions = {str(key): str(value) for key, value in self.config['centromeres_positions'].items()}
 
         path_chromosome_tmp_data = self.datadir+'____list_of_chromosomes____.json'
@@ -154,7 +163,7 @@ class GenotypeData:
                 _region = self.idx_pos.locate_range(_chr)
                 self.list_of_chromosomes.append({
                     'id': _chr,
-                    'label': chromosome_labels[str(_chr)],
+                    'label': self.chromosome_labels[str(_chr)],
                     'centromere_position': int(centromeres_positions[str(_chr)]),
                     'start': int(self.pos[ _region.start ]),
                     'end': int(self.pos[ _region.stop - 1 ]),
@@ -162,6 +171,14 @@ class GenotypeData:
                 })
             with open(path_chromosome_tmp_data, 'w') as outfile:
                 json.dump(self.list_of_chromosomes, outfile)
+
+
+
+    def _free_mem(self):
+        del self.idx_pos
+        del self.chrom
+
+
 
 
     def sample_ids_to_mask(self, sample_ids: list) -> np.ndarray:
@@ -280,6 +297,27 @@ class GenotypeData:
             return lookup, 'nearest_lookup'
 
 
+    def get_posidx_by_genome_coordinates(self, chrom, positions, method='nearest') -> Tuple[int, str]:
+
+        pd_series = self.chrom_indices[chrom]
+
+        positions = [int(x) for x in positions]
+                
+        start = timer()
+        diff = pd.Index(positions).difference(pd_series.index)
+        log.debug("============ diff = pd.Index(positions).difference(pd_series.index) => calculation time: %f", timer() - start)
+
+        if diff.size > 0:
+            return False, None, diff.values
+        
+        else:
+            start = timer()
+            lookup = pd_series.loc[positions]
+            log.debug("============ lookup = pd_series.loc[positions] => calculation time: %f", timer() - start)
+            return True, lookup.values, None
+
+
+
 
     def count_variants_in_window(self, chrom, startpos, endpos) -> int:
         """Counts number of variants in a genomic region
@@ -316,35 +354,60 @@ class GenotypeData:
             chrom,
             startpos = None,
             endpos = None,
+            positions = None,
             count = None,
             samples = None,
             variant_filter_settings = None,
             with_call_metadata = False,
+            calc_summary_stats = False,
             flanking_region_include = False,
             flanking_region_length = 1500,
             flanking_region_direction = 'both'
         ) -> VariantCallsSlice:
 
+        start = timer()
+
         lookup_type_start = False
         lookup_type_end = False
+        type_of_slice = 'range'
+        positions_not_found = None
 
         if samples is None:
             samples = self.samples
 
         samples_mask, samples_selected_mapped = self.get_samples_mask(samples)
 
+        log.debug("============ self.get_samples_mask() => calculation time: %f", timer() - start)
+        start = timer()
+
         if count is None:
 
-            if flanking_region_include:
-                startpos = startpos - flanking_region_length
-                endpos = endpos + flanking_region_length
-                location_start, lookup_type_start = self.get_posidx_by_genome_coordinate(chrom, startpos, method='backfill')
-                location_end, lookup_type_end = self.get_posidx_by_genome_coordinate(chrom, endpos, method='pad')
+            #print("++++++++++++++++++++++++++++++++++++++++++++")
+            #print(positions)
+            #print(type(positions))
+
+            if positions and isinstance(positions, list) and len(positions) > 0:
+                type_of_slice = 'positions'
+                positional_lookup_success, positions_matched_indices, positions_not_found = self.get_posidx_by_genome_coordinates(chrom, positions)
+
+                location_start = 0
+                location_end = 0
+
+                #print('******************************************************************************')
+                #print(positional_lookup_success)
+                #print(positions_matched_indices)
 
             else:
-                location_start, lookup_type_start = self.get_posidx_by_genome_coordinate(chrom, startpos)
-                location_end, lookup_type_end = self.get_posidx_by_genome_coordinate(chrom, endpos)
-                location_end = location_end + 1
+                if flanking_region_include:
+                    startpos = startpos - flanking_region_length
+                    endpos = endpos + flanking_region_length
+                    location_start, lookup_type_start = self.get_posidx_by_genome_coordinate(chrom, startpos, method='backfill')
+                    location_end, lookup_type_end = self.get_posidx_by_genome_coordinate(chrom, endpos, method='pad')
+
+                else:
+                    location_start, lookup_type_start = self.get_posidx_by_genome_coordinate(chrom, startpos)
+                    location_end, lookup_type_end = self.get_posidx_by_genome_coordinate(chrom, endpos)
+                    location_end = location_end + 1
         else:
             if startpos is not None:
                 # Get start coordinate (allows automatic position fuzzy search if coordinate does not exist in the variant matrix!)
@@ -365,17 +428,35 @@ class GenotypeData:
                 if location_start < 0:
                     location_start = 0
                     location_end = location_start + count
+        
+        log.debug("============ self.get_posidx_by_genome_coordinate() section => calculation time: %f", timer() - start)
+
+        
+        if type_of_slice == 'positions':
+            if positional_lookup_success:
+                slice_variant_calls = positions_matched_indices
+                positions = self.pos[positions_matched_indices]
+                positions_indices = positions_matched_indices
+            else:
+                slice_variant_calls = False
+                positions = np.array(positions)
+                positions_indices = positions_not_found
+        else:
+            # create slice() object for later going into get_orthogonal_selection()
+            slice_variant_calls = slice(location_start, location_end, None)
+            positions = self.pos[slice_variant_calls]
+            positions_indices = np.array(list(range(location_start, location_end)))
 
 
-        # create slice() object for later going into get_orthogonal_selection()
-        slice_variant_calls = slice(location_start, location_end, None)
 
-        positions = self.pos[slice_variant_calls]
 
         # get the variant slice from Zarr dataset
+        start = timer()
         sliced_variant_calls = self.calldata.get_orthogonal_selection((slice_variant_calls, samples_mask))
+        log.debug("============ self.calldata.get_orthogonal_selection() section => calculation time: %f", timer() - start)
 
 
+        start = timer()
         metadata = {}
         if with_call_metadata:
             # get DP values
@@ -397,17 +478,25 @@ class GenotypeData:
                     metadata['DV'][sample] = sliced_DV[i].tolist()
                     i += 1
 
+        log.debug("============ if with_call_metadata: section => calculation time: %f", timer() - start)
 
+        start = timer()
         variant_calls_slice = VariantCallsSlice(
             gd = self,
+            type_of_slice = type_of_slice,
+            #positional_lookup_success = positional_lookup_success,
             sliced_variant_calls = sliced_variant_calls,
             positions = positions,
+            positions_indices = positions_indices,
+            positions_not_found = positions_not_found,
             location_start = location_start,
             location_end = location_end,
             samples_mask = samples_mask,
             samples_selected_mapped = samples_selected_mapped,
             variant_filter_settings = variant_filter_settings,
-            calls_metadata = metadata
+            calls_metadata = metadata,
+            calc_summary_stats = calc_summary_stats
         )
+        log.debug("============ variant_calls_slice = VariantCallsSlice() section => calculation time: %f", timer() - start)
 
         return variant_calls_slice

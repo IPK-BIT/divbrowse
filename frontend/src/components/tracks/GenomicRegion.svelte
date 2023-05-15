@@ -3,7 +3,7 @@ export let data;
 
 import GenomicRegionGrid from '@/components/tracks/GenomicRegionGrid.svelte';
 
-import { getContext } from 'svelte';
+import { onMount, getContext } from 'svelte';
 let { appId, eventbus, controller } = getContext('app').app();
 
 const rootElem = getContext('rootElem');
@@ -129,6 +129,22 @@ const openGeneDetailsModal = (featureId) => {
     });
 };
 
+let cursorlinePos = '0px';
+let cursorlabelPos = 0;
+let _div;
+let x = 0;
+let bounds; // = _div.getBoundingClientRect();
+let cursorlineVisibility = 'hidden';
+
+
+function cursorpos(ev) {
+    bounds = _div.getBoundingClientRect();
+    x = ev.clientX - bounds.left;
+    cursorlinePos = x+'px';
+    let position = ((x / (widthAllVariants-5)) * maxmin) + data.coordinate_first;
+    cursorlabelPos = Math.ceil(position);
+}
+
 </script>
 
 
@@ -138,7 +154,19 @@ const openGeneDetailsModal = (featureId) => {
 
     <div class="label" style="">Genes and variants<br />in genomic region</div>
 
-    <div style="width: {widthAllVariants}px; border: 1px solid black;">
+    <!--<div 
+        bind:this={_div} 
+        on:mousemove={(ev) => cursorpos(ev)} 
+        on:mouseenter={() => cursorlineVisibility = 'visible'} 
+        on:mouseleave={() => cursorlineVisibility = 'hidden'} 
+        style="width: {widthAllVariants}px; border: 1px solid black; position: relative;">-->
+
+    <div 
+        bind:this={_div} 
+        style="width: {widthAllVariants}px; border: 1px solid black; position: relative;">
+
+        <div id="cursorline" style:left={cursorlinePos} style:visibility={cursorlineVisibility}></div>
+        <div id="cursorline-pos" style:left={cursorlinePos} style:visibility={cursorlineVisibility}>{cursorlabelPos.toLocaleString()}</div>
 
         <div id="svg-container" style="width: {widthAllVariants}px;">
             <svg width="{widthAllVariants}" height="80" bind:this={svg}>
@@ -219,6 +247,27 @@ const openGeneDetailsModal = (featureId) => {
 </div>
 
 <style>
+
+#cursorline {
+    position: absolute;
+    /*left: 200px;*/
+    top: -1px;
+    width: 1px;
+    height: 81px;
+    border-left: 1.5px dotted rgb(50,50,50);
+}
+
+#cursorline-pos {
+    position: absolute;
+    /*left: 200px;*/
+    top: 4px;
+    
+    padding: 3px;
+    margin-left: 1px;
+    border: 1px solid black;
+    background: white;
+    font-size: 11px;
+}
 
 #arrow {
     transform-origin: 50% 50%;

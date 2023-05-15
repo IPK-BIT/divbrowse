@@ -1,48 +1,42 @@
-<script context="module">
-    import { writable } from "svelte/store";
-
-    let allModals = writable([]);
-
-    export function newModal(component) {
-        allModals.update($ => {
-            $ = [...$, component];
-            return $;
-        });
-    }
-
-    function closeModal(index) {
-        allModals.update($ => {
-            let closedModal;
-            if (index === -1) { // close highest modal
-                closedModal = $.pop();
-            } else {
-                closedModal = $.splice(index, 1)[0];
-            }
-
-            if (closedModal.onClose && typeof closedModal.onClose === 'function') {
-                closedModal.onClose();
-            }
-            $ = [...$];
-            return $;
-        });
-    }
-
-    function closeHighestModal() {
-        closeModal(-1);
-    }
-</script>
-
 <script>
-import { onMount, onDestroy, getContext } from 'svelte'
+import { onMount, onDestroy } from 'svelte';
 
-const rootElem = getContext('rootElem');
+import { writable } from "svelte/store";
+
+let allModals = writable([]);
+
+export function newModal(component) {
+    allModals.update($ => {
+        $ = [...$, component];
+        return $;
+    });
+}
+
+function closeModal(index) {
+    allModals.update($ => {
+        let closedModal;
+        if (index === -1) { // close highest modal
+            closedModal = $.pop();
+        } else {
+            closedModal = $.splice(index, 1)[0];
+        }
+
+        if (closedModal.onClose && typeof closedModal.onClose === 'function') {
+            closedModal.onClose();
+        }
+        $ = [...$];
+        return $;
+    });
+}
+
+function closeHighestModal() {
+    closeModal(-1);
+}
+
     
 let topDiv;
 let visible = false;
 
-let prevOnTop
-let closeCallback
-let modalContentComponent;
 
 /*export let id=''
 
@@ -91,19 +85,11 @@ function close(retVal){
 
 allModals.subscribe($ => {
     if ($.length > 0) {
-        //rootElem.appendChild(topDiv);
-        //document.body.appendChild(topDiv);
         visible = true;
     } else {
         visible = false;
     }
 });
-
-/*onMount(async () => {
-    let _type = typeof topDiv;
-    console.log(_type);
-    console.log(topDiv);
-});*/
 
 </script>
 

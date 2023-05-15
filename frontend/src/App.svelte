@@ -6,7 +6,12 @@ export let rootElem;
 import { onMount, setContext } from 'svelte';
 //import Plotly from 'plotly.js-dist';
 
+//import plotly from '@/vendor/plotly.min.js';
+//console.log(plotly);
+
 setContext('rootElem', rootElem);
+
+import { log } from '@/utils/logging';
 
 import EventEmitter from '@/utils/eventbus';
 import Controller from '@/lib/Controller';
@@ -77,7 +82,7 @@ function onVisible(element, callback) {
 
 
 eventbus.on('metadata:loaded', metadata => {
-    console.log('Metadata loaded!');
+    log('Metadata loaded!');
 
     onVisible(tracksRendererContainer, () => {
         controller.draw();
@@ -86,19 +91,19 @@ eventbus.on('metadata:loaded', metadata => {
 
     let resizeObserverStarted = false;
     let initResizeObserver = () => {
-        console.log('ResizeObserver INITIATED ('+appId+')');
+        //console.log('ResizeObserver INITIATED ('+appId+')');
 
         const containerResizeObserver = new ResizeObserver(debounce(function(entries) {
             if (resizeObserverStarted === false) {
                 resizeObserverStarted = true;
-                console.log('ResizeObserver: omitted first event ('+appId+')');
+                //console.log('ResizeObserver: omitted first event ('+appId+')');
 
             } else {
-                console.log('ResizeObserver: invoked ('+appId+')');
+                //console.log('ResizeObserver: invoked ('+appId+')');
                 
                 let containerWidth = entries[0].contentBoxSize[0].inlineSize;
                 if (containerWidth > 0) {
-                    console.log('ResizeObserver: controller.draw() called ('+appId+')');
+                    //console.log('ResizeObserver: controller.draw() called ('+appId+')');
                     controller.draw();
                 }
             }
@@ -113,7 +118,7 @@ eventbus.on('metadata:loaded', metadata => {
 
 
 onMount(async () => {
-    console.log('DivBrowse App mounted!');
+    log('DivBrowse App mounted!');
 
     //const url = new URL(location.href);
     //console.log(url);
@@ -134,33 +139,8 @@ onMount(async () => {
    };*/
 
 
-
-    /*document.body.addEventListener('mouseenter', function(event) {
-        if (event.target.matches("div#"+appId+" .variant-hover")) {
-            //console.log(event.target.dataset.position);
-            let position = event.target.dataset.position;
-            let elem = document.querySelector("#snp-"+position);
-            elem.classList.add('highlight-snp');
-
-            elem = document.querySelector("#variant-bezier-"+position);
-            elem.classList.add('highlight-variant-bezier');
-        }
-    }, true);
-
-    document.body.addEventListener('mouseleave', function(event) {
-        if (event.target.matches("div#"+appId+" .variant-hover")) {
-            let position = event.target.dataset.position;
-            let elem = document.querySelector("#snp-"+position);
-            elem.classList.remove('highlight-snp');
-
-            elem = document.querySelector("#variant-bezier-"+position);
-            elem.classList.remove('highlight-variant-bezier');
-        }
-    }, true);*/
-
    rootElem.addEventListener('mouseenter', function(event) {
         if (event.target.matches("div#"+appId+" .variant-hover")) {
-            //console.log(event.target.dataset.position);
             let position = event.target.dataset.position;
             let elem = rootElem.querySelector("#snp-"+position);
             elem.classList.add('highlight-snp');
@@ -190,10 +170,6 @@ eventbus.on('data:display:changed', _data => {
 });
 
 
-let showLoadingAnimation = false;
-eventbus.on('loading:animation', msg => {
-    showLoadingAnimation = msg.status;
-});
 
 </script>
 
@@ -221,6 +197,9 @@ eventbus.on('loading:animation', msg => {
 
 </div>
 
+<svelte:head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.8.0/plotly.min.js"></script>
+</svelte:head>
 
 <style lang="less">
 
@@ -238,14 +217,20 @@ eventbus.on('loading:animation', msg => {
     box-sizing: border-box;
 }
 
+:global(:host) {
+    font-size: 15px;
+    all: initial;
+}
+
 .divbrowse-container {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-
+    font-size: 15px;
     border: 1px solid rgb(0,0,0);
     padding: 10px;
     font-family: 'Arial', sans-serif;
     background: rgb(220,220,220);
+    
 }
 
 #tracks-renderer-container {
