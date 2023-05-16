@@ -1,11 +1,14 @@
-<img src="docs/source/images/divbrowse_logo.png" width="600">
+<img src="https://raw.githubusercontent.com/IPK-BIT/divbrowse/main/docs/source/images/divbrowse_logo.png" width="600">
 <br />
+
+
 
 [![PyPI](https://img.shields.io/pypi/v/divbrowse?color=blue&label=PyPI.org)](https://pypi.org/project/divbrowse/)
 [![Docker Image Version (latest semver)](https://img.shields.io/docker/v/ipkbit/divbrowse?color=blue&label=DockerHub)](https://hub.docker.com/r/ipkbit/divbrowse)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/IPK-BIT/divbrowse?color=blue&label=Github)
 
-[![Preprint on bioRxiv.org](https://img.shields.io/badge/DOI-10.1101%2F2022.09.22.509016-yellow)](https://doi.org/10.1101/2022.09.22.509016)
+[![Peer-reviewed paper in GigaScience Journal](https://img.shields.io/badge/DOI-10.1093%2Fgigascience%2Fgiad025-yellow)](https://doi.org/10.1093/gigascience/giad025)
+
 
 [![Documentation Status](https://readthedocs.org/projects/divbrowse/badge/?version=latest)](https://divbrowse.readthedocs.io/?badge=latest)
 [![Python](https://img.shields.io/pypi/pyversions/divbrowse.svg?color=green)](https://badge.fury.io/py/divbrowse)
@@ -16,16 +19,17 @@
 <br />
 
 **Website:** https://divbrowse.ipk-gatersleben.de   
-**Documentation:** https://divbrowse.readthedocs.io
+**Documentation:** https://divbrowse.readthedocs.io   
+**Paper:** https://doi.org/10.1093/gigascience/giad025   
 
 <hr />
 
 **Table of contents:**
-  - [About DivBrowse](#about-divbrowse)
-  - [Try out DivBrowse](#try-out-divbrowse)
-  - [Screenshots](#screenshots)
-  - [Usage workflow concept](#usage-workflow-concept)
-  - [Architecture](#architecture)
+- [About DivBrowse](#about-divbrowse)
+- [Try out DivBrowse](#try-out-divbrowse)
+- [Screenshots](#screenshots)
+- [Usage workflow concept](#usage-workflow-concept)
+- [Architecture](#architecture)
 
 <br />
 
