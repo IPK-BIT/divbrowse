@@ -26,6 +26,7 @@
 
 **Table of contents:**
 - [About DivBrowse](#about-divbrowse)
+- [Installation](#installation)
 - [Try out DivBrowse](#try-out-divbrowse)
 - [Screenshots](#screenshots)
 - [Usage workflow concept](#usage-workflow-concept)
@@ -41,6 +42,9 @@ It offers a novel approach for interactive visualization and analysis of genomic
 
 The integrated ad-hoc calculation of variant summary statistics and principal component analysis enables the user to perform interactive analysis of population structure for single genetic features like genes, exons and promoter regions. Data interoperability is achieved by the possibility to export genomic diversity data for genomic regions of interest in standardized VCF files.
 
+## Installation
+
+The installation via pip or container images is described in the documentation: https://divbrowse.readthedocs.io/en/stable/installation.html
 
 ## Try out DivBrowse
 
