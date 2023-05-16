@@ -8,7 +8,26 @@ title: >-
 message: >-
   If you use this software, please cite it using the
   metadata from this file.
-type: software
+type: article
+doi: 10.1093/gigascience/giad025
+journal: GigaScience
+volume: 12
+year: 2023
+abstract: >-
+  DivBrowse is a software for interactive
+  visualization and analysis of the diversity of
+  genomic variants. It uses VCF and GFF3 files as
+  data input and consists of a web server written in
+  Python and a GUI written in Javascript.
+keywords:
+  - genomics
+  - data visualization
+  - variation data
+  - variant call format
+  - biodiversity
+license: MIT
+#version: 1.0.1
+date-released: '2023-04-21'
 authors:
   - given-names: Patrick
     family-names: König
@@ -68,19 +87,3 @@ identifiers:
 repository-code: 'https://github.com/IPK-BIT/divbrowse'
 url: 'https://divbrowse.ipk-gatersleben.de/'
 repository-artifact: 'https://pypi.org/project/divbrowse/'
-doi: 10.1093/gigascience/giad025
-abstract: >-
-  DivBrowse is a software for interactive
-  visualization and analysis of the diversity of
-  genomic variants. It uses VCF and GFF3 files as
-  data input and consists of a web server written in
-  Python and a GUI written in Javascript.
-keywords:
-  - genomics
-  - data visualization
-  - variation data
-  - variant call format
-  - biodiversity
-license: MIT
-#version: 1.0.1
-date-released: '2023-04-21'
