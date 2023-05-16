@@ -60,15 +60,15 @@ authors:
       Seeland, Germany
 identifiers:
   - type: doi
-    value: 10.1101/2022.09.22.509016
-    description: The bioRxiv deposit of the encompassing paper.
+    value: 10.1093/gigascience/giad025
+    description: The DivBrowse paper on Oxford Academic GigaScience Journal.
   - type: url
     value: 'https://divbrowse.ipk-gatersleben.de'
     description: Project homepage
 repository-code: 'https://github.com/IPK-BIT/divbrowse'
 url: 'https://divbrowse.ipk-gatersleben.de/'
 repository-artifact: 'https://pypi.org/project/divbrowse/'
-doi: 10.1101/2022.09.22.509016
+doi: 10.1093/gigascience/giad025
 abstract: >-
   DivBrowse is a software for interactive
   visualization and analysis of the diversity of
@@ -82,5 +82,5 @@ keywords:
   - variant call format
   - biodiversity
 license: MIT
-version: 1.0.1
-date-released: '2022-09-28'
+#version: 1.0.1
+date-released: '2023-04-21'
