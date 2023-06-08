@@ -18,14 +18,12 @@ from divbrowse.lib.annotation_data import AnnotationData
 from divbrowse.lib.genotype_data import GenotypeData
 from divbrowse.lib.analysis import Analysis
 
-from divbrowse.brapi.v2.allelematrix import BrapiAllelematrix
-
 from divbrowse.lib.utils import ApiError
 from divbrowse.lib.utils import ORJSONEncoder
 
 import base64
 from io import BytesIO
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_style('white')
 sns.set_style('ticks')
@@ -37,6 +35,7 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
     app = Flask(__name__, static_url_path='', static_folder='static')
     app.json_encoder = ORJSONEncoder
+
 
     if config_runtime is not None:
         log.info('Using runtime config')
@@ -50,12 +49,17 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
             log.error('Divbrowse config file `divbrowse.config.yml` not found in current directory!')
             exit(1)
 
-
     log.info('Instanciate GenotypeData classes')
     gd = GenotypeData(config)
 
     log.info('Instanciate AnnotationData classes')
     ad = AnnotationData(config, gd)
+
+    
+    brapi_active = config.get('brapi', {}).get('active', False)
+    if brapi_active:
+        from divbrowse.brapi.v2.blueprint import get_brapi_blueprint
+        app.register_blueprint(get_brapi_blueprint(config, gd, ad), url_prefix='/brapi/v2')
 
 
     def process_request_vars(vars):
@@ -256,107 +260,6 @@ def create_app(filename_config_yaml = 'divbrowse.config.yml', config_runtime=Non
 
         return jsonify(result)
 
-
-    @app.route("/brapi/v2/serverinfo", methods = ['GET', 'OPTIONS'])
-    def __serverinfo():
-
-        output = {
-            "@context": [
-                "https://brapi.org/jsonld/context/metadata.jsonld"
-            ],
-            "metadata": {
-                "datafiles": [],
-                "pagination": None,
-                "status": [
-                    {
-                        "message": "Request accepted, response successful",
-                        "messageType": "INFO"
-                    }
-                ]
-            },
-            "result": {
-                "calls": [
-                    {
-                        "contentTypes": ["application/json"],
-                        "dataTypes": ["application/json"],
-                        "methods": ["GET",],
-                        "service": "serverinfo",
-                        "versions": ["2.1"]
-                    },
-                    {
-                        "contentTypes": ["application/json"],
-                        "dataTypes": ["application/json"],
-                        "methods": ["GET",],
-                        "service": "commoncropnames",
-                        "versions": ["2.1"]
-                    },
-                    {
-                        "contentTypes": ["application/json"],
-                        "dataTypes": ["application/json"],
-                        "methods": ["GET",],
-                        "service": "allelematrix",
-                        "versions": ["2.1"]
-                    }
-                ],
-                "contactEmail": "koenig@ipk-gatersleben.de",
-                "documentationURL": "",
-                "location": "Germany",
-                "organizationName": "IPK Gatersleben",
-                "organizationURL": "ipk-gatersleben.de",
-                "serverDescription": "DivBrowse",
-                "serverName": "DivBrowse BrAPI v2.1 endpoints"
-            }
-        }
-
-        return jsonify(output)
-
-
-
-    @app.route("/brapi/v2/commoncropnames", methods = ['GET', 'OPTIONS'])
-    def __commoncropnames():
-
-        output = {
-            "@context": [
-                "https://brapi.org/jsonld/context/metadata.jsonld"
-            ],
-            "metadata": {
-                "datafiles": [],
-                "pagination": {
-                    "currentPage": 0,
-                    "pageSize": 1000,
-                    "totalCount": 10,
-                    "totalPages": 1
-                },
-                "status": [
-                    {
-                        "message": "Request accepted, response successful",
-                        "messageType": "INFO"
-                    }
-                ]
-            },
-            "result": {
-                "data": [
-                    "Barley",
-                ]
-            }
-        }
-        return jsonify(output)
-
-
-
-    @app.route("/brapi/v2/allelematrix", methods = ['GET', 'POST', 'OPTIONS'])
-    def __allelematrix():
-
-        if request.method == 'GET':
-            pass
-
-        else:
-            #raise ApiError('Method not allowed', status_code=405)
-            return ''
-
-        brapi_allelematrix = BrapiAllelematrix(gd, request)
-
-        return jsonify(brapi_allelematrix.get_response_object())
 
 
 

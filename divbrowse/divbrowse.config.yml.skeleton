@@ -47,3 +47,16 @@ blast:
     blast_database:
     blast_type:
   blast_result_to_vcf_chromosome_mapping:
+
+
+brapi:
+  active: false
+  commoncropname: 
+  serverinfo:
+    server_name: 
+    server_description: 
+    organization_name: 
+    organization_url: 
+    location: 
+    contact_email: 
+    documentation_url: 

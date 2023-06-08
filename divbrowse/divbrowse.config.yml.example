@@ -97,3 +97,16 @@ blast:
     chr6H: chr6H
     chr7H: chr7H
     chrUn: chrUn
+
+
+brapi:
+  active: false
+  commoncropname: barley
+  serverinfo:
+    server_name: BrAPI v2.1 endpoints
+    server_description: Detailed description about this BrAPI server.
+    organization_name: Institute of Plant Breeding, University of ...
+    organization_url: institute-xy.org
+    location: 
+    contact_email: 
+    documentation_url: 
