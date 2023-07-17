@@ -18,9 +18,6 @@ class BrapiVariants():
 
         self._add_data()
 
-        #self._add_calldata()
-        #self._add_call_level_metadata()
-
         self.status_messages.append({
             'message': 'Request accepted, response successful',
             'messageType': 'INFO'
@@ -42,11 +39,10 @@ class BrapiVariants():
                 self.has_variant_db_id = True
 
             except:
-                print('ERROR: variantDbId seems to be malformatted. It should have the format `chromosome:position`. Example: `1:56242`')
-                #self.status_messages.append({
-                #    'message': 'Given parameter `page` was bigger than corresponding `totalPages` would allow. `currentPage` was set to the biggest possible value of '+str(self.input['page']),
-                #    'messageType': 'WARNING'
-                #})
+                self.status_messages.append({
+                    'message': 'variantDbId seems to be malformatted. It should have the format `chromosome:position`. Example: `1:56242`',
+                    'messageType': 'ERROR'
+                })
 
         input['page'] = request.args.get('page', default = 0, type = int)
         input['pageSize'] = request.args.get('pageSize', default = 1000, type = int)
@@ -56,26 +52,13 @@ class BrapiVariants():
 
 
     def _count_variants(self):
-
+    
         self.slice_variant_calls = False
 
         if self.has_variant_db_id:
-
-            """
-            location_start, lookup_type_start = self.gd.get_posidx_by_genome_coordinate(self.input['chrom'], self.input['pos'])
-
-            self.slice_variant_calls = slice(location_start, location_end, None)
-            self.slice_variants_indices = np.arange(location_start, location_end, 1)
-            positions = self.gd.pos[self.slice_variant_calls]
-
-            self.count_variants = len(positions)
-            """
-
             self.count_variants = 1
-
         else:
             self.count_variants = self.gd.count_variants
-
 
 
 
@@ -98,66 +81,6 @@ class BrapiVariants():
             'totalCount': self.count_variants,
             'totalPages': total_pages
         }
-
-
-
-
-    def _add_calldata(self):
-
-        variants_start = self.input['dimensionVariantPage'] * self.input['dimensionVariantPageSize']
-        variants_end = variants_start + self.input['dimensionVariantPageSize']
-
-        if self.has_position_range:
-            slice_variant_axis = self.slice_variants_indices[slice(variants_start, variants_end, None)]
-
-        else:
-            slice_variant_axis = slice(variants_start, variants_end, None)
-        
-        self.slice_variant_axis = slice_variant_axis
-
-
-        if not self.input['preview']:
-            if not (self.input['dataMatrixAbbreviations'] and 'GT' not in self.input['dataMatrixAbbreviations']):
-
-                sliced_variant_calls = self.gd.callset['calldata/GT'].get_orthogonal_selection((self.slice_variant_axis, self.sample_mask_integer_indices_sliced))
-                sliced_variant_calls = sliced_variant_calls.transpose(1, 0, 2) # transpose GenotypeArray so that samples are in the 1st dimension and not the variant-calls
-
-                calls = []
-
-                for i in range(sliced_variant_calls.shape[0]):
-                    _sample_variant_calls = ['/'.join(map(str, m)) for m in sliced_variant_calls[i]]
-                    calls.append(_sample_variant_calls)
-
-                self.data_matrices.append({
-                    'dataMatrix': calls,
-                    'dataMatrixAbbreviation': 'GT',
-                    'dataMatrixName': 'Genotype',
-                    'dataType': 'string'
-                })
-
-        chrom = self.gd.callset['variants/CHROM'].get_orthogonal_selection((slice_variant_axis))
-        positions = self.gd.pos[slice_variant_axis]
-        self.variant_db_ids = [str(chrom[idx])+':'+str(pos) for (idx, pos) in enumerate(positions.tolist())]
-
-
-    def _add_call_level_metadata(self):
-
-        if self.input['preview']:
-            return
-
-        if self.input['dataMatrixAbbreviations'] and 'DP' not in self.input['dataMatrixAbbreviations']:
-            return
-
-        # add possible DP values
-        if 'DP' in self.gd.available_calldata:
-            sliced_DP = self.gd.callset['calldata/DP'].get_orthogonal_selection((self.slice_variant_axis, self.sample_mask_integer_indices_sliced)).T
-
-            self.data_matrices.append({
-                'dataMatrix': sliced_DP.tolist(),
-                'dataMatrixAbbreviation': 'DP',
-                'dataMatrixName': 'Read depth',
-                'dataType': 'integer'
-            })
 
 
 
